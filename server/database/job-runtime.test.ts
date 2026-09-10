@@ -129,6 +129,7 @@ describe.skipIf(!url)('production job runtime', () => {
         run: async () => {
           entered()
           await gate
+          return 0
         }
       }]
     })
