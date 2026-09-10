@@ -20,7 +20,7 @@ export interface RuntimeTask {
   intervalMs: number
   initialDelayMs?: number
   leaseMs?: number
-  run: () => Promise<unknown>
+  run: () => Promise<number>
 }
 
 export function defaultRuntimeTasks(): RuntimeTask[] {
@@ -51,7 +51,7 @@ export function defaultRuntimeTasks(): RuntimeTask[] {
       run: async () => {
         const dispatched = await dispatchDomainEvents()
         const delivered = await processAutomationRuns()
-        return { dispatched, delivered }
+        return dispatched + delivered
       }
     },
     {
@@ -88,7 +88,7 @@ export function defaultRuntimeTasks(): RuntimeTask[] {
         const reminders = await processBillingReminders()
         const expired = await expireLapsedTeams()
         await pruneWorkerInstances()
-        return { reminders, expired }
+        return reminders.sent + expired
       }
     }
   ]
@@ -124,7 +124,7 @@ export function createJobRuntime(input: {
         })
         if (!execution.acquired) return
 
-        const count = processedCount(execution.result)
+        const count = execution.result
         if (count > 0) {
           logEvent('info', 'worker_task_completed', {
             workerId,
@@ -233,16 +233,4 @@ export function createJobRuntime(input: {
     runTask,
     get runningTasks() { return [...inFlight.keys()] }
   }
-}
-
-function processedCount(result: unknown) {
-  if (typeof result === 'number') return result
-  if (result && typeof result === 'object') {
-    const record = result as Record<string, unknown>
-    if (typeof record.sent === 'number') return record.sent
-    return Object.values(record).reduce<number>((total, value) => (
-      total + (typeof value === 'number' ? value : 0)
-    ), 0)
-  }
-  return 0
 }
