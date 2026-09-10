@@ -1,14 +1,17 @@
 import { getHeader, getRequestURL, setResponseHeader } from 'h3'
-import { useEnv } from '../config/env'
-import { enforceRateLimit } from '../services/rate-limit'
-import { enforceBoundedRequestBody } from '../security/request-body'
+import { useEnv } from '@@/server/config/env'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { enforceBoundedRequestBody } from '@@/server/security/request-body'
 import {
   apiBodyLimit,
   requestProtectionFailure,
   sensitiveRateLimit
-} from '../security/request-protection'
+} from '@@/server/security/request-protection'
 
 export default defineEventHandler(async (event) => {
+  // Static rendering loads public icon assets, not authenticated API requests.
+  if (import.meta.prerender) return
+
   const url = getRequestURL(event)
   if (!url.pathname.startsWith('/api/')) return
 

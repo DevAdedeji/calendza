@@ -4,7 +4,7 @@ import {
   recurringOccurrences,
   weeklyRecurringOccurrences
 } from '#shared/recurrence'
-import { commonRecurringHostIds, recurringOccurrenceAvailability } from './recurrence'
+import { commonRecurringHostIds, recurringOccurrenceAvailability } from '@@/server/domain/recurrence'
 
 describe('recurring occurrence generation', () => {
   it('keeps the same local time each week', () => {

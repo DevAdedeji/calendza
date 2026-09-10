@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -19,7 +19,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
     process.env.MICROSOFT_CLIENT_ID = 'microsoft-client-id'
     process.env.MICROSOFT_CLIENT_SECRET = 'microsoft-client-secret'
     process.env.INTEGRATION_ENCRYPTION_KEY = 'integration-test-key-that-is-at-least-32-characters'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   }
 
@@ -39,7 +39,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       displayName: 'Host Person',
       mail: 'host@example.com'
     })))
-    const { saveMicrosoftConnection } = await import('../integrations/calendar/microsoft')
+    const { saveMicrosoftConnection } = await import('@@/server/integrations/calendar/microsoft')
     await saveMicrosoftConnection(hostId, {
       access_token: 'microsoft-access-token',
       refresh_token: 'microsoft-refresh-token',
@@ -50,8 +50,8 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
 
   beforeEach(async () => {
     await configure()
-    const { clearMicrosoftBusyCache } = await import('../integrations/calendar/microsoft')
-    const { clearGoogleBusyCache } = await import('../integrations/calendar/google')
+    const { clearMicrosoftBusyCache } = await import('@@/server/integrations/calendar/microsoft')
+    const { clearGoogleBusyCache } = await import('@@/server/integrations/calendar/google')
     clearMicrosoftBusyCache()
     clearGoogleBusyCache()
     await sql`
@@ -100,7 +100,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       microsoftCalendarConnection,
       microsoftAuthorizationUrl,
       saveMicrosoftConnection
-    } = await import('../integrations/calendar/microsoft')
+    } = await import('@@/server/integrations/calendar/microsoft')
     const authorization = new URL(microsoftAuthorizationUrl(
       'csrf-state',
       'host@example.com',
@@ -121,7 +121,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
     })
     await initializeMicrosoftCalendars(hostId)
 
-    const { enqueueFutureBookingsForCalendarSync } = await import('../services/calendar-sync')
+    const { enqueueFutureBookingsForCalendarSync } = await import('@@/server/services/calendar-sync')
     await expect(enqueueFutureBookingsForCalendarSync(hostId)).resolves.toBeUndefined()
 
     const calendarListUrl = String(fetchMock.mock.calls[1]?.[0])
@@ -154,7 +154,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
   it('combines busy periods from every selected Google and Microsoft calendar', async () => {
     const hostId = await createHost()
     await connect(hostId)
-    const { saveGoogleConnection } = await import('../integrations/calendar/google')
+    const { saveGoogleConnection } = await import('@@/server/integrations/calendar/google')
     await saveGoogleConnection(hostId, {
       access_token: 'google-access-token',
       refresh_token: 'google-refresh-token',
@@ -192,7 +192,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       return json({}, 404)
     }))
 
-    const { calendarBusyTimes } = await import('../integrations/calendar/providers')
+    const { calendarBusyTimes } = await import('@@/server/integrations/calendar/providers')
     const periods = await calendarBusyTimes(
       hostId,
       '2026-09-07T08:00:00Z',
@@ -223,7 +223,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
     ] }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { microsoftBusyTimes } = await import('../integrations/calendar/microsoft')
+    const { microsoftBusyTimes } = await import('@@/server/integrations/calendar/microsoft')
     await expect(microsoftBusyTimes(hostId, '2026-09-01T00:00:00Z', '2026-10-01T00:00:00Z')).resolves.toEqual([
       { start: '2026-09-07T09:00:00.0000000Z', end: '2026-09-07T09:30:00.0000000Z' }
     ])
@@ -244,7 +244,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       .mockResolvedValueOnce(json({ id: 'event-id' }))
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
     vi.stubGlobal('fetch', fetchMock)
-    const { deleteMicrosoftCalendarEvent, upsertMicrosoftCalendarEvent } = await import('../integrations/calendar/microsoft')
+    const { deleteMicrosoftCalendarEvent, upsertMicrosoftCalendarEvent } = await import('@@/server/integrations/calendar/microsoft')
     const input = {
       uid: 'booking-uid', title: 'Intro call', startsAt: new Date('2026-09-07T09:00:00Z'),
       endsAt: new Date('2026-09-07T09:30:00Z'), attendeeName: 'Guest', attendeeEmail: 'guest@example.com',
@@ -270,7 +270,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
     }, 201))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { upsertMicrosoftCalendarEvent } = await import('../integrations/calendar/microsoft')
+    const { upsertMicrosoftCalendarEvent } = await import('@@/server/integrations/calendar/microsoft')
     const remote = await upsertMicrosoftCalendarEvent(hostId, 'primary-calendar', null, {
       uid: 'teams-booking',
       title: 'Teams call',
@@ -317,7 +317,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       .mockResolvedValueOnce(json({ value: [] }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { updateMicrosoftCalendarSelection } = await import('../integrations/calendar/microsoft')
+    const { updateMicrosoftCalendarSelection } = await import('@@/server/integrations/calendar/microsoft')
     await updateMicrosoftCalendarSelection(hostId, ['outlook-primary'], 'outlook-primary', true)
 
     const connections = await sql<{ provider: string, write_calendar_id: string | null, is_default_write_destination: boolean }[]>`
@@ -348,7 +348,7 @@ describe.skipIf(!url)('Microsoft Calendar integration', () => {
       { id: 'outlook-primary', name: 'Calendar', isDefaultCalendar: true, canEdit: true }
     ] })))
 
-    const { initializeMicrosoftCalendars } = await import('../integrations/calendar/microsoft')
+    const { initializeMicrosoftCalendars } = await import('@@/server/integrations/calendar/microsoft')
     await initializeMicrosoftCalendars(hostId)
 
     const connections = await sql<{ provider: string, write_calendar_id: string | null, is_default_write_destination: boolean }[]>`

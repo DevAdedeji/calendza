@@ -6,13 +6,13 @@ import {
   type BookingEmailTemplateSettings
 } from '#shared/email-templates'
 import { DEFAULT_PERSONAL_BRANDING } from '#shared/branding'
-import type { Database } from '../database/client'
-import { organizations, users } from '../database/schema'
-import { useDatabase } from '../database'
-import type { Email, EmailBranding } from '../integrations/email'
-import { useEnv } from '../config/env'
-import { organizationEntitlement } from './entitlement'
-import { personalPlanEntitlement } from './personal-entitlement'
+import type { Database } from '@@/server/database/client'
+import { organizations, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import type { Email, EmailBranding } from '@@/server/integrations/email'
+import { useEnv } from '@@/server/config/env'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
 export interface BookingEmailOwner {
   organizationId?: string | null

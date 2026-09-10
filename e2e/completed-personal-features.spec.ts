@@ -149,6 +149,56 @@ test('manages time off on mobile, blocks its date and rejects overlaps and anony
   expect(restored.slots.some(slot => slot.start.slice(0, 10) === blockedDate)).toBe(true)
 })
 
+test('edits guest questions on mobile and preserves saved answers after cancelling a draft', async ({ page }) => {
+  test.setTimeout(60_000)
+  await signUpAndSignIn(page, {
+    name: 'Questions Host', username: 'questions-host', email: 'questions-host@schedra.test'
+  })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto('/event-types')
+  await page.waitForLoadState('networkidle')
+  await page.getByRole('button', { name: 'New event type' }).click()
+  const create = page.getByRole('dialog', { name: 'New event type' })
+  await create.getByLabel('Event name').fill('Discovery questions')
+  await create.getByRole('button', { name: /Guest questions/ }).click()
+  await create.getByRole('button', { name: 'Add question', exact: true }).click()
+  await create.getByLabel('Question', { exact: true }).fill('What should we discuss?')
+  await create.getByRole('button', { name: 'Add question', exact: true }).click()
+  await create.getByLabel('Question', { exact: true }).nth(1).fill('Which service?')
+  await create.getByLabel('Answer type', { exact: true }).nth(1).click()
+  await page.getByRole('option', { name: 'Choose one' }).click()
+  await expect(page.getByRole('listbox')).not.toBeVisible()
+  await create.getByLabel('Choice 1', { exact: true }).click()
+  await create.getByLabel('Choice 1', { exact: true }).fill('Design')
+  await create.getByLabel('Choice 2', { exact: true }).fill('Development')
+  await expect(create.getByLabel('Choice 1', { exact: true })).toHaveValue('Design')
+  await expect(create.getByLabel('Choice 2', { exact: true })).toHaveValue('Development')
+  await create.getByRole('button', { name: 'Move question 2 up', exact: true }).click()
+  await expect(create.getByLabel('Question', { exact: true }).first()).toHaveValue('Which service?')
+  await expect(create.getByLabel('Choice 1', { exact: true })).toHaveValue('Design')
+  await create.getByRole('button', { name: 'Create event type' }).click()
+  await expect(create).not.toBeVisible()
+
+  const [saved] = await sql<{ id: string, booking_questions: Array<{ label: string, options: string[] }> }[]>`
+    select id, booking_questions from event_types where title = 'Discovery questions'
+  `
+  expect(saved!.booking_questions.map(question => question.label)).toEqual(['Which service?', 'What should we discuss?'])
+  expect(saved!.booking_questions[0]!.options).toEqual(['Design', 'Development'])
+
+  const row = page.getByRole('listitem').filter({ hasText: 'Discovery questions' })
+  await row.locator('button').first().click()
+  const edit = page.getByRole('dialog', { name: 'Edit event type' })
+  await edit.getByRole('button', { name: /Guest questions/ }).click()
+  await edit.getByLabel('Choice 1', { exact: true }).fill('Unsaved change')
+  await edit.getByRole('button', { name: 'Cancel', exact: true }).click()
+  await row.locator('button').first().click()
+  await edit.getByRole('button', { name: /Guest questions/ }).click()
+  await expect(edit.getByLabel('Choice 1', { exact: true })).toHaveValue('Design')
+  const box = await edit.boundingBox()
+  expect(box!.width).toBeLessThan(390)
+  expect(box!.x).toBeGreaterThan(0)
+})
+
 test('enforces weekly and monthly booking limits configured in the event editor', async ({ page, request }) => {
   await signUpAndSignIn(page, {
     name: 'Limit Host', username: 'limit-host', email: 'limit-host@schedra.test'

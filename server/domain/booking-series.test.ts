@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { currentSeriesOccurrences } from './booking-series'
+import { currentSeriesOccurrences } from '@@/server/domain/booking-series'
 
 describe('recurring request recovery', () => {
   it('returns the latest replacement for each position, including cancelled final occurrences', () => {

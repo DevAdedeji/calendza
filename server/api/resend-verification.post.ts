@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { emailSchema } from '../../shared/validation'
-import { enforceRateLimit } from '../services/rate-limit'
-import { resendVerificationEmail } from '../services/verification-email'
+import { emailSchema } from '@@/shared/validation'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { resendVerificationEmail } from '@@/server/services/verification-email'
 
 const callbackURLSchema = z.string().trim().max(1000).refine(
   value => /^\/(?!\/)[^\\\r\n]*$/.test(value),

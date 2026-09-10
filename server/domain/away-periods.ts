@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill'
-import type { Interval } from './types'
+import type { Interval } from '@@/server/domain/types'
 
 export interface CalendarDateRange {
   startDate: string

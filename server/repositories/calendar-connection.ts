@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, isNotNull, sql } from 'drizzle-orm'
-import { calendarConnections } from '../database/schema'
-import { useDatabase } from '../database'
+import { calendarConnections } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 /** Persistence queries for calendar-connection policy checks. */
 export async function writableGoogleCalendarUserIds(userIds: string[]) {

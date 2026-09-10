@@ -1,7 +1,7 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { describe, expect, it } from 'vitest'
-import { getAvailableSlots } from './availability'
-import type { AvailabilityQuery, Slot, TimeZone, Weekday } from './types'
+import { getAvailableSlots } from '@@/server/domain/availability'
+import type { AvailabilityQuery, Slot, TimeZone, Weekday } from '@@/server/domain/types'
 
 const LAGOS = 'Africa/Lagos' // UTC+1 year round, no DST
 const LONDON = 'Europe/London'

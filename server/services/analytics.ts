@@ -1,8 +1,8 @@
 import { and, asc, desc, eq, gte, lt, sql } from 'drizzle-orm'
 import { fillDailySeries, percentage, percentageChange, type AnalyticsQuery } from '#shared/analytics'
-import { bookingHosts, bookingPayments, bookings, eventTypes } from '../database/schema'
-import { useDatabase } from '../database'
-import { subtractFromInstant } from '../utils/date-time'
+import { bookingHosts, bookingPayments, bookings, eventTypes } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { subtractFromInstant } from '@@/server/utils/date-time'
 
 export type AnalyticsOwner
   = | { userId: string, organizationId?: never, visibleUserId?: never }

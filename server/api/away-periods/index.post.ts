@@ -1,6 +1,6 @@
 import { awayPeriodInputSchema } from '#shared/away-periods'
-import { createAwayPeriod } from '../../services/away-periods'
-import { requireAuthSession } from '../../services/session'
+import { createAwayPeriod } from '@@/server/services/away-periods'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

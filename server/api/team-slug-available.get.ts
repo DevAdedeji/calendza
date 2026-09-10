@@ -1,9 +1,9 @@
 import { sql } from 'drizzle-orm'
 import { organizationSlugSchema } from '#shared/billing'
-import { organizationSlugHistory, organizations } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { enforceRateLimit } from '../services/rate-limit'
-import { requireAuthSession } from '../services/session'
+import { organizationSlugHistory, organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   await requireAuthSession(event)

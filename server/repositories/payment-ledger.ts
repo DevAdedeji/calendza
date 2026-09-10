@@ -1,5 +1,5 @@
 import { and, count, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   bookingPayments,
   bookings,
@@ -8,8 +8,8 @@ import {
   paymentLedgerEntries,
   paymentRecipients,
   users
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import type {
   PaymentActivityQuery,
   PaymentLedgerDirection,

@@ -1,15 +1,15 @@
-import type { AssignedBookingHost, ManagedBooking } from '../repositories/booking'
-import { emailDedupeKey, enqueueEmails, type EmailInsertExecutor } from './email-outbox'
-import { useEnv } from '../config/env'
+import type { AssignedBookingHost, ManagedBooking } from '@@/server/repositories/booking'
+import { emailDedupeKey, enqueueEmails, type EmailInsertExecutor } from '@@/server/services/email-outbox'
+import { useEnv } from '@@/server/config/env'
 import type { BookingAnswer, MeetingLocationType } from '#shared/validation'
-import { readBookingAnswers } from '../domain/booking-answers'
-import { subtractFromInstant } from '../utils/date-time'
-import { useDatabase } from '../database'
+import { readBookingAnswers } from '@@/server/domain/booking-answers'
+import { subtractFromInstant } from '@@/server/utils/date-time'
+import { useDatabase } from '@@/server/database'
 import {
   optionalHostRecipients,
   type NotificationPreferenceExecutor
-} from './email-notification-preferences'
-import { customizeGuestBookingEmail, resolveBookingEmailCustomization } from './booking-email-customization'
+} from '@@/server/services/email-notification-preferences'
+import { customizeGuestBookingEmail, resolveBookingEmailCustomization } from '@@/server/services/booking-email-customization'
 
 export interface BookingNotice {
   uid: string

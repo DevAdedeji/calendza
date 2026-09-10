@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DEFAULT_PERSONAL_BRANDING, readableTextColor, type BookingPageTheme } from '#shared/branding'
-import { apiErrorMessage, brandingApi } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { brandingApi } from '@/services/api/branding'
 
 const feedback = useFeedback()
 const logoInput = ref<HTMLInputElement | null>(null)

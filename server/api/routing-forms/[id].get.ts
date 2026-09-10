@@ -1,5 +1,5 @@
-import { getRoutingForm } from '../../services/routing-forms'
-import { requireAuthSession } from '../../services/session'
+import { getRoutingForm } from '@@/server/services/routing-forms'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

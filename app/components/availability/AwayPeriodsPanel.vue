@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  awayPeriodsApi,
-  type AwayPeriodRecord,
-  type AwayPeriodsResponse
-} from '~/services/schedra-api'
-import { formatCalendarDate, todayCalendarDate } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { awayPeriodsApi, type AwayPeriodRecord, type AwayPeriodsResponse } from '@/services/api/schedules'
+import { formatCalendarDate, todayCalendarDate } from '@/utils/date-time'
 
 const { data, status, error: loadFailure, refresh } = await useLazyFetch<AwayPeriodsResponse>(awayPeriodsApi.endpoint)
 const feedback = useFeedback()

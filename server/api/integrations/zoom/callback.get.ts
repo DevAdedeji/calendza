@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { exchangeZoomCode, saveZoomConnection } from '../../../integrations/video/zoom'
-import { enqueueFutureBookingsForCalendarSync } from '../../../services/calendar-sync'
-import { requireAuthSession } from '../../../services/session'
-import { matchesOAuthState } from '../../../security/oauth'
-import { logEvent } from '../../../observability/logger'
+import { exchangeZoomCode, saveZoomConnection } from '@@/server/integrations/video/zoom'
+import { enqueueFutureBookingsForCalendarSync } from '@@/server/services/calendar-sync'
+import { requireAuthSession } from '@@/server/services/session'
+import { matchesOAuthState } from '@@/server/security/oauth'
+import { logEvent } from '@@/server/observability/logger'
 
 const callbackQuery = z.object({
   code: z.string().min(1),

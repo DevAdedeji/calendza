@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -19,7 +19,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     process.env.GOOGLE_CLIENT_ID = 'google-client-id'
     process.env.GOOGLE_CLIENT_SECRET = 'google-client-secret'
     process.env.INTEGRATION_ENCRYPTION_KEY = 'integration-test-key-that-is-at-least-32-characters'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   }
 
@@ -51,7 +51,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
   }
 
   async function connect(hostId: string, expiresIn = 3600) {
-    const { saveGoogleConnection } = await import('../integrations/calendar/google')
+    const { saveGoogleConnection } = await import('@@/server/integrations/calendar/google')
     await saveGoogleConnection(hostId, {
       access_token: 'plain-access-token',
       refresh_token: 'plain-refresh-token',
@@ -88,7 +88,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
 
   beforeEach(async () => {
     await configure()
-    const { clearGoogleBusyCache } = await import('../integrations/calendar/google')
+    const { clearGoogleBusyCache } = await import('@@/server/integrations/calendar/google')
     clearGoogleBusyCache()
     await sql`
       truncate table
@@ -141,7 +141,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       GOOGLE_CALENDAR_SCOPES,
       googleAuthorizationUrl,
       initializeGoogleCalendars
-    } = await import('../integrations/calendar/google')
+    } = await import('@@/server/integrations/calendar/google')
     const state = 'csrf-state-value'
     const authorization = new URL(googleAuthorizationUrl(state, 'host@example.com', 'pkce-challenge'))
 
@@ -188,8 +188,8 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       .mockResolvedValueOnce(json({ items: [] }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { listGoogleCalendars } = await import('../integrations/calendar/google')
-    const { decryptCredential } = await import('../integrations/calendar/credential-crypto')
+    const { listGoogleCalendars } = await import('@@/server/integrations/calendar/google')
+    const { decryptCredential } = await import('@@/server/integrations/calendar/credential-crypto')
     await listGoogleCalendars(hostId)
 
     expect(fetchMock).toHaveBeenCalledTimes(2)
@@ -212,7 +212,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     await sql`update calendar_connections set access_token_expires_at = now() - interval '1 minute' where user_id = ${hostId}`
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ error: 'invalid_grant' }, 400)))
 
-    const { CalendarUnavailableError, listGoogleCalendars } = await import('../integrations/calendar/google')
+    const { CalendarUnavailableError, listGoogleCalendars } = await import('@@/server/integrations/calendar/google')
     await expect(listGoogleCalendars(hostId)).rejects.toBeInstanceOf(CalendarUnavailableError)
 
     const [connection] = await sql<{ status: string, last_error: string }[]>`
@@ -237,7 +237,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = await findPublicEventType('host', 'intro')
     const slots = await slotsFor(event!, '2026-09-07', '2026-09-07', '2026-09-01T00:00:00Z')
 
@@ -272,7 +272,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       }
     })))
 
-    const { googleBusyTimes } = await import('../integrations/calendar/google')
+    const { googleBusyTimes } = await import('@@/server/integrations/calendar/google')
     const busy = await googleBusyTimes(hostId, '2026-09-01T00:00:00Z', '2026-10-01T00:00:00Z')
 
     expect(busy).toEqual([
@@ -305,7 +305,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { CalendarSelectionError, updateGoogleCalendarSelection } = await import('../integrations/calendar/google')
+    const { CalendarSelectionError, updateGoogleCalendarSelection } = await import('@@/server/integrations/calendar/google')
     const failure = await updateGoogleCalendarSelection(
       hostId,
       ['primary@example.com', 'holidays@example.com'],
@@ -331,7 +331,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { googleBusyTimes } = await import('../integrations/calendar/google')
+    const { googleBusyTimes } = await import('@@/server/integrations/calendar/google')
     await googleBusyTimes(hostId, '2026-09-01T00:00:00Z', '2026-10-01T00:00:00Z')
     const narrowed = await googleBusyTimes(hostId, '2026-09-07T00:00:00Z', '2026-09-08T00:00:00Z')
 
@@ -359,7 +359,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(originalId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -423,7 +423,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -480,7 +480,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     })
     vi.stubGlobal('fetch', fetchMock)
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -508,7 +508,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       values ('cohost@example.com', 'Co Host', 'cohost', true, 'Europe/London')
       returning id
     `
-    const { requireTeamLocationIntegrations } = await import('../services/event-location')
+    const { requireTeamLocationIntegrations } = await import('@@/server/services/event-location')
     vi.stubGlobal('createError', (input: { statusCode: number, statusMessage: string }) =>
       Object.assign(new Error(input.statusMessage), input))
 
@@ -538,7 +538,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ error: 'temporary' }, 503)))
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -590,7 +590,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       enqueueCalendarReconciliation,
       enqueueCalendarSync,
       processCalendarSyncJobs
-    } = await import('../services/calendar-sync')
+    } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
     await sql`
@@ -629,7 +629,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('Timed out', 'TimeoutError')))
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const { enqueueCalendarReconciliation, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarReconciliation, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     expect(await enqueueCalendarReconciliation()).toBe(1)
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -667,7 +667,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ error: 'invalid_grant' }, 400)))
     vi.spyOn(console, 'error').mockImplementation(() => {})
 
-    const { enqueueCalendarReconciliation, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarReconciliation, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     expect(await enqueueCalendarReconciliation()).toBe(1)
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -711,7 +711,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
       CalendarSelectionError,
       disconnectGoogleCalendar,
       updateGoogleCalendarSelection
-    } = await import('../integrations/calendar/google')
+    } = await import('@@/server/integrations/calendar/google')
 
     await expect(updateGoogleCalendarSelection(
       hostId,

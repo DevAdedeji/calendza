@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { formatMoney, type PaymentCurrency } from '#shared/payments'
-import {
-  apiErrorMessage,
-  paymentsApi,
-  type PaymentWithdrawalOptions,
-  type PaymentWithdrawalPreview,
-  type PaymentWithdrawalRecord
-} from '~/services/schedra-api'
-import { formatDateTime } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { paymentsApi, type PaymentWithdrawalOptions, type PaymentWithdrawalPreview, type PaymentWithdrawalRecord } from '@/services/api/payments'
+import { formatDateTime } from '@/utils/date-time'
 
 const props = defineProps<{ teamSlug?: string }>()
 const emit = defineEmits<{ updated: [] }>()
@@ -24,6 +19,8 @@ const requestId = ref<string | null>(null)
 const previewing = ref(false)
 const submitting = ref(false)
 const formError = ref('')
+const previewRequests = useRequestGuard()
+const submissionRequests = useRequestGuard()
 
 const availableOptions = computed(() => (data.value?.available ?? [])
   .filter(balance => balance.amountCents > 0)
@@ -55,12 +52,17 @@ watch(data, (value) => {
   }
 }, { immediate: true })
 
-watch([sourceCurrency, destinationId, amount], () => {
-  if (preview.value) {
-    preview.value = null
-    requestId.value = null
-  }
+watch([sourceCurrency, destinationId, amount, open, () => props.teamSlug], () => {
+  previewRequests.invalidate()
+  preview.value = null
+  requestId.value = null
   formError.value = ''
+}, { flush: 'sync' })
+
+watch(() => props.teamSlug, () => {
+  submissionRequests.invalidate()
+  open.value = false
+  resetForm()
 })
 
 function inputCents(value: string) {
@@ -88,6 +90,8 @@ function resetForm() {
 }
 
 async function reviewWithdrawal() {
+  if (previewing.value || submitting.value || !open.value) return
+  const current = previewRequests.begin()
   const amountCents = inputCents(amount.value)
   if (!amountCents || !destinationId.value) {
     formError.value = 'Choose where the money should go and enter a valid amount.'
@@ -101,21 +105,24 @@ async function reviewWithdrawal() {
   previewing.value = true
   formError.value = ''
   try {
-    preview.value = await paymentsApi.previewWithdrawal({
+    const result = await paymentsApi.previewWithdrawal({
       destinationId: destinationId.value,
       sourceCurrency: sourceCurrency.value,
       amountCents
     }, props.teamSlug)
+    if (!current()) return
+    preview.value = result
     requestId.value = crypto.randomUUID()
   } catch (failure) {
-    formError.value = apiErrorMessage(failure, 'The withdrawal could not be previewed. No money was moved.')
+    if (current()) formError.value = apiErrorMessage(failure, 'The withdrawal could not be previewed. No money was moved.')
   } finally {
     previewing.value = false
   }
 }
 
 async function confirmWithdrawal() {
-  if (!preview.value || !requestId.value) return
+  if (!preview.value || !requestId.value || submitting.value || !open.value) return
+  const current = submissionRequests.begin()
   submitting.value = true
   formError.value = ''
   try {
@@ -123,6 +130,7 @@ async function confirmWithdrawal() {
       requestId: requestId.value,
       confirmationToken: preview.value.confirmationToken
     }, props.teamSlug)
+    if (!current()) return
     const uncertain = withdrawal.status === 'unknown' || withdrawal.status === 'creating'
     const withdrawalAmount = formatMoney(withdrawal.requestedAmountCents, withdrawal.sourceCurrency)
     const fee = withdrawal.feeCents == null
@@ -145,9 +153,7 @@ async function confirmWithdrawal() {
     await refresh()
     emit('updated')
   } catch (failure) {
-    formError.value = apiErrorMessage(failure, 'The withdrawal could not be submitted. Review a new preview before trying again.')
-    preview.value = null
-    requestId.value = null
+    if (current()) formError.value = apiErrorMessage(failure, 'We could not confirm the result. Retry uses the same withdrawal request, not a new one.')
   } finally {
     submitting.value = false
   }

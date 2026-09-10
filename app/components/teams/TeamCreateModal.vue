@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createOrganizationSchema, TEAM_PLAN, formatUsd } from '#shared/billing'
-import { apiErrorMessage, teamsApi, type SlugAvailability } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamsApi, type SlugAvailability } from '@/services/api/teams'
 
 const props = defineProps<{ open: boolean }>()
 const emit = defineEmits<{ 'update:open': [value: boolean], 'created': [slug: string] }>()

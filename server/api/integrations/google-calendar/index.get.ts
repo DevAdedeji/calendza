@@ -1,5 +1,5 @@
-import { googleCalendarConnection } from '../../../integrations/calendar/google'
-import { requireAuthSession } from '../../../services/session'
+import { googleCalendarConnection } from '@@/server/integrations/calendar/google'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

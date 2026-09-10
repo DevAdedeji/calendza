@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { TeamSummary } from '~/services/schedra-api'
-import { getInitials } from '~/utils/text'
+import type { TeamSummary } from '@/services/api/teams'
+import { getInitials } from '@/utils/text'
 
 const props = defineProps<{ collapsedLabel?: string }>()
 

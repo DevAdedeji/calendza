@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { combineHostSlots, pickRoundRobinHost, type HostSlots } from './team-availability'
+import { combineHostSlots, pickRoundRobinHost, type HostSlots } from '@@/server/domain/team-availability'
 
 const slot = (start: string) => ({ start, end: start })
 

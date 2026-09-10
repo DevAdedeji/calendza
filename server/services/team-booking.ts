@@ -1,9 +1,9 @@
 import { and, asc, desc, eq, gte, inArray, isNull, lt, lte, ne, sql } from 'drizzle-orm'
 import { eventTypeDurationOptions, type AssignmentMode, type BookingQuestion } from '#shared/validation'
-import { getAvailableSlots } from '../domain/availability'
-import { combineHostSlots, pickRoundRobinHost, type HostLoad, type TeamSlot } from '../domain/team-availability'
-import type { AvailabilityRule, DateOverride, Weekday } from '../domain/types'
-import type { Database } from '../database/client'
+import { getAvailableSlots } from '@@/server/domain/availability'
+import { combineHostSlots, pickRoundRobinHost, type HostLoad, type TeamSlot } from '@@/server/domain/team-availability'
+import type { AvailabilityRule, DateOverride, Weekday } from '@@/server/domain/types'
+import type { Database } from '@@/server/database/client'
 import {
   availabilityRules,
   bookingHosts,
@@ -14,15 +14,15 @@ import {
   members,
   schedules,
   users
-} from '../database/schema'
-import { useDatabase } from '../database'
-import { calendarBusyTimes } from '../integrations/calendar/providers'
-import { awayIntervalsForUser } from './away-periods'
-import { bookingLimitRange, subtractFromInstant, utcCalendarDateBoundary } from '../utils/date-time'
-import { organizationEntitlement } from './entitlement'
-import { findOrganizationBySlug } from './organization'
-import { assignedHostsForGroupSessions, groupSessionCapacity } from './group-events'
-import { storedTeamBranding } from './team-branding'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { calendarBusyTimes } from '@@/server/integrations/calendar/providers'
+import { awayIntervalsForUser } from '@@/server/services/away-periods'
+import { bookingLimitRange, subtractFromInstant, utcCalendarDateBoundary } from '@@/server/utils/date-time'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { findOrganizationBySlug } from '@@/server/services/organization'
+import { assignedHostsForGroupSessions, groupSessionCapacity } from '@@/server/services/group-events'
+import { storedTeamBranding } from '@@/server/services/team-branding'
 
 /** `HH:MM:SS` from Postgres `time`, trimmed to what the engine expects. */
 function wall(value: string) {

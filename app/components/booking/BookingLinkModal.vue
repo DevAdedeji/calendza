@@ -11,7 +11,7 @@ const {
   durationMinutes, durationOptions, label, expiryDays, selectedStarts, availability, loadingSlots, slotError, submitting,
   submitError, createdUrl, eventOptions, selectedEvent, groupedSlots,
   dayLabel, timeLabel, toggleSlot, chooseKind, canSubmit, loadSlots, create, copyCreated
-} = await useBookingLinkForm({
+} = useBookingLinkForm({
   open: () => props.open,
   initialKind: () => props.initialKind,
   onCreated: () => emit('created')

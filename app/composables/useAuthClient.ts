@@ -1,7 +1,7 @@
 import { createAuthClient } from 'better-auth/vue'
 import { inferAdditionalFields, organizationClient, twoFactorClient } from 'better-auth/client/plugins'
 import { accessControl, organizationAccessRoles } from '#shared/organization-access'
-import type { useAuth } from '~~/server/services/auth'
+import type { useAuth } from '@@/server/services/auth'
 
 let client: ReturnType<typeof create> | null = null
 

@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import { recurringBookingRequestSchema } from '#shared/recurrence'
 import { timeZoneSchema } from '#shared/validation'
-import { findPublicEventType } from '../services/booking-page'
-import { activeHostsFor, findPublicTeamEventType } from '../services/team-booking'
-import { personalRecurringAvailability, teamRecurringAvailability } from '../services/recurring-booking'
-import { enforceRateLimit } from '../services/rate-limit'
-import { CalendarUnavailableError } from '../integrations/calendar/google'
+import { findPublicEventType } from '@@/server/services/booking-page'
+import { activeHostsFor, findPublicTeamEventType } from '@@/server/services/team-booking'
+import { personalRecurringAvailability, teamRecurringAvailability } from '@@/server/services/recurring-booking'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { CalendarUnavailableError } from '@@/server/integrations/calendar/google'
 
 const schema = z.object({
   mode: z.enum(['personal', 'team']),

@@ -1,6 +1,6 @@
 import { workflowIdSchema, workflowInputSchema } from '#shared/workflows'
-import { requireAuthSession } from '../../services/session'
-import { updateWorkflow } from '../../services/workflows'
+import { requireAuthSession } from '@@/server/services/session'
+import { updateWorkflow } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

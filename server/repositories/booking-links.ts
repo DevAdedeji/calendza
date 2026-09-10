@@ -1,6 +1,6 @@
 import { and, asc, count, desc, eq, sql } from 'drizzle-orm'
-import { bookingLinks, bookingLinkSlots, eventTypes, schedules, users } from '../database/schema'
-import { useDatabase } from '../database'
+import { bookingLinks, bookingLinkSlots, eventTypes, schedules, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 type Executor = Pick<ReturnType<typeof useDatabase>, 'select' | 'insert' | 'update'>
 

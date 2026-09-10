@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { recurringBookingRequestSchema } from './recurrence'
-import { paymentCurrencySchema } from './payments'
+import { recurringBookingRequestSchema } from '@@/shared/recurrence'
+import { paymentCurrencySchema } from '@@/shared/payments'
 
 export const RESERVED_USERNAMES = new Set([
   'admin', 'api', 'app', 'auth', 'billing', 'blog', 'dashboard', 'designs',

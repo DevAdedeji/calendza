@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { paginationMeta, paginationQuerySchema } from '../shared/pagination'
+import { paginationMeta, paginationQuerySchema } from '@@/shared/pagination'
 
 describe('pagination contract', () => {
   it('defaults every list endpoint to ten items per page', () => {

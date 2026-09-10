@@ -1,5 +1,5 @@
 import { reactive, ref, toValue, type MaybeRefOrGetter } from 'vue'
-import type { BookingDetail, PublicBookingPage } from '~/services/schedra-api'
+import type { BookingDetail, PublicBookingPage } from '@/services/api/bookings'
 
 export function useBookingGuestForm(options: {
   prefillName: MaybeRefOrGetter<string | undefined>

@@ -129,8 +129,9 @@ export function renderBookingEmailTemplate(
   template: BookingEmailTemplate,
   variables: Record<(typeof bookingEmailVariables)[number]['token'], string>
 ) {
-  const render = (value: string) => Object.entries(variables)
-    .reduce((result, [token, replacement]) => result.replaceAll(token, replacement), value)
+  const render = (value: string) => value.replace(/{{[^{}]+}}/g, token =>
+    Object.hasOwn(variables, token) ? variables[token as keyof typeof variables] : token
+  )
 
   return {
     subject: render(template.subject),

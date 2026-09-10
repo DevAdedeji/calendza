@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { TEAM_PLAN, invitableRoles, type InvitableRole, type OrganizationRole } from '#shared/billing'
-import {
-  apiErrorMessage,
-  teamsApi,
-  type TeamDetail,
-  type TeamInvitationsResponse,
-  type TeamMemberRecord,
-  type TeamMembersResponse
-} from '~/services/schedra-api'
-import { compactActionMenuUi } from '~/utils/action-menu'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { getInitials } from '~/utils/text'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamsApi, type TeamDetail, type TeamInvitationsResponse, type TeamMemberRecord, type TeamMembersResponse } from '@/services/api/teams'
+import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 

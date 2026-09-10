@@ -1,6 +1,6 @@
 import { and, eq, isNotNull } from 'drizzle-orm'
-import { accounts, users } from '../database/schema'
-import { useDatabase } from '../database'
+import { accounts, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 export async function profileForUser(userId: string) {
   const database = useDatabase()

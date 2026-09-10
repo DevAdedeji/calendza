@@ -5,9 +5,9 @@ import {
   organizations,
   organizationSubscriptions,
   users
-} from '../database/schema'
-import { useDatabase } from '../database/index'
-import { useEnv } from '../config/env'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { useEnv } from '@@/server/config/env'
 
 interface SitemapPage {
   path: string

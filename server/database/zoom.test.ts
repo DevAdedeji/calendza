@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 const requiredScopes = [
@@ -27,7 +27,7 @@ describe.skipIf(!url)('Zoom integration', () => {
     process.env.ZOOM_CLIENT_SECRET = 'zoom-client-secret'
     process.env.ZOOM_WEBHOOK_SECRET = 'zoom-webhook-secret'
     process.env.INTEGRATION_ENCRYPTION_KEY = 'integration-test-key-that-is-at-least-32-characters'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   }
 
@@ -70,7 +70,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       id: 'zoom-account-id',
       email: 'zoom-host@example.com'
     })))
-    const { saveZoomConnection } = await import('../integrations/video/zoom')
+    const { saveZoomConnection } = await import('@@/server/integrations/video/zoom')
     await saveZoomConnection(hostId, {
       access_token: 'plain-access-token',
       refresh_token: 'plain-refresh-token',
@@ -112,7 +112,7 @@ describe.skipIf(!url)('Zoom integration', () => {
 
   it('builds a state-bound OAuth request and stores credentials encrypted', async () => {
     const { hostId } = await createHostAndBooking()
-    const { zoomAuthorizationUrl, saveZoomConnection, zoomConnection } = await import('../integrations/video/zoom')
+    const { zoomAuthorizationUrl, saveZoomConnection, zoomConnection } = await import('@@/server/integrations/video/zoom')
     const authorization = new URL(zoomAuthorizationUrl('safe-state', 'pkce-challenge'))
 
     expect(authorization.origin).toBe('https://zoom.us')
@@ -157,7 +157,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       where user_id = ${hostId}
     `
 
-    const { checkZoomConnection, zoomConnection } = await import('../integrations/video/zoom')
+    const { checkZoomConnection, zoomConnection } = await import('@@/server/integrations/video/zoom')
     await expect(zoomConnection(hostId)).resolves.toMatchObject({
       connected: false,
       status: 'needs_reauthorization'
@@ -173,7 +173,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       message: 'Meeting hosting and scheduling capabilities are not allowed for this user.'
     }, 400)))
 
-    const { upsertZoomMeeting } = await import('../integrations/video/zoom')
+    const { upsertZoomMeeting } = await import('@@/server/integrations/video/zoom')
     await expect(upsertZoomMeeting(hostId, null, {
       uid: 'failed-zoom-booking',
       title: 'Zoom call',
@@ -206,7 +206,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       return json({ message: 'unexpected request' }, 500)
     })
     vi.stubGlobal('fetch', fetchMock)
-    const { upsertZoomMeeting } = await import('../integrations/video/zoom')
+    const { upsertZoomMeeting } = await import('@@/server/integrations/video/zoom')
     const remote = await upsertZoomMeeting(hostId, null, {
       uid: 'refresh-token-booking',
       title: 'Zoom call',
@@ -221,7 +221,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       select access_token_encrypted as "accessToken", refresh_token_encrypted as "refreshToken"
       from video_conference_connections where user_id = ${hostId}
     `
-    const { decryptCredential } = await import('../integrations/calendar/credential-crypto')
+    const { decryptCredential } = await import('@@/server/integrations/calendar/credential-crypto')
     expect(decryptCredential(stored!.accessToken)).toBe('rotated-access-token')
     expect(decryptCredential(stored!.refreshToken)).toBe('rotated-refresh-token')
   })
@@ -243,7 +243,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       return json({ message: 'unexpected request' }, 500)
     }))
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
 
@@ -300,7 +300,7 @@ describe.skipIf(!url)('Zoom integration', () => {
       )
     `
 
-    const { deauthorizeZoomUser } = await import('../services/zoom-connection')
+    const { deauthorizeZoomUser } = await import('@@/server/services/zoom-connection')
     await expect(deauthorizeZoomUser('zoom-account-id')).resolves.toEqual({
       removedConnections: 1,
       removedMeetings: 1

@@ -1,9 +1,9 @@
 import { count, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { timeZoneSchema } from '#shared/validation'
-import { availabilityRules, schedules } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { requireAuthSession } from '../services/session'
+import { availabilityRules, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireAuthSession } from '@@/server/services/session'
 
 const createScheduleSchema = z.object({
   name: z.string().trim().min(1).max(60),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { authApi } from '~/services/schedra-api'
+import { authApi } from '@/services/api/account'
 
 definePageMeta({ layout: 'auth' })
 useSeoMeta({ title: 'Confirm your email', robots: 'noindex, nofollow' })

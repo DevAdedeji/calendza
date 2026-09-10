@@ -1,10 +1,10 @@
 import { and, asc, count, eq, ilike, inArray, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
-import { availabilityRules, dateOverrides, eventTypes, schedules } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { ensureStarterSetup } from '../services/onboarding'
-import { requireAuthSession } from '../services/session'
+import { availabilityRules, dateOverrides, eventTypes, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { requireAuthSession } from '@@/server/services/session'
 
 const querySchema = paginationQuerySchema.extend({
   pageSize: z.coerce.number().int().min(1).max(10).default(10),

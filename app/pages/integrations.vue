@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  integrationHealthApi,
-  zoomApi,
-  type IntegrationSyncHealth,
-  type VideoConferenceConnection
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { integrationHealthApi, zoomApi, type IntegrationSyncHealth, type VideoConferenceConnection } from '@/services/api/integrations'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Integrations', robots: 'noindex, nofollow' })

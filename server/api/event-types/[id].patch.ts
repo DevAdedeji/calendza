@@ -1,11 +1,11 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { eventTypeSchema } from '#shared/validation'
-import { eventTypes, schedules } from '../../database/schema'
-import { useDatabase } from '../../database/index'
-import { requireAuthSession } from '../../services/session'
-import { requireLocationIntegration } from '../../services/event-location'
-import { requirePaymentRecipient } from '../../services/paid-booking'
+import { eventTypes, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireAuthSession } from '@@/server/services/session'
+import { requireLocationIntegration } from '@@/server/services/event-location'
+import { requirePaymentRecipient } from '@@/server/services/paid-booking'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

@@ -5,12 +5,12 @@ import {
   paymentRecipients,
   paymentWithdrawals,
   webhookDeliveries
-} from '../database/schema'
-import { useDatabase } from '../database'
-import { useEnv } from '../config/env'
-import { enqueueEmails } from './email-outbox'
-import { operationsOverview } from './operations'
-import { logEvent } from '../observability/logger'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
+import { enqueueEmails } from '@@/server/services/email-outbox'
+import { operationsOverview } from '@@/server/services/operations'
+import { logEvent } from '@@/server/observability/logger'
 
 interface AlertCandidate {
   key: string

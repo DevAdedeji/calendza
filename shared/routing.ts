@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { emailSchema, eventTypeSlugSchema } from './validation'
+import { emailSchema, eventTypeSlugSchema } from '@@/shared/validation'
 
 export const routingOperatorSchema = z.enum(['equals', 'not_equals', 'contains'])
 
@@ -7,7 +7,7 @@ export const routingQuestionSchema = z.object({
   id: z.uuid(),
   label: z.string().trim().min(2).max(120),
   options: z.array(z.string().trim().min(1).max(80)).min(2).max(20)
-    .transform(values => [...new Set(values)]),
+    .refine(values => new Set(values).size === values.length, 'Each answer option must be different.'),
   required: z.boolean().default(true)
 })
 
@@ -33,6 +33,9 @@ export const routingFormInputSchema = z.object({
   rules: z.array(routingRuleSchema).max(20)
 }).superRefine((form, context) => {
   const questions = new Map(form.questions.map(question => [question.id, question]))
+  if (questions.size !== form.questions.length) {
+    context.addIssue({ code: 'custom', path: ['questions'], message: 'Each question must have a unique ID.' })
+  }
   for (const [ruleIndex, rule] of form.rules.entries()) {
     for (const [conditionIndex, condition] of rule.conditions.entries()) {
       const question = questions.get(condition.questionId)

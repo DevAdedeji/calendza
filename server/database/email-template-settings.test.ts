@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -9,7 +9,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`
       truncate table
@@ -85,7 +85,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       update users set booking_email_templates = ${sql.json(settings('Custom: {{event_name}}'))}
       where id = ${host.id}
     `
-    const { queueBookingEmails } = await import('../services/booking-emails')
+    const { queueBookingEmails } = await import('@@/server/services/booking-emails')
     await queueBookingEmails(notice(host.id, 'free-host'))
 
     const [guest] = await sql<{ subject: string, branding: unknown }[]>`
@@ -110,7 +110,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
         booking_email_templates = ${sql.json(settings('Welcome: {{event_name}}'))}
       where id = ${host.id}
     `
-    const { queueBookingEmails } = await import('../services/booking-emails')
+    const { queueBookingEmails } = await import('@@/server/services/booking-emails')
     await queueBookingEmails(notice(host.id, 'pro-host'))
     await sql`
       update users set
@@ -158,7 +158,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       ) values (${organization!.id}, 'active', 'yearly', 'charge_automatically', now() + interval '1 year')
     `
 
-    const { queueBookingEmails } = await import('../services/booking-emails')
+    const { queueBookingEmails } = await import('@@/server/services/booking-emails')
     await queueBookingEmails(notice(host.id, 'team-host', organization!.id))
 
     const messages = await sql<{

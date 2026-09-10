@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { accountApi, apiErrorMessage, profileApi } from '~/services/schedra-api'
-import { getInitials } from '~/utils/text'
+import { accountApi } from '@/services/api/account'
+import { apiErrorMessage } from '@/services/api/http'
+import { profileApi } from '@/services/api/profiles'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Settings', robots: 'noindex, nofollow' })

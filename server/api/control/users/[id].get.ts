@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { requirePlatformAdminSession } from '../../../services/session'
-import { controlUserDetail } from '../../../services/control'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { controlUserDetail } from '@@/server/services/control'
 
 const idSchema = z.string().uuid()
 

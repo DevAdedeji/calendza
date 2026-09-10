@@ -1,11 +1,11 @@
 import { and, eq, sql } from 'drizzle-orm'
 import { rejectBookingSchema } from '#shared/validation'
-import { bookings } from '../../../database/schema'
-import { queueBookingRejectedEmails } from '../../../services/booking-emails'
-import { assignedHostsForBooking, findBookingByUid } from '../../../repositories/booking'
-import { requireAuthSession } from '../../../services/session'
-import { useDatabase } from '../../../database/index'
-import { cancelPendingAutomationRuns, publishBookingEvent } from '../../../services/workflows'
+import { bookings } from '@@/server/database/schema'
+import { queueBookingRejectedEmails } from '@@/server/services/booking-emails'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { requireAuthSession } from '@@/server/services/session'
+import { useDatabase } from '@@/server/database/index'
+import { cancelPendingAutomationRuns, publishBookingEvent } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

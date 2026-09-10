@@ -9,10 +9,10 @@ import {
   membershipByOrganizationAndUser,
   organizationByCurrentSlug,
   organizationByHistoricalSlug
-} from '../repositories/organization'
-import { organizationEntitlement } from './entitlement'
-import { requireAuthSession } from './session'
-import { logEvent } from '../observability/logger'
+} from '@@/server/repositories/organization'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { requireAuthSession } from '@@/server/services/session'
+import { logEvent } from '@@/server/observability/logger'
 
 type PermissionRequest = Partial<{
   [K in keyof typeof organizationStatements]: Array<(typeof organizationStatements)[K][number]>

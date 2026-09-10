@@ -11,8 +11,9 @@ import {
   type BillingInterval,
   type CollectionCurrency
 } from '#shared/billing'
-import { apiErrorMessage, billingApi, type TeamBillingResponse } from '~/services/schedra-api'
-import { formatInstant } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { billingApi, type TeamBillingResponse } from '@/services/api/billing'
+import { formatInstant } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Team billing', robots: 'noindex, nofollow' })

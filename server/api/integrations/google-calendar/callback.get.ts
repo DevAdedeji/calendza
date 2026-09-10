@@ -3,11 +3,11 @@ import {
   exchangeGoogleCode,
   initializeGoogleCalendars,
   saveGoogleConnection
-} from '../../../integrations/calendar/google'
-import { enqueueFutureBookingsForCalendarSync } from '../../../services/calendar-sync'
-import { requireAuthSession } from '../../../services/session'
-import { matchesOAuthState } from '../../../security/oauth'
-import { logEvent } from '../../../observability/logger'
+} from '@@/server/integrations/calendar/google'
+import { enqueueFutureBookingsForCalendarSync } from '@@/server/services/calendar-sync'
+import { requireAuthSession } from '@@/server/services/session'
+import { matchesOAuthState } from '@@/server/security/oauth'
+import { logEvent } from '@@/server/observability/logger'
 
 const callbackQuery = z.object({
   code: z.string().min(1),

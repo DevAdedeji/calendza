@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 const ownerA = '00000000-0000-4000-8000-000000000001'
@@ -11,7 +11,7 @@ describe.skipIf(!url)('production job runtime', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table worker_leases, worker_instances restart identity cascade`
   })
@@ -22,7 +22,7 @@ describe.skipIf(!url)('production job runtime', () => {
   })
 
   it('lets only one worker own a scheduled task at a time', async () => {
-    const { withWorkerLease } = await import('../services/worker-coordination')
+    const { withWorkerLease } = await import('@@/server/services/worker-coordination')
     let enter!: () => void
     let release!: () => void
     const entered = new Promise<void>((resolve) => {
@@ -63,7 +63,7 @@ describe.skipIf(!url)('production job runtime', () => {
       insert into worker_leases (name, owner_id, expires_at)
       values ('runtime:abandoned', ${ownerA}, now() - interval '1 second')
     `
-    const { acquireWorkerLease } = await import('../services/worker-coordination')
+    const { acquireWorkerLease } = await import('@@/server/services/worker-coordination')
     await expect(acquireWorkerLease('runtime:abandoned', ownerB)).resolves.toBe(true)
 
     const [lease] = await sql<{ owner_id: string }[]>`
@@ -73,7 +73,7 @@ describe.skipIf(!url)('production job runtime', () => {
   })
 
   it('registers, runs and gracefully stops a dedicated worker', async () => {
-    const { createJobRuntime } = await import('../services/job-runtime')
+    const { createJobRuntime } = await import('@@/server/services/job-runtime')
     let ran!: () => void
     const executed = new Promise<void>((resolve) => {
       ran = resolve
@@ -109,7 +109,7 @@ describe.skipIf(!url)('production job runtime', () => {
   })
 
   it('keeps a timed-out task leased until that task actually finishes', async () => {
-    const { createJobRuntime } = await import('../services/job-runtime')
+    const { createJobRuntime } = await import('@@/server/services/job-runtime')
     let entered!: () => void
     let release!: () => void
     const running = new Promise<void>((resolve) => {
@@ -152,8 +152,8 @@ describe.skipIf(!url)('production job runtime', () => {
   })
 
   it('reports live and stopped workers through private diagnostics', async () => {
-    const { registerWorkerInstance, stopWorkerInstance } = await import('../services/worker-coordination')
-    const { operationsDiagnostics } = await import('../services/operations')
+    const { registerWorkerInstance, stopWorkerInstance } = await import('@@/server/services/worker-coordination')
+    const { operationsDiagnostics } = await import('@@/server/services/operations')
     await registerWorkerInstance(ownerA, 'all')
     await expect(operationsDiagnostics()).resolves.toMatchObject({
       worker: { ok: true, active: 1 }

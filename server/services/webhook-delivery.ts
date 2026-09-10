@@ -1,7 +1,7 @@
 import { and, eq, sql } from 'drizzle-orm'
-import { webhookDeliveries } from '../database/schema'
-import { useDatabase } from '../database'
-import { decryptCredential, encryptCredential } from '../integrations/calendar/credential-crypto'
+import { webhookDeliveries } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { decryptCredential, encryptCredential } from '@@/server/integrations/calendar/credential-crypto'
 
 export type WebhookProvider = 'bachs' | 'zoom'
 

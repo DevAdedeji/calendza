@@ -1,7 +1,7 @@
 import { createHmac, randomBytes } from 'node:crypto'
 import { and, asc, count, desc, eq, gt, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import type { WorkflowAction, WorkflowInput, WorkflowTrigger } from '#shared/workflows'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   automationRuns,
   automationWorkflows,
@@ -11,16 +11,16 @@ import {
   eventTypes,
   organizations,
   users
-} from '../database/schema'
-import { useDatabase } from '../database'
-import { decryptCredential, encryptCredential } from '../integrations/calendar/credential-crypto'
-import { fetchWithTimeout } from '../integrations/fetch'
-import { enqueueEmails, emailDedupeKey } from './email-outbox'
-import { validateWebhookDestination } from './outbound-webhook'
-import { useEnv } from '../config/env'
-import { logEvent } from '../observability/logger'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { decryptCredential, encryptCredential } from '@@/server/integrations/calendar/credential-crypto'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { enqueueEmails, emailDedupeKey } from '@@/server/services/email-outbox'
+import { validateWebhookDestination } from '@@/server/services/outbound-webhook'
+import { useEnv } from '@@/server/config/env'
+import { logEvent } from '@@/server/observability/logger'
 import { paginationMeta } from '#shared/pagination'
-import { addToInstant, subtractFromInstant, unixSeconds } from '../utils/date-time'
+import { addToInstant, subtractFromInstant, unixSeconds } from '@@/server/utils/date-time'
 
 export type WorkflowScope = { userId: string, organizationId?: never } | { organizationId: string, userId?: never }
 export type WorkflowExecutor = Pick<Database, 'insert' | 'update'>

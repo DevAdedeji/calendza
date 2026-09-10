@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  teamEventTemplatesApi,
-  type TeamEventTemplateRecord,
-  type TeamEventTemplatesResponse
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamEventTemplatesApi, type TeamEventTemplateRecord, type TeamEventTemplatesResponse } from '@/services/api/event-templates'
 import type { ManagedEventMemberEditableField } from '#shared/validation'
 
 const props = defineProps<{ teamSlug: string, refreshKey?: number }>()

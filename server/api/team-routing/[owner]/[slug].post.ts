@@ -1,6 +1,6 @@
 import { routingSubmissionSchema } from '#shared/routing'
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { findPublicRoutingForm, submitRoutingForm } from '../../../services/routing-forms'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { findPublicRoutingForm, submitRoutingForm } from '@@/server/services/routing-forms'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'team-routing-submit', limit: 20, windowSeconds: 600 })

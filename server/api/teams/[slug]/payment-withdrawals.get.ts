@@ -1,5 +1,5 @@
-import { paymentWithdrawalOptions } from '../../../services/payment-withdrawal'
-import { requireOrganizationPermission } from '../../../services/organization'
+import { paymentWithdrawalOptions } from '@@/server/services/payment-withdrawal'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

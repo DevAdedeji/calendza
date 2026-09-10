@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { productFeatureGroups } from '~/data/product-features'
+import { productFeatureGroups } from '@/data/product-features'
 
 definePageMeta({ layout: 'default' })
 

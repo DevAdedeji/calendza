@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm'
-import { usernameSchema } from '../../shared/validation'
-import { users } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { enforceRateLimit } from '../services/rate-limit'
+import { usernameSchema } from '@@/shared/validation'
+import { users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'username-available', limit: 60, windowSeconds: 60 })

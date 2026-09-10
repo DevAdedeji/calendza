@@ -4,8 +4,8 @@ import {
   type BookingPageTheme,
   type PublicPersonalBranding
 } from '#shared/branding'
-import { organizations } from '../database/schema'
-import { useDatabase } from '../database'
+import { organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 export async function storedTeamBranding(organizationId: string): Promise<PublicPersonalBranding> {
   const [row] = await useDatabase().select({

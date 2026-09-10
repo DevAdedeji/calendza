@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from './avatar'
+import { avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from '@@/server/utils/avatar'
 
 describe('avatar validation', () => {
   it('accepts supported image signatures and rejects disguised files', () => {

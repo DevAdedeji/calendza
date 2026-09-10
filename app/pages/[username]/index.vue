@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { publicBookingApi, type PublicProfile } from '~/services/schedra-api'
-import { getInitials } from '~/utils/text'
+import { publicBookingApi } from '@/services/api/bookings'
+import type { PublicProfile } from '@/services/api/profiles'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'bare' })
 

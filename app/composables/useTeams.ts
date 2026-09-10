@@ -1,4 +1,4 @@
-import { teamsApi, type TeamDetail, type TeamSummary } from '~/services/schedra-api'
+import { teamsApi, type TeamDetail, type TeamSummary } from '@/services/api/teams'
 
 export function useTeams() {
   const requestFetch = useRequestFetch()

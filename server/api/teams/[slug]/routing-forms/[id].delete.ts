@@ -1,6 +1,6 @@
-import { assertTeamWritable } from '../../../../services/entitlement'
-import { requireOrganizationPermission } from '../../../../services/organization'
-import { deleteRoutingForm } from '../../../../services/routing-forms'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { deleteRoutingForm } from '@@/server/services/routing-forms'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganizationPermission(event, getRouterParam(event, 'slug') ?? '', { eventType: ['delete'] })

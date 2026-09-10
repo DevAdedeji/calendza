@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isPlatformAdminEmail } from './session'
+import { isPlatformAdminEmail } from '@@/server/services/session'
 
 describe('platform administrator allow-list', () => {
   it('matches normalized email addresses only', () => {

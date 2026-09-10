@@ -1,6 +1,6 @@
 import { paginationQuerySchema } from '#shared/pagination'
-import { requirePlatformAdminSession } from '../../services/session'
-import { controlEventTypes } from '../../services/control'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { controlEventTypes } from '@@/server/services/control'
 
 export default defineEventHandler(async (event) => {
   await requirePlatformAdminSession(event)

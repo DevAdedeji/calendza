@@ -1,4 +1,4 @@
-import { useEnv } from '../config/env'
+import { useEnv } from '@@/server/config/env'
 
 const disallowed = [
   '/api/',

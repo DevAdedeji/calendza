@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto'
 import { and, asc, eq, inArray, lt, lte, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
-import { bookings, emailOutbox } from '../database/schema'
-import { useDatabase } from '../database'
-import { type Email, isPermanentEmailDeliveryError, sendEmail } from '../integrations/email'
-import { logEvent } from '../observability/logger'
-import { addToInstant } from '../utils/date-time'
+import type { Database } from '@@/server/database/client'
+import { bookings, emailOutbox } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { type Email, isPermanentEmailDeliveryError, sendEmail } from '@@/server/integrations/email'
+import { logEvent } from '@@/server/observability/logger'
+import { addToInstant } from '@@/server/utils/date-time'
 
 interface OutboxEmail {
   dedupeKey: string

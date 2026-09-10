@@ -1,8 +1,8 @@
 import { and, eq, gte, inArray, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import { bookings, organizationSubscriptions, organizations } from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
+import { bookings, organizationSubscriptions, organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
 
 const bodySchema = z.object({ confirmation: z.string().trim() })
 

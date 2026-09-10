@@ -5,10 +5,10 @@ import {
   members,
   organizationEventTemplateAssignments,
   organizationEventTemplates
-} from '../../../../database/schema'
-import { useDatabase } from '../../../../database/index'
-import { requireOrganization } from '../../../../services/organization'
-import { hostsForEventType } from '../../../../services/team-event-type'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireOrganization } from '@@/server/services/organization'
+import { hostsForEventType } from '@@/server/services/team-event-type'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { resetEnv } from '../../config/env'
+import { resetEnv } from '@@/server/config/env'
 
 describe('integration credential encryption', () => {
   beforeEach(() => {
@@ -11,7 +11,7 @@ describe('integration credential encryption', () => {
   })
 
   it('round-trips a credential without storing its plaintext', async () => {
-    const { decryptCredential, encryptCredential } = await import('./credential-crypto')
+    const { decryptCredential, encryptCredential } = await import('@@/server/integrations/calendar/credential-crypto')
     const secret = 'google-refresh-token-value'
     const encrypted = encryptCredential(secret)
 
@@ -21,7 +21,7 @@ describe('integration credential encryption', () => {
   })
 
   it('rejects a modified authentication tag', async () => {
-    const { decryptCredential, encryptCredential } = await import('./credential-crypto')
+    const { decryptCredential, encryptCredential } = await import('@@/server/integrations/calendar/credential-crypto')
     const encrypted = encryptCredential('google-refresh-token-value')
     const parts = encrypted.split('.')
     parts[2] = `${parts[2]!.startsWith('A') ? 'B' : 'A'}${parts[2]!.slice(1)}`
@@ -30,7 +30,7 @@ describe('integration credential encryption', () => {
   })
 
   it('derives a stable Google-compatible event id for retry-safe creation', async () => {
-    const { googleEventId } = await import('./google')
+    const { googleEventId } = await import('@@/server/integrations/calendar/google')
     const first = googleEventId('booking-uid')
 
     expect(first).toBe(googleEventId('booking-uid'))

@@ -1,11 +1,11 @@
 import { and, eq, isNull, lte, sql } from 'drizzle-orm'
 import { updateBookingAttendanceSchema } from '#shared/validation'
-import { bookings } from '../../../database/schema'
-import { useDatabase } from '../../../database'
-import { assignedHostsForBooking, findBookingByUid } from '../../../repositories/booking'
-import { recordSecurityAudit } from '../../../services/security-audit'
-import { requireAuthSession } from '../../../services/session'
-import { publishBookingEvent } from '../../../services/workflows'
+import { bookings } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
+import { requireAuthSession } from '@@/server/services/session'
+import { publishBookingEvent } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

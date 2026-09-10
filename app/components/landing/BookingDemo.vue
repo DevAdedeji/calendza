@@ -5,7 +5,7 @@ import {
   formatInstant,
   localCalendarDate,
   localTimeZone
-} from '~/utils/date-time'
+} from '@/utils/date-time'
 
 interface Slot {
   time: string

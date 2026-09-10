@@ -1,7 +1,8 @@
 import { reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { workflowInputSchema, type WorkflowInput, type WorkflowTrigger } from '#shared/workflows'
-import { apiErrorMessage, workflowsApi, type WorkflowRecord } from '~/services/schedra-api'
-import { WORKFLOW_OFFSET_OPTIONS, WORKFLOW_TRIGGER_OPTIONS } from '~/constants/workflows'
+import { apiErrorMessage } from '@/services/api/http'
+import { workflowsApi, type WorkflowRecord } from '@/services/api/workflows'
+import { WORKFLOW_OFFSET_OPTIONS, WORKFLOW_TRIGGER_OPTIONS } from '@/constants/workflows'
 
 function emptyWorkflowForm(): WorkflowInput {
   return {
@@ -42,7 +43,7 @@ export function useWorkflowManager(options: {
     editing.value = workflow
     Object.assign(form, {
       name: workflow.name, trigger: workflow.trigger, offsetMinutes: workflow.offsetMinutes,
-      eventTypeId: workflow.eventTypeId, action: structuredClone(workflow.action), active: workflow.active
+      eventTypeId: workflow.eventTypeId, action: { ...workflow.action }, active: workflow.active
     })
     formError.value = ''
     modalOpen.value = true

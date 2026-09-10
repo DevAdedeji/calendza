@@ -1,7 +1,7 @@
 import { analyticsQuerySchema } from '#shared/analytics'
-import { getBookingAnalytics } from '../services/analytics'
-import { requireAuthSession } from '../services/session'
-import { personalPlanEntitlement } from '../services/personal-entitlement'
+import { getBookingAnalytics } from '@@/server/services/analytics'
+import { requireAuthSession } from '@@/server/services/session'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

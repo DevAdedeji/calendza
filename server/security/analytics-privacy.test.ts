@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { analyticsPageForRoute, analyticsReferrerOrigin } from '../../shared/analytics'
+import { analyticsPageForRoute, analyticsReferrerOrigin } from '@@/shared/analytics'
 
 describe('Umami route privacy', () => {
   it('keeps useful names for informational pages', () => {

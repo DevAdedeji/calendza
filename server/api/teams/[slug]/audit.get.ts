@@ -1,8 +1,8 @@
 import { count, desc, eq } from 'drizzle-orm'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
-import { organizationAuditLogs, users } from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { requireOrganizationPermission } from '../../../services/organization'
+import { organizationAuditLogs, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

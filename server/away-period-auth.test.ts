@@ -5,8 +5,8 @@ const mocks = vi.hoisted(() => ({
   requireAuthSession: vi.fn()
 }))
 
-vi.mock('./services/away-periods', () => ({ listAwayPeriods: mocks.listAwayPeriods }))
-vi.mock('./services/session', () => ({ requireAuthSession: mocks.requireAuthSession }))
+vi.mock('@@/server/services/away-periods', () => ({ listAwayPeriods: mocks.listAwayPeriods }))
+vi.mock('@@/server/services/session', () => ({ requireAuthSession: mocks.requireAuthSession }))
 
 describe('away period API authentication', () => {
   beforeEach(() => {
@@ -16,7 +16,7 @@ describe('away period API authentication', () => {
 
   it('rejects an unauthenticated request before reading any periods', async () => {
     mocks.requireAuthSession.mockRejectedValue({ statusCode: 401, statusMessage: 'Not signed in' })
-    const { default: handler } = await import('./api/away-periods/index.get')
+    const { default: handler } = await import('@@/server/api/away-periods/index.get')
 
     await expect(handler({} as never)).rejects.toMatchObject({ statusCode: 401 })
     expect(mocks.listAwayPeriods).not.toHaveBeenCalled()
@@ -25,7 +25,7 @@ describe('away period API authentication', () => {
   it('scopes the list to the authenticated user', async () => {
     mocks.requireAuthSession.mockResolvedValue({ user: { id: 'user-123' } })
     mocks.listAwayPeriods.mockResolvedValue({ items: [], timeZone: 'UTC' })
-    const { default: handler } = await import('./api/away-periods/index.get')
+    const { default: handler } = await import('@@/server/api/away-periods/index.get')
 
     await expect(handler({} as never)).resolves.toEqual({ items: [], timeZone: 'UTC' })
     expect(mocks.listAwayPeriods).toHaveBeenCalledWith('user-123')

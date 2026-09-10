@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { zoomAuthorizationUrl } from '../../../integrations/video/zoom'
-import { useEnv } from '../../../config/env'
-import { requireAuthSession } from '../../../services/session'
-import { createOAuthPkce } from '../../../security/oauth'
+import { zoomAuthorizationUrl } from '@@/server/integrations/video/zoom'
+import { useEnv } from '@@/server/config/env'
+import { requireAuthSession } from '@@/server/services/session'
+import { createOAuthPkce } from '@@/server/security/oauth'
 
 export default defineEventHandler(async (event) => {
   await requireAuthSession(event)

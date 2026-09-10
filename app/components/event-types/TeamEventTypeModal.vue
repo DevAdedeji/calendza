@@ -1,15 +1,10 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  paymentsApi,
-  teamEventTemplatesApi,
-  teamEventTypesApi,
-  type PaymentAccountSummary,
-  type TeamEventTemplatesResponse,
-  type TeamEventTypeRecord,
-  type TeamMemberRecord
-} from '~/services/schedra-api'
-import { getInitials } from '~/utils/text'
+import { apiErrorMessage } from '@/services/api/http'
+import { paymentsApi, type PaymentAccountSummary } from '@/services/api/payments'
+import { teamEventTemplatesApi, type TeamEventTemplatesResponse } from '@/services/api/event-templates'
+import { teamEventTypesApi, type TeamEventTypeRecord } from '@/services/api/event-types'
+import type { TeamMemberRecord } from '@/services/api/teams'
+import { getInitials } from '@/utils/text'
 
 const props = defineProps<{
   open: boolean
@@ -43,6 +38,7 @@ const isOpen = computed({ get: () => props.open, set: value => emit('update:open
 const memberPageModel = computed({ get: () => props.memberPage, set: value => emit('update:memberPage', value) })
 const memberSearchModel = computed({ get: () => props.memberSearch, set: value => emit('update:memberSearch', value) })
 const saving = ref(false)
+const loadingForm = ref(false)
 const error = ref('')
 const selectedTemplateId = ref<string | undefined>()
 const {
@@ -56,29 +52,37 @@ const {
 })
 
 // Reload whenever the modal opens so a stale edit never overwrites fresh data.
-watch(() => props.open, async (open) => {
+watch([() => props.open, () => props.teamSlug, () => props.eventType?.id], async ([open, teamSlug, eventId], _, onCleanup) => {
+  let active = true
+  onCleanup(() => {
+    active = false
+  })
+  loadingForm.value = open
   if (!open) return
   error.value = ''
   selectedTemplateId.value = undefined
   slugTouched.value = Boolean(props.eventType)
 
-  if (!props.eventType) {
-    resetForm()
+  resetForm()
+  if (!eventId) {
     await Promise.all([
       refreshPaymentAccount().catch(() => undefined),
       refreshTemplates().catch(() => undefined)
     ])
+    if (active) loadingForm.value = false
     return
   }
 
   await refreshPaymentAccount().catch(() => undefined)
   try {
-    const detail = await teamEventTypesApi.get(props.teamSlug, props.eventType.id)
-    resetForm(detail)
+    const detail = await teamEventTypesApi.get(teamSlug, eventId)
+    if (active) resetForm(detail)
   } catch (failure) {
-    error.value = apiErrorMessage(failure, 'Could not load that event type.')
+    if (active) error.value = apiErrorMessage(failure, 'Could not load that event type.')
+  } finally {
+    if (active) loadingForm.value = false
   }
-})
+}, { immediate: true })
 
 const bookingUrl = computed(() => `${host.value}/team/${props.teamSlug}/${form.slug || 'your-link'}`)
 const bookingWindowDays = computed<number | undefined>({
@@ -113,7 +117,7 @@ function applyTemplate(templateId: string | undefined) {
 }
 
 async function save() {
-  if (!valid.value || saving.value) return
+  if (!valid.value || saving.value || loadingForm.value || !props.open) return
   saving.value = true
   error.value = ''
 
@@ -149,7 +153,12 @@ async function save() {
     }"
   >
     <template #body>
+      <ListLoadingSkeleton
+        v-if="loadingForm"
+        label="Loading team event settings"
+      />
       <form
+        v-else
         id="team-event-type-form"
         class="space-y-6"
         @submit.prevent="save"
@@ -655,7 +664,7 @@ async function save() {
             type="submit"
             form="team-event-type-form"
             :loading="saving"
-            :disabled="!valid"
+            :disabled="loadingForm || !valid"
           >
             {{ eventType ? 'Save changes' : 'Create' }}
           </UButton>

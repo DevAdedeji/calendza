@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { findOwnedEventType } from '../../../repositories/booking-links'
-import { slotsFor } from '../../../services/booking-page'
-import { requireAuthSession } from '../../../services/session'
-import { calendarDaysBetween } from '../../../utils/date-time'
+import { findOwnedEventType } from '@@/server/repositories/booking-links'
+import { slotsFor } from '@@/server/services/booking-page'
+import { requireAuthSession } from '@@/server/services/session'
+import { calendarDaysBetween } from '@@/server/utils/date-time'
 
 const querySchema = z.object({
   from: z.iso.date(),

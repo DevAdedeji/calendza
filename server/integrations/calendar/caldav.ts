@@ -1,10 +1,10 @@
 import { and, eq, sql } from 'drizzle-orm'
-import { useDatabase } from '../../database'
-import { calendarConnections, users } from '../../database/schema'
-import { ensureDefaultCalendarDestination } from '../../repositories/calendar-connection'
-import { IntegrationUnavailableError } from '../errors'
-import { decryptCredential, encryptCredential } from './credential-crypto'
-import type { CalendarEventInput } from './provider'
+import { useDatabase } from '@@/server/database'
+import { calendarConnections, users } from '@@/server/database/schema'
+import { ensureDefaultCalendarDestination } from '@@/server/repositories/calendar-connection'
+import { IntegrationUnavailableError } from '@@/server/integrations/errors'
+import { decryptCredential, encryptCredential } from '@@/server/integrations/calendar/credential-crypto'
+import type { CalendarEventInput } from '@@/server/integrations/calendar/provider'
 import {
   appleBusyTimes as fetchAppleBusyTimes,
   appleEventId,
@@ -13,7 +13,7 @@ import {
   discoverAppleCalendars,
   upsertAppleCalendarEvent as upsertRemoteAppleEvent,
   type CalDavCredentials
-} from './caldav-client'
+} from '@@/server/integrations/calendar/caldav-client'
 
 const NON_EXPIRING_CREDENTIAL = new Date('9999-12-31T23:59:59.999Z')
 const BUSY_CACHE_MS = 15_000

@@ -1,5 +1,5 @@
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { findPublicRoutingForm } from '../../../services/routing-forms'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { findPublicRoutingForm } from '@@/server/services/routing-forms'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'routing-form', limit: 120, windowSeconds: 60 })

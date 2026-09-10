@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm'
-import { userBrandLogos } from '../../database/schema'
-import { useDatabase } from '../../database'
-import { personalPlanEntitlement } from '../../services/personal-entitlement'
+import { userBrandLogos } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
 export default defineEventHandler(async (event) => {
   const userId = getRouterParam(event, 'userId')

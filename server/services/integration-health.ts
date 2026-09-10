@@ -1,7 +1,7 @@
 import { and, eq, inArray, sql } from 'drizzle-orm'
-import { bookingHosts, calendarSyncJobs } from '../database/schema'
-import { useDatabase } from '../database'
-import type { IntegrationProviderId } from '../integrations/errors'
+import { bookingHosts, calendarSyncJobs } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import type { IntegrationProviderId } from '@@/server/integrations/errors'
 
 export interface IntegrationSyncHealth {
   pending: number

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { UMAMI_WEBSITE_ID } from '../../shared/analytics'
-import { parseUmamiEvent, umamiForwardHeaders } from './umami-proxy'
+import { UMAMI_WEBSITE_ID } from '@@/shared/analytics'
+import { parseUmamiEvent, umamiForwardHeaders } from '@@/server/services/umami-proxy'
 
 const event = {
   type: 'event',

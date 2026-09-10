@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -92,7 +92,7 @@ describe.skipIf(!url)('platform control data', () => {
   })
 
   it('summarizes product usage and active subscriptions', async () => {
-    const { controlOverview } = await import('../services/control')
+    const { controlOverview } = await import('@@/server/services/control')
     const result = await controlOverview()
 
     expect(result.users).toMatchObject({ total: 2, verified: 1, twoFactor: 1 })
@@ -103,7 +103,7 @@ describe.skipIf(!url)('platform control data', () => {
   })
 
   it('searches users and returns only safe account metadata', async () => {
-    const { controlUsers, controlUserDetail } = await import('../services/control')
+    const { controlUsers, controlUserDetail } = await import('@@/server/services/control')
     const list = await controlUsers({ page: 1, pageSize: 10, search: 'owner@' })
     expect(list.pagination.total).toBe(1)
     expect(list.items[0]).toMatchObject({
@@ -126,7 +126,7 @@ describe.skipIf(!url)('platform control data', () => {
   })
 
   it('includes team links hosted by a member without treating them as owned links', async () => {
-    const { controlUserDetail } = await import('../services/control')
+    const { controlUserDetail } = await import('@@/server/services/control')
     const detail = await controlUserDetail(memberId)
 
     expect(detail?.eventTypes).toEqual([
@@ -136,7 +136,7 @@ describe.skipIf(!url)('platform control data', () => {
   })
 
   it('lists event types, teams and bookings with bounded support metadata', async () => {
-    const { controlBookings, controlEventTypes, controlOrganizations } = await import('../services/control')
+    const { controlBookings, controlEventTypes, controlOrganizations } = await import('@@/server/services/control')
     const [eventList, teamList, bookingList] = await Promise.all([
       controlEventTypes({ page: 1, pageSize: 10, search: 'advice' }),
       controlOrganizations({ page: 1, pageSize: 10, search: 'control' }),

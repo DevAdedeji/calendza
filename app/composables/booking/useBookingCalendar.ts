@@ -1,6 +1,6 @@
 import { computed, onMounted, ref, toValue, watch, watchEffect, type MaybeRefOrGetter, type Ref } from 'vue'
 import { lastBookingCalendarWeek } from '#shared/booking-calendar'
-import type { AvailabilityResponse, PublicBookingPage } from '~/services/schedra-api'
+import type { AvailabilityResponse, PublicBookingPage } from '@/services/api/bookings'
 import {
   addLocalCalendarDays,
   calendarDateKey,
@@ -11,7 +11,7 @@ import {
   localCalendarDate,
   localTimeZone,
   startOfIsoWeek
-} from '~/utils/date-time'
+} from '@/utils/date-time'
 
 export function isoCalendarDate(date: Date) {
   return localCalendarDate(date)

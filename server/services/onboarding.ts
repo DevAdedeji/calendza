@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { availabilityRules, eventTypes, schedules } from '../database/schema'
-import { useDatabase } from '../database'
+import { availabilityRules, eventTypes, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 const WEEKDAYS = [1, 2, 3, 4, 5]
 

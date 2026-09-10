@@ -5,6 +5,20 @@ const questionId = '11111111-1111-4111-8111-111111111111'
 const salesEvent = '22222222-2222-4222-8222-222222222222'
 
 describe('routing decisions', () => {
+  it('rejects duplicate options after trimming and duplicate question IDs', () => {
+    const input = {
+      title: 'Find a meeting', slug: 'find-a-meeting', active: true,
+      defaultEventTypeId: salesEvent,
+      questions: [{ id: questionId, label: 'Topic', options: ['Sales', ' Sales '], required: true }],
+      rules: []
+    }
+    expect(routingFormInputSchema.safeParse(input).success).toBe(false)
+    input.questions[0]!.options = ['Sales', 'Support']
+    expect(routingFormInputSchema.safeParse(input).success).toBe(true)
+    input.questions.push({ ...input.questions[0]! })
+    expect(routingFormInputSchema.safeParse(input).success).toBe(false)
+  })
+
   it('uses the first route whose every condition matches', () => {
     const rules = [
       {

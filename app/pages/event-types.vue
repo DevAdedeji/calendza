@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { apiErrorMessage, eventTypesApi, type EventTypesResponse } from '~/services/schedra-api'
-import type { EventTypeRecord } from '~/types/event-type'
-import { compactActionMenuUi } from '~/utils/action-menu'
+import { apiErrorMessage } from '@/services/api/http'
+import { eventTypesApi, type EventTypesResponse } from '@/services/api/event-types'
+import type { EventTypeRecord } from '@/types/event-type'
+import { compactActionMenuUi } from '@/utils/action-menu'
 import { formatMoney } from '#shared/payments'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Event types', robots: 'noindex, nofollow' })

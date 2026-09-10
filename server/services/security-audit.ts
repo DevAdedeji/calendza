@@ -1,8 +1,8 @@
 import type { H3Event } from 'h3'
-import type { Database } from '../database/client'
-import { securityAuditLogs } from '../database/schema'
-import { useDatabase } from '../database'
-import { logEvent } from '../observability/logger'
+import type { Database } from '@@/server/database/client'
+import { securityAuditLogs } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { logEvent } from '@@/server/observability/logger'
 
 type AuditExecutor = Pick<Database, 'insert'>
 

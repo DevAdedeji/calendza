@@ -1,6 +1,6 @@
 import { and, eq, inArray } from 'drizzle-orm'
-import { videoConferenceConnections } from '../database/schema'
-import { useDatabase } from '../database'
+import { videoConferenceConnections } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 /** Persistence queries used by event-location policy checks. */
 export async function connectedZoomUserIds(userIds: string[]) {

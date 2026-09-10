@@ -1,5 +1,5 @@
-import { zoomConnection } from '../../../integrations/video/zoom'
-import { requireAuthSession } from '../../../services/session'
+import { zoomConnection } from '@@/server/integrations/video/zoom'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

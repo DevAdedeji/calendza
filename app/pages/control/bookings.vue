@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { controlApi, type ControlBookingRecord, type ControlListResponse } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatDateTime } from '~/utils/date-time'
+import { controlApi, type ControlBookingRecord, type ControlListResponse } from '@/services/api/control'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatDateTime } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: ['auth', 'platform-admin'] })
 useSeoMeta({ title: 'Bookings · Control', robots: 'noindex, nofollow' })

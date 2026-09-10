@@ -1,5 +1,5 @@
-import { bookingLinkDurationOptions, requireUsableBookingLink } from '../../../services/booking-links'
-import { enforceRateLimit } from '../../../services/rate-limit'
+import { bookingLinkDurationOptions, requireUsableBookingLink } from '@@/server/services/booking-links'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'booking-invitation', limit: 180, windowSeconds: 60 })

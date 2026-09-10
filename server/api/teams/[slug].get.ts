@@ -1,5 +1,5 @@
 import { organizationAccessRoles } from '#shared/organization-access'
-import { organizationContextPayload, requireOrganization } from '../../services/organization'
+import { organizationContextPayload, requireOrganization } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

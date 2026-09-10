@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import { billingIntervals, collectionCurrencies } from '#shared/billing'
-import { bachsConfigured } from '../../integrations/bachs'
-import { startPersonalCheckout } from '../../services/personal-billing'
-import { enforceRateLimit } from '../../services/rate-limit'
-import { requireAuthSession } from '../../services/session'
+import { bachsConfigured } from '@@/server/integrations/bachs'
+import { startPersonalCheckout } from '@@/server/services/personal-billing'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
 
 const bodySchema = z.object({
   interval: z.enum(billingIntervals).default('yearly'),

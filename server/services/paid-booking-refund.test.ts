@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isAmbiguousRefundFailure, refundProviderState } from './paid-booking'
+import { isAmbiguousRefundFailure, refundProviderState } from '@@/server/services/paid-booking'
 
 describe('paid booking refund state', () => {
   it('normalizes terminal provider states without guessing about in-progress states', () => {

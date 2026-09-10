@@ -1,6 +1,6 @@
-import { acknowledgeOperationsAlert } from '../../../../services/operations'
-import { requirePlatformAdminSession } from '../../../../services/session'
-import { recordSecurityAudit } from '../../../../services/security-audit'
+import { acknowledgeOperationsAlert } from '@@/server/services/operations'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePlatformAdminSession(event)
