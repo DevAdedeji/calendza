@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -17,9 +17,9 @@ describe.skipIf(!url)('public booking page', () => {
 
   async function auth() {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
-    const { useAuth } = await import('../services/auth')
+    const { useAuth } = await import('@@/server/services/auth')
     return useAuth()
   }
 
@@ -65,7 +65,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('keeps an unverified account off public booking pages', async () => {
     await (await auth()).api.signUpEmail({ body: credentials })
-    const { findPublicEventType } = await import('../services/booking-page')
+    const { findPublicEventType } = await import('@@/server/services/booking-page')
 
     expect(await findPublicEventType('ada', '30min')).toBeNull()
   })
@@ -73,7 +73,7 @@ describe.skipIf(!url)('public booking page', () => {
   it('resolves the booking page and offers real slots', async () => {
     await signUp()
 
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = await findPublicEventType('ada', '30min')
     expect(event).not.toBeNull()
 
@@ -90,7 +90,7 @@ describe.skipIf(!url)('public booking page', () => {
     await signUp()
     await sql`update event_types set additional_duration_minutes = array[60] where slug = '30min'`
 
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
     const slots = await slotsFor(event, '2026-09-07', '2026-09-07', '2026-09-01T00:00:00Z', 60)
 
@@ -104,7 +104,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('is case-insensitive on the username and slug', async () => {
     await signUp()
-    const { findPublicEventType } = await import('../services/booking-page')
+    const { findPublicEventType } = await import('@@/server/services/booking-page')
 
     expect(await findPublicEventType('ADA', '30MIN')).not.toBeNull()
     expect(await findPublicEventType('nobody', '30min')).toBeNull()
@@ -112,7 +112,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('does not offer a slot that collides with an existing booking', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
 
     await sql`
@@ -130,7 +130,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('skips a weekend, where the default schedule has no hours', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
 
     const slots = await slotsFor(event!, '2026-09-05', '2026-09-05', '2026-09-01T00:00:00Z')
@@ -139,7 +139,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('refuses a time outside the host\'s hours', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
 
     // 03:00 in Lagos, hours before the schedule opens.
@@ -151,7 +151,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('withholds a slot once it is booked', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
 
     const before = await slotsFor(event, '2026-09-07', '2026-09-07', '2026-09-01T00:00:00Z')
@@ -171,7 +171,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('offers a slot again once its booking is cancelled', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
 
     const before = await slotsFor(event, '2026-09-07', '2026-09-07', '2026-09-01T00:00:00Z')
@@ -195,7 +195,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('applies weekly limits to this event type and resets them on Monday', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
     await sql`update event_types set max_per_week = 1 where id = ${event.id}`
 
@@ -231,7 +231,7 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('keeps an open group occurrence available while blocking new sessions at the daily cap', async () => {
     await signUp()
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = (await findPublicEventType('ada', '30min'))!
     await sql`update event_types set capacity = 3, max_per_day = 1 where id = ${event.id}`
     const [session] = await sql<{ id: string }[]>`
@@ -258,8 +258,8 @@ describe.skipIf(!url)('public booking page', () => {
 
   it('finds a booking by its opaque uid, and nothing by a wrong one', async () => {
     await signUp()
-    const { findPublicEventType } = await import('../services/booking-page')
-    const { findBookingByUid } = await import('../repositories/booking')
+    const { findPublicEventType } = await import('@@/server/services/booking-page')
+    const { findBookingByUid } = await import('@@/server/repositories/booking')
     const event = (await findPublicEventType('ada', '30min'))!
 
     await sql`

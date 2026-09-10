@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -9,7 +9,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table webhook_deliveries, operations_alerts, email_outbox restart identity cascade`
   })
@@ -20,7 +20,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
   })
 
   it('deduplicates completed provider events', async () => {
-    const { claimWebhookDelivery, completeWebhookDelivery } = await import('../services/webhook-delivery')
+    const { claimWebhookDelivery, completeWebhookDelivery } = await import('@@/server/services/webhook-delivery')
     const first = await claimWebhookDelivery({
       provider: 'bachs',
       providerEventId: 'evt-completed',
@@ -41,7 +41,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
   })
 
   it('reopens a failed delivery and increments its attempt safely', async () => {
-    const { claimWebhookDelivery, failWebhookDelivery } = await import('../services/webhook-delivery')
+    const { claimWebhookDelivery, failWebhookDelivery } = await import('@@/server/services/webhook-delivery')
     const first = await claimWebhookDelivery({
       provider: 'zoom',
       providerEventId: 'zoom:1',
@@ -62,8 +62,8 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
   })
 
   it('manually retries encrypted webhook payloads without exposing them', async () => {
-    const { claimWebhookDelivery, failWebhookDelivery } = await import('../services/webhook-delivery')
-    const { retryOperation } = await import('../services/operations')
+    const { claimWebhookDelivery, failWebhookDelivery } = await import('@@/server/services/webhook-delivery')
+    const { retryOperation } = await import('@@/server/services/operations')
     const delivery = await claimWebhookDelivery({
       provider: 'bachs',
       providerEventId: 'evt-retry',
@@ -88,7 +88,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
         ('bachs', 'failed-1', 'invoice.paid', 'failed', 1, 'failed'),
         ('bachs', 'failed-2', 'invoice.paid', 'failed', 1, 'failed')
     `
-    const { evaluateOperationsAlerts } = await import('../services/operations-alerts')
+    const { evaluateOperationsAlerts } = await import('@@/server/services/operations-alerts')
     await expect(evaluateOperationsAlerts()).resolves.toBe(1)
     await expect(evaluateOperationsAlerts()).resolves.toBe(1)
 
@@ -107,8 +107,8 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
         provider, provider_event_id, event_type, status, attempts, last_error
       ) values ('bachs', 'checked-incident', 'invoice.paid', 'failed', 1, 'failed')
     `
-    const { evaluateOperationsAlerts } = await import('../services/operations-alerts')
-    const { acknowledgeOperationsAlert } = await import('../services/operations')
+    const { evaluateOperationsAlerts } = await import('@@/server/services/operations-alerts')
+    const { acknowledgeOperationsAlert } = await import('@@/server/services/operations')
     await evaluateOperationsAlerts()
     const [active] = await sql<{ id: string }[]>`
       select id from operations_alerts where key = 'webhook-failed'
@@ -142,7 +142,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
 
   it('enqueues one notification for an active incident instead of repeating it', async () => {
     process.env.OPERATIONS_ALERT_EMAILS = 'ops@example.com'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     try {
       await sql`
@@ -150,7 +150,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
           provider, provider_event_id, event_type, status, attempts, last_error
         ) values ('bachs', 'failed-once', 'invoice.paid', 'failed', 1, 'failed')
       `
-      const { evaluateOperationsAlerts } = await import('../services/operations-alerts')
+      const { evaluateOperationsAlerts } = await import('@@/server/services/operations-alerts')
       await evaluateOperationsAlerts()
       await evaluateOperationsAlerts()
 
@@ -178,7 +178,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
       )
       returning id
     `
-    const { operationsJobs, operationsOverview, retryOperation } = await import('../services/operations')
+    const { operationsJobs, operationsOverview, retryOperation } = await import('@@/server/services/operations')
 
     const overview = await operationsOverview()
     expect(overview.queues.email).toMatchObject({ pending: 1, stale: 0 })

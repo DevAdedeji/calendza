@@ -8,8 +8,8 @@ import {
   invoiceTotalCents,
   toDecimalString
 } from '#shared/billing'
-import { organizationInvoices, organizationSubscriptions } from '../database/schema'
-import { useDatabase } from '../database'
+import { organizationInvoices, organizationSubscriptions } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import {
   createCheckoutSession,
   createSubscriptionCheckout,
@@ -17,12 +17,12 @@ import {
   NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
   quoteConversion,
   type BachsSubscription
-} from '../integrations/bachs'
-import { organizationEntitlement } from './entitlement'
-import { recordAudit } from './organization'
-import { enqueueSubscriptionSeatSync } from './subscription-seat-sync'
-import { useEnv } from '../config/env'
-import { addUtcCalendarPeriod } from '../utils/date-time'
+} from '@@/server/integrations/bachs'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { recordAudit } from '@@/server/services/organization'
+import { enqueueSubscriptionSeatSync } from '@@/server/services/subscription-seat-sync'
+import { useEnv } from '@@/server/config/env'
+import { addUtcCalendarPeriod } from '@@/server/utils/date-time'
 
 // Bachs rejects NGN checkouts below ₦1,000. Even the smallest one-seat team
 // invoice is far above that after USD-to-NGN conversion.

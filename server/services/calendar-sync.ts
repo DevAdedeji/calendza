@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, lt, lte, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   bookingCalendarEvents,
   bookingConferenceMeetings,
@@ -8,23 +8,23 @@ import {
   calendarConnections,
   calendarSyncJobs,
   eventTypes
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import {
   calendarDestinationProvider,
   calendarProvider,
   calendarProviderForLocation
-} from '../integrations/calendar/providers'
-import { IntegrationUnavailableError } from '../integrations/errors'
-import { bookingAnswersText } from '../domain/booking-answers'
+} from '@@/server/integrations/calendar/providers'
+import { IntegrationUnavailableError } from '@@/server/integrations/errors'
+import { bookingAnswersText } from '@@/server/domain/booking-answers'
 import {
   deleteZoomMeeting,
   upsertZoomMeeting,
   zoomConnectionFor
-} from '../integrations/video/zoom'
-import { logEvent } from '../observability/logger'
-import { canonicalBookingId, confirmedGroupSeats } from './group-events'
-import { addToInstant } from '../utils/date-time'
+} from '@@/server/integrations/video/zoom'
+import { logEvent } from '@@/server/observability/logger'
+import { canonicalBookingId, confirmedGroupSeats } from '@@/server/services/group-events'
+import { addToInstant } from '@@/server/utils/date-time'
 
 export type CalendarSyncExecutor = Pick<Database, 'insert' | 'select'>
 export type CalendarSyncAction = 'upsert' | 'delete'

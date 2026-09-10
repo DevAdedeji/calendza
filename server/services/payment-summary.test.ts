@@ -1,16 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getConnectedAccountBalance, listConnectedAccountPayouts } from '../integrations/bachs'
-import { collectedPaymentTotals } from '../repositories/payment-ledger'
-import { findPaymentRecipient } from './payment-recipient'
-import { paymentSummary } from './payment-summary'
+import { getConnectedAccountBalance, listConnectedAccountPayouts } from '@@/server/integrations/bachs'
+import { collectedPaymentTotals } from '@@/server/repositories/payment-ledger'
+import { findPaymentRecipient } from '@@/server/services/payment-recipient'
+import { paymentSummary } from '@@/server/services/payment-summary'
 
-vi.mock('../integrations/bachs', () => ({
+vi.mock('@@/server/integrations/bachs', () => ({
   getConnectedAccountBalance: vi.fn(),
   listConnectedAccountPayouts: vi.fn()
 }))
-vi.mock('../repositories/payment-ledger', () => ({ collectedPaymentTotals: vi.fn() }))
-vi.mock('./payment-recipient', () => ({ findPaymentRecipient: vi.fn() }))
-vi.mock('../observability/logger', () => ({ logEvent: vi.fn() }))
+vi.mock('@@/server/repositories/payment-ledger', () => ({ collectedPaymentTotals: vi.fn() }))
+vi.mock('@@/server/services/payment-recipient', () => ({ findPaymentRecipient: vi.fn() }))
+vi.mock('@@/server/observability/logger', () => ({ logEvent: vi.fn() }))
 
 describe('payment summary', () => {
   beforeEach(() => vi.clearAllMocks())

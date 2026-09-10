@@ -1,6 +1,6 @@
 import { workflowIdSchema } from '#shared/workflows'
-import { requireOrganizationPermission } from '../../../../services/organization'
-import { deleteWorkflow } from '../../../../services/workflows'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { deleteWorkflow } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganizationPermission(event, getRouterParam(event, 'slug') ?? '', { workflow: ['delete'] })

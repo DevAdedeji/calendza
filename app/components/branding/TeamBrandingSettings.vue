@@ -5,7 +5,8 @@ import {
   type BookingPageTheme,
   type PublicPersonalBranding
 } from '#shared/branding'
-import { apiErrorMessage, teamBrandingApi } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamBrandingApi } from '@/services/api/branding'
 
 const props = defineProps<{ teamSlug: string, teamName: string }>()
 const feedback = useFeedback()

@@ -1,9 +1,9 @@
 import { desc, eq } from 'drizzle-orm'
-import { personalInvoices, personalSubscriptions } from '../database/schema'
-import { useDatabase } from '../database'
-import { bachsConfigured } from '../integrations/bachs'
-import { personalPlanEntitlement } from '../services/personal-entitlement'
-import { requireAuthSession } from '../services/session'
+import { personalInvoices, personalSubscriptions } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { bachsConfigured } from '@@/server/integrations/bachs'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

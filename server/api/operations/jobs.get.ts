@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { paginationQuerySchema } from '#shared/pagination'
-import { requirePlatformAdminSession } from '../../services/session'
-import { operationsJobs } from '../../services/operations'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { operationsJobs } from '@@/server/services/operations'
 
 const querySchema = paginationQuerySchema.pick({ page: true, pageSize: true }).extend({
   kind: z.enum(['automation', 'calendar', 'billing', 'email', 'webhook']).default('calendar'),

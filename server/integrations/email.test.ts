@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { renderEmailHtml, renderEmailText, type Email } from './email'
+import { renderEmailHtml, renderEmailText, type Email } from '@@/server/integrations/email'
 
 const message: Email = {
   to: 'guest@example.com',

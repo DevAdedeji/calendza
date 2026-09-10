@@ -1,7 +1,7 @@
-import { createPaymentOnboarding } from '../services/payment-recipient'
-import { enforceRateLimit } from '../services/rate-limit'
-import { requireAuthSession } from '../services/session'
-import { recordSecurityAudit } from '../services/security-audit'
+import { createPaymentOnboarding } from '@@/server/services/payment-recipient'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'payment-onboarding', limit: 3, windowSeconds: 600 })

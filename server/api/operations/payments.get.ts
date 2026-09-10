@@ -1,6 +1,6 @@
 import { paymentActivityQuerySchema } from '#shared/payment-ledger'
-import { listOperationsPaymentActivity } from '../../services/payment-ledger'
-import { requirePlatformAdminSession } from '../../services/session'
+import { listOperationsPaymentActivity } from '@@/server/services/payment-ledger'
+import { requirePlatformAdminSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   await requirePlatformAdminSession(event)

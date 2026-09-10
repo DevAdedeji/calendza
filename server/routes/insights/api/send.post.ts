@@ -1,14 +1,14 @@
-import { useEnv } from '../../../config/env'
-import { fetchWithTimeout } from '../../../integrations/fetch'
-import { logEvent } from '../../../observability/logger'
-import { enforceBoundedRequestBody } from '../../../security/request-body'
+import { useEnv } from '@@/server/config/env'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { logEvent } from '@@/server/observability/logger'
+import { enforceBoundedRequestBody } from '@@/server/security/request-body'
 import {
   parseUmamiEvent,
   UMAMI_EVENT_BODY_BYTES,
   UMAMI_EVENT_URL,
   umamiForwardHeaders,
   UMAMI_PROXY_TIMEOUT_MS
-} from '../../../services/umami-proxy'
+} from '@@/server/services/umami-proxy'
 
 export default defineEventHandler(async (event) => {
   if (getHeader(event, 'sec-fetch-site')?.toLowerCase() === 'cross-site') {

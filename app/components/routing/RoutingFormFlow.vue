@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { RoutingQuestion } from '#shared/routing'
 import type { PublicPersonalBranding } from '#shared/branding'
-import { apiErrorMessage } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
 
 const props = defineProps<{ mode: 'personal' | 'team', owner: string, slug: string }>()
 const endpoint = computed(() => props.mode === 'team'

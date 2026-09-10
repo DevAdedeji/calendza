@@ -4,7 +4,7 @@ import {
   DEFAULT_BOOKING_EMAIL_TEMPLATE_SETTINGS,
   renderBookingEmailTemplate
 } from '#shared/email-templates'
-import { customizeGuestBookingEmail, type BookingEmailOwner } from './booking-email-customization'
+import { customizeGuestBookingEmail, type BookingEmailOwner } from '@@/server/services/booking-email-customization'
 
 const owner: BookingEmailOwner = {
   hostUserId: 'host-id',
@@ -16,6 +16,23 @@ const owner: BookingEmailOwner = {
 }
 
 describe('booking email customization', () => {
+  it('inserts user text literally, without replacement syntax or recursive template expansion', () => {
+    const guestName = '$& $\' $` {{host_name}}'
+    expect(renderBookingEmailTemplate({
+      subject: 'Welcome {{guest_name}}',
+      body: '{{guest_name}} meets {{host_name}}'
+    }, {
+      '{{guest_name}}': guestName,
+      '{{event_name}}': 'Discovery',
+      '{{host_name}}': 'Alex',
+      '{{start_time}}': '10:00',
+      '{{time_zone}}': 'UTC'
+    })).toEqual({
+      subject: `Welcome ${guestName}`,
+      body: `${guestName} meets Alex`
+    })
+  })
+
   it('accepts only safe text and supported variables', () => {
     const input = structuredClone(DEFAULT_BOOKING_EMAIL_TEMPLATE_SETTINGS)
     input.templates.confirmation = {

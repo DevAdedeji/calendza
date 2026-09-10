@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  routingFormsApi,
-  type RoutingFormsResponse,
-  type RoutingFormSummary
-} from '~/services/schedra-api'
-import { compactActionMenuUi } from '~/utils/action-menu'
+import { apiErrorMessage } from '@/services/api/http'
+import { routingFormsApi, type RoutingFormsResponse, type RoutingFormSummary } from '@/services/api/routing'
+import { compactActionMenuUi } from '@/utils/action-menu'
 
 const props = defineProps<{ teamSlug?: string, canManage?: boolean }>()
 const feedback = useFeedback()

@@ -1,6 +1,6 @@
 import { paymentActivityQuerySchema } from '#shared/payment-ledger'
-import { listPaymentActivity } from '../services/payment-ledger'
-import { requireAuthSession } from '../services/session'
+import { listPaymentActivity } from '@@/server/services/payment-ledger'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

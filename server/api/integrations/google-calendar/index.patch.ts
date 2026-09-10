@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { CalendarSelectionError, CalendarUnavailableError, updateGoogleCalendarSelection } from '../../../integrations/calendar/google'
-import { enqueueFutureBookingsForCalendarSync } from '../../../services/calendar-sync'
-import { requireAuthSession } from '../../../services/session'
-import { logEvent } from '../../../observability/logger'
+import { CalendarSelectionError, CalendarUnavailableError, updateGoogleCalendarSelection } from '@@/server/integrations/calendar/google'
+import { enqueueFutureBookingsForCalendarSync } from '@@/server/services/calendar-sync'
+import { requireAuthSession } from '@@/server/services/session'
+import { logEvent } from '@@/server/observability/logger'
 
 const selectionSchema = z.object({
   conflictCalendarIds: z.array(z.string().min(1).max(1024)).min(1, 'Choose at least one calendar.').max(50),

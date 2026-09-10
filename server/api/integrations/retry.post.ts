@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { retryFailedIntegrationSyncs } from '../../services/integration-health'
-import { requireAuthSession } from '../../services/session'
+import { retryFailedIntegrationSyncs } from '@@/server/services/integration-health'
+import { requireAuthSession } from '@@/server/services/session'
 
 const retrySchema = z.object({
   provider: z.enum(['google', 'microsoft', 'caldav', 'zoom']).optional()

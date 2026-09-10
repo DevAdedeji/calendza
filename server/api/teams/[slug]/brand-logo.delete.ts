@@ -1,8 +1,8 @@
 import { eq, sql } from 'drizzle-orm'
-import { organizationBrandLogos, organizations } from '../../../database/schema'
-import { useDatabase } from '../../../database'
-import { assertTeamWritable } from '../../../services/entitlement'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
+import { organizationBrandLogos, organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

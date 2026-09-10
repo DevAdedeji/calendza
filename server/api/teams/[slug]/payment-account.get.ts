@@ -1,6 +1,6 @@
-import { findPaymentRecipient, publicRecipient, syncPaymentRecipient, unavailableRecipient } from '../../../services/payment-recipient'
-import { requireOrganizationPermission } from '../../../services/organization'
-import { useEnv } from '../../../config/env'
+import { findPaymentRecipient, publicRecipient, syncPaymentRecipient, unavailableRecipient } from '@@/server/services/payment-recipient'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { useEnv } from '@@/server/config/env'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

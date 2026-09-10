@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto'
 import { Temporal } from '@js-temporal/polyfill'
-import { fetchWithTimeout } from '../fetch'
-import { retryAfterMilliseconds } from '../errors'
-import type { BusyPeriod, CalendarEventInput, CalendarRemoteEvent } from './provider'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { retryAfterMilliseconds } from '@@/server/integrations/errors'
+import type { BusyPeriod, CalendarEventInput, CalendarRemoteEvent } from '@@/server/integrations/calendar/provider'
 
 const APPLE_CALDAV_URL = new URL('https://caldav.icloud.com/')
 const MAX_XML_BYTES = 10 * 1024 * 1024

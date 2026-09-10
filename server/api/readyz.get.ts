@@ -1,7 +1,7 @@
 import { sql } from 'drizzle-orm'
-import { useDatabase } from '../database/index'
-import { useEnv } from '../config/env'
-import { logEvent } from '../observability/logger'
+import { useDatabase } from '@@/server/database/index'
+import { useEnv } from '@@/server/config/env'
+import { logEvent } from '@@/server/observability/logger'
 
 export default defineEventHandler(async (event) => {
   try {

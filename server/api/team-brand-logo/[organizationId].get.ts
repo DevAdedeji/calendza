@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { organizationBrandLogos, organizations } from '../../database/schema'
-import { useDatabase } from '../../database'
+import { organizationBrandLogos, organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 export default defineEventHandler(async (event) => {
   const organizationId = getRouterParam(event, 'organizationId') ?? ''

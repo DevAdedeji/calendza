@@ -1,19 +1,11 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  bookingsApi,
-  recurrenceApi,
-  publicBookingApi,
-  invitationBookingApi,
-  publicTeamApi,
-  type AvailabilityResponse,
-  type BookingDetail,
-  type PublicBookingPage
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { bookingsApi, publicBookingApi, invitationBookingApi, publicTeamApi, type AvailabilityResponse, type BookingDetail, type PublicBookingPage } from '@/services/api/bookings'
+import { recurrenceApi } from '@/services/api/recurrence'
 import { formatMoney } from '#shared/payments'
 import type { RecurringOccurrencePreview } from '#shared/recurrence'
-import { useRecurringBooking } from '~/composables/booking/useRecurringBooking'
-import { formatInstant } from '~/utils/date-time'
+import { useRecurringBooking } from '@/composables/booking/useRecurringBooking'
+import { formatInstant } from '@/utils/date-time'
 import { bookingCalendarRange } from '#shared/booking-calendar'
 
 /**

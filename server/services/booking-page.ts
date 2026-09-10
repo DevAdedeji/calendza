@@ -1,13 +1,13 @@
 import { and, eq, gte, isNull, lt, lte, ne, sql } from 'drizzle-orm'
-import { getAvailableSlots } from '../domain/availability'
-import type { AvailabilityRule, DateOverride, Slot, Weekday } from '../domain/types'
-import { availabilityRules, bookingHosts, bookings, dateOverrides, eventTypes, schedules, users } from '../database/schema'
-import { useDatabase } from '../database'
-import { calendarBusyTimes } from '../integrations/calendar/providers'
-import { bookingLimitRange, utcCalendarDateBoundary } from '../utils/date-time'
+import { getAvailableSlots } from '@@/server/domain/availability'
+import type { AvailabilityRule, DateOverride, Slot, Weekday } from '@@/server/domain/types'
+import { availabilityRules, bookingHosts, bookings, dateOverrides, eventTypes, schedules, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { calendarBusyTimes } from '@@/server/integrations/calendar/providers'
+import { bookingLimitRange, utcCalendarDateBoundary } from '@@/server/utils/date-time'
 import { eventTypeDurationOptions, type BookingQuestion } from '#shared/validation'
-import { groupSessionCapacity } from './group-events'
-import { awayIntervalsForUser } from './away-periods'
+import { groupSessionCapacity } from '@@/server/services/group-events'
+import { awayIntervalsForUser } from '@@/server/services/away-periods'
 
 export interface PublicEventType {
   id: string

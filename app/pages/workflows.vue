@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { eventTypesApi } from '~/services/schedra-api'
+import { eventTypesApi } from '@/services/api/event-types'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Workflows', robots: 'noindex, nofollow' })

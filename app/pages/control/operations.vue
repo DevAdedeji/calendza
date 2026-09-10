@@ -1,15 +1,8 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  operationsApi,
-  type OperationsDiagnostics,
-  type OperationsJobsResponse,
-  type OperationsOverview,
-  type OperationKind,
-  type OperationStatus
-} from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { compactRelativeTime, formatDateTime } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { operationsApi, type OperationsDiagnostics, type OperationsJobsResponse, type OperationsOverview, type OperationKind, type OperationStatus } from '@/services/api/operations'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { compactRelativeTime, formatDateTime } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: ['auth', 'platform-admin'] })
 useSeoMeta({ title: 'Operations', robots: 'noindex, nofollow' })

@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -18,7 +18,7 @@ describe.skipIf(!url)('paid booking database invariants', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table payment_ledger_entries, booking_payments, payment_recipients, bookings, event_types, users restart identity cascade`
     const [user] = await sql<{ id: string }[]>`
@@ -168,7 +168,7 @@ describe.skipIf(!url)('paid booking database invariants', () => {
       ) returning id
     `
     const refundReference = `booking-refund-${payment!.id}`
-    const { applyRefundEvent } = await import('../services/paid-booking')
+    const { applyRefundEvent } = await import('@@/server/services/paid-booking')
 
     await expect(applyRefundEvent({
       reference: refundReference,

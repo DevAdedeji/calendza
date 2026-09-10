@@ -1,9 +1,9 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { and, asc, count, eq, gt, isNull, lt, ne } from 'drizzle-orm'
 import type { AwayPeriodInput } from '#shared/away-periods'
-import { awayPeriods, bookingHosts, users } from '../database/schema'
-import { useDatabase } from '../database'
-import { awayPeriodInterval } from '../domain/away-periods'
+import { awayPeriods, bookingHosts, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { awayPeriodInterval } from '@@/server/domain/away-periods'
 
 const MAX_AWAY_PERIODS = 100
 

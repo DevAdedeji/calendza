@@ -1,6 +1,6 @@
 import type { H3Event } from 'h3'
-import { useAuth } from './auth'
-import { useEnv } from '../config/env'
+import { useAuth } from '@@/server/services/auth'
+import { useEnv } from '@@/server/config/env'
 
 export async function getAuthSession(event: H3Event) {
   return useAuth().api.getSession({ headers: event.headers })

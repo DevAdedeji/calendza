@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
-import { useEnv } from '../../config/env'
+import { useEnv } from '@@/server/config/env'
 
 const WEBHOOK_TOLERANCE_SECONDS = 5 * 60
 

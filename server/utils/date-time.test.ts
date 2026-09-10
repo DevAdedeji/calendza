@@ -6,7 +6,7 @@ import {
   calendarDaysBetween as appCalendarDaysBetween,
   formatCalendarDate,
   startOfIsoWeek
-} from '../../app/utils/date-time'
+} from '@/utils/date-time'
 import {
   addToInstant,
   addUtcCalendarDays,
@@ -17,7 +17,7 @@ import {
   unixSeconds,
   utcCalendarDate,
   utcCalendarDateBoundary
-} from './date-time'
+} from '@@/server/utils/date-time'
 
 describe('calendar date utilities', () => {
   it('uses calendar arithmetic across leap days and DST boundaries', () => {

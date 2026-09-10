@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { findPublicEventType, slotsFor } from '../services/booking-page'
-import { enforceRateLimit } from '../services/rate-limit'
-import { CalendarUnavailableError } from '../integrations/calendar/google'
-import { requireLocationIntegration } from '../services/event-location'
-import { calendarDaysBetween } from '../utils/date-time'
-import { bookingToReschedule } from '../services/booking-reschedule'
+import { findPublicEventType, slotsFor } from '@@/server/services/booking-page'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { CalendarUnavailableError } from '@@/server/integrations/calendar/google'
+import { requireLocationIntegration } from '@@/server/services/event-location'
+import { calendarDaysBetween } from '@@/server/utils/date-time'
+import { bookingToReschedule } from '@@/server/services/booking-reschedule'
 
 const query = z.object({
   username: z.string().min(1),

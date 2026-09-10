@@ -1,13 +1,9 @@
 import { computed, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import {
-  apiErrorMessage,
-  calendarIntegrationApi,
-  type CalendarConnection,
-  type CalendarIntegrationProvider,
-  type CalendarItem
-} from '~/services/schedra-api'
+import { useRequestGuard } from '@/composables/useRequestGuard'
+import { apiErrorMessage } from '@/services/api/http'
+import { calendarIntegrationApi, type CalendarConnection, type CalendarIntegrationProvider, type CalendarItem } from '@/services/api/integrations'
 
-export async function useCalendarIntegration(options: {
+export function useCalendarIntegration(options: {
   provider: CalendarIntegrationProvider
   name: MaybeRefOrGetter<string>
   refreshSignal: MaybeRefOrGetter<number | undefined>
@@ -16,7 +12,7 @@ export async function useCalendarIntegration(options: {
   const feedback = useFeedback()
   const api = calendarIntegrationApi(options.provider)
   const { data: connection, refresh: refreshConnection, status, error: connectionFailure }
-    = await useLazyFetch<CalendarConnection>(api.connectionEndpoint)
+    = useLazyFetch<CalendarConnection>(api.connectionEndpoint)
   const settingsOpen = ref(false)
   const disconnectOpen = ref(false)
   const calendars = ref<CalendarItem[]>([])
@@ -31,6 +27,7 @@ export async function useCalendarIntegration(options: {
   const saving = ref(false)
   const disconnecting = ref(false)
   const isGoogle = computed(() => options.provider === 'google-calendar')
+  const calendarRequests = useRequestGuard()
 
   const writableCalendars = computed(() => calendars.value
     .filter(calendar => ['writer', 'owner'].includes(calendar.accessRole))
@@ -70,11 +67,13 @@ export async function useCalendarIntegration(options: {
   }
 
   async function loadCalendars(force = false) {
-    if (!connection.value?.connected || loadingCalendars.value || (calendarsLoaded.value && !force)) return
+    if (!connection.value?.connected || disconnecting.value || (loadingCalendars.value && !force) || (calendarsLoaded.value && !force)) return
+    const current = calendarRequests.begin()
     loadingCalendars.value = true
     calendarFailure.value = ''
     try {
       const data = await api.calendars()
+      if (!current()) return
       calendars.value = data.items
       selectedConflictIds.value = [...data.conflictCalendarIds]
       writeCalendarId.value = data.writeCalendarId ?? ''
@@ -82,9 +81,9 @@ export async function useCalendarIntegration(options: {
       baseline.value = currentSnapshot.value
       calendarsLoaded.value = true
     } catch (failure) {
-      calendarFailure.value = apiErrorMessage(failure, `Could not load calendars from ${toValue(options.name)} just now.`)
+      if (current()) calendarFailure.value = apiErrorMessage(failure, `Could not load calendars from ${toValue(options.name)} just now.`)
     } finally {
-      loadingCalendars.value = false
+      if (current()) loadingCalendars.value = false
     }
   }
 
@@ -94,16 +93,17 @@ export async function useCalendarIntegration(options: {
   }
 
   async function save() {
-    if (!selectedConflictIds.value.length || !writeCalendarId.value) return
+    if (saving.value || disconnecting.value || loadingCalendars.value || !selectedConflictIds.value.length || !writeCalendarId.value) return
+    const submittedSnapshot = currentSnapshot.value
     saving.value = true
     pageError.value = ''
     try {
       const result = await api.update({
-        conflictCalendarIds: selectedConflictIds.value,
+        conflictCalendarIds: [...selectedConflictIds.value],
         writeCalendarId: writeCalendarId.value,
         defaultForBookings: defaultForBookings.value
       })
-      baseline.value = currentSnapshot.value
+      baseline.value = submittedSnapshot
       await refreshConnection()
       options.onSaved()
       if (result.syncQueued) feedback.success({ title: `${toValue(options.name)} preferences saved` })
@@ -121,6 +121,9 @@ export async function useCalendarIntegration(options: {
   }
 
   async function disconnect() {
+    if (disconnecting.value || saving.value) return
+    calendarRequests.invalidate()
+    loadingCalendars.value = false
     disconnecting.value = true
     pageError.value = ''
     try {
@@ -144,6 +147,17 @@ export async function useCalendarIntegration(options: {
 
   watch(settingsOpen, (open) => {
     if (open && connection.value?.connected) void loadCalendars()
+  })
+  watch(() => connection.value?.connected, (connected) => {
+    if (connected) return
+    calendarRequests.invalidate()
+    loadingCalendars.value = false
+    calendarsLoaded.value = false
+    calendars.value = []
+    selectedConflictIds.value = []
+    writeCalendarId.value = ''
+    defaultForBookings.value = false
+    baseline.value = currentSnapshot.value
   })
   watch(() => toValue(options.refreshSignal), async (next, previous) => {
     if (!next || next === previous) return

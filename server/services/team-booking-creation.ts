@@ -1,37 +1,37 @@
 import { and, eq, gt, inArray, sql } from 'drizzle-orm'
 import type { CreateTeamBookingInput, MeetingLocationType } from '#shared/validation'
-import { bookingHosts, bookings } from '../database/schema'
-import { databaseErrorCode } from '../database/errors'
-import { useDatabase } from '../database/index'
+import { bookingHosts, bookings } from '@@/server/database/schema'
+import { databaseErrorCode } from '@@/server/database/errors'
+import { useDatabase } from '@@/server/database/index'
 import {
   activeHostsFor,
   chooseHosts,
   findPublicTeamEventType,
   teamSlotsFor
-} from './team-booking'
-import { queueBookingEmails, queueBookingRequestEmails, queueBookingRescheduledEmails } from './booking-emails'
-import { enqueueCalendarSync } from './calendar-sync'
-import { CalendarUnavailableError } from '../integrations/calendar/google'
-import { BookingAnswerValidationError, buildBookingAnswersSnapshot } from '../domain/booking-answers'
-import { assignedHostsForBooking, findBookingByUid } from '../repositories/booking'
-import { cancelBookingReminders } from './email-outbox'
-import { cancelPendingAutomationRuns, publishBookingEvent } from './workflows'
-import { requireTeamLocationIntegrations } from './event-location'
+} from '@@/server/services/team-booking'
+import { queueBookingEmails, queueBookingRequestEmails, queueBookingRescheduledEmails } from '@@/server/services/booking-emails'
+import { enqueueCalendarSync } from '@@/server/services/calendar-sync'
+import { CalendarUnavailableError } from '@@/server/integrations/calendar/google'
+import { BookingAnswerValidationError, buildBookingAnswersSnapshot } from '@@/server/domain/booking-answers'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { cancelBookingReminders } from '@@/server/services/email-outbox'
+import { cancelPendingAutomationRuns, publishBookingEvent } from '@@/server/services/workflows'
+import { requireTeamLocationIntegrations } from '@@/server/services/event-location'
 import {
   assignedHostsForGroupSessions,
   claimGroupSession,
   isGroupSessionFullError
-} from './group-events'
+} from '@@/server/services/group-events'
 import {
   createPaymentRecord,
   eventPaymentReadiness,
   movePaidBookingPayment,
   openPaidBookingCheckout,
   paymentForBooking
-} from './paid-booking'
-import { addUtcCalendarDays, utcCalendarDate } from '../utils/date-time'
-import { createTeamRecurringBooking } from './recurring-booking-creation'
-import { assertBookingLimits } from './booking-limits'
+} from '@@/server/services/paid-booking'
+import { addUtcCalendarDays, utcCalendarDate } from '@@/server/utils/date-time'
+import { createTeamRecurringBooking } from '@@/server/services/recurring-booking-creation'
+import { assertBookingLimits } from '@@/server/services/booking-limits'
 
 const SLOT_TAKEN = '23P01'
 

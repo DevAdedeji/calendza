@@ -1,11 +1,11 @@
 import { and, asc, count, desc, eq, gte, ilike, inArray, lt, lte, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
-import { bookings, eventTypes } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { requireAuthSession } from '../services/session'
-import { readBookingAnswers } from '../domain/booking-answers'
-import { addToInstant } from '../utils/date-time'
+import { bookings, eventTypes } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireAuthSession } from '@@/server/services/session'
+import { readBookingAnswers } from '@@/server/domain/booking-answers'
+import { addToInstant } from '@@/server/utils/date-time'
 
 const querySchema = paginationQuerySchema.extend({
   filter: z.enum(['all', 'upcoming', 'pending', 'past', 'cancelled']).default('upcoming')

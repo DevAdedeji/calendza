@@ -1,4 +1,4 @@
-import { findBookingByUid } from '../repositories/booking'
+import { findBookingByUid } from '@@/server/repositories/booking'
 
 /** A booking UID is a management capability, never an arbitrary exclusion ID. */
 export async function bookingToReschedule(uid: string | undefined, eventTypeId: string, attendeeEmail?: string) {

@@ -3,11 +3,11 @@ import {
   organizationInvoices,
   organizationSubscriptions,
   subscriptionSeatSyncJobs
-} from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { bachsConfigured } from '../../../integrations/bachs'
-import { organizationEntitlement } from '../../../services/entitlement'
-import { requireOrganizationPermission } from '../../../services/organization'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { bachsConfigured } from '@@/server/integrations/bachs'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

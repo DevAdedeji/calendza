@@ -1,6 +1,6 @@
 import { paginationMeta } from '#shared/pagination'
 import type { PaymentActivityQuery, PaymentLedgerKind } from '#shared/payment-ledger'
-import { paymentActivityRows, type PaymentActivityOwner } from '../repositories/payment-ledger'
+import { paymentActivityRows, type PaymentActivityOwner } from '@@/server/repositories/payment-ledger'
 
 const kindCopy: Record<PaymentLedgerKind, { label: string, icon: string }> = {
   checkout: { label: 'Checkout', icon: 'i-lucide-credit-card' },

@@ -8,9 +8,9 @@ import {
   organizationEventTemplateAssignments,
   organizationEventTemplates,
   users
-} from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { requireOrganization } from '../../../services/organization'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireOrganization } from '@@/server/services/organization'
 
 const querySchema = paginationQuerySchema.extend({
   filter: z.enum(['all', 'active', 'hidden']).default('all')

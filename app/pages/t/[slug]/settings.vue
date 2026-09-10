@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { organizationNameSchema, organizationSlugSchema } from '#shared/billing'
-import {
-  apiErrorMessage,
-  teamsApi,
-  type SlugAvailability,
-  type TeamDetail,
-  type TeamMembersResponse
-} from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamsApi, type SlugAvailability, type TeamDetail, type TeamMembersResponse } from '@/services/api/teams'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 

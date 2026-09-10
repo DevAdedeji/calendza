@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { recipientNextAction, recipientStatus, unavailableRecipient } from './payment-recipient'
+import { recipientNextAction, recipientStatus, unavailableRecipient } from '@@/server/services/payment-recipient'
 
 describe('payment recipient status', () => {
   it('fails closed when Bachs cannot be checked even if the cached row was active', () => {

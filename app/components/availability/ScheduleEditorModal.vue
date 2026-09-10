@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ScheduleRecord } from '~/types/schedule'
+import type { ScheduleRecord } from '@/types/schedule'
 
 const props = defineProps<{ open: boolean, schedule?: ScheduleRecord | null }>()
 const emit = defineEmits<{ 'update:open': [value: boolean], 'saved': [id: string] }>()

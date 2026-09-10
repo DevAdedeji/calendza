@@ -1,6 +1,6 @@
-import { findPublicEventType } from '../../../services/booking-page'
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { publicPersonalBranding } from '../../../services/personal-branding'
+import { findPublicEventType } from '@@/server/services/booking-page'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { publicPersonalBranding } from '@@/server/services/personal-branding'
 import { eventTypeDurationOptions } from '#shared/validation'
 
 export default defineEventHandler(async (event) => {

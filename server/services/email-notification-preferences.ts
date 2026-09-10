@@ -1,9 +1,9 @@
 import { and, eq, inArray, or, sql } from 'drizzle-orm'
 import type { EmailNotificationPreferences, OptionalHostEmailCategory } from '#shared/email-notification-preferences'
 import { DEFAULT_EMAIL_NOTIFICATION_PREFERENCES } from '#shared/email-notification-preferences'
-import type { Database } from '../database/client'
-import { useDatabase } from '../database'
-import { emailNotificationPreferences, users } from '../database/schema'
+import type { Database } from '@@/server/database/client'
+import { useDatabase } from '@@/server/database'
+import { emailNotificationPreferences, users } from '@@/server/database/schema'
 
 export interface OptionalHostRecipient {
   userId?: string

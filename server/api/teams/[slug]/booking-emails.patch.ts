@@ -1,7 +1,7 @@
 import { bookingEmailTemplateSettingsSchema } from '#shared/email-templates'
-import { saveTeamBookingEmailTemplateSettings } from '../../../services/booking-email-template-settings'
-import { assertTeamWritable } from '../../../services/entitlement'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
+import { saveTeamBookingEmailTemplateSettings } from '@@/server/services/booking-email-template-settings'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

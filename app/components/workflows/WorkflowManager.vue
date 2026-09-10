@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import {
-  workflowsApi,
-  type EventTypesResponse,
-  type TeamEventTypesResponse,
-  type WorkflowsResponse
-} from '~/services/schedra-api'
-import { compactActionMenuUi } from '~/utils/action-menu'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { WORKFLOW_OFFSET_OPTIONS, WORKFLOW_RECIPIENT_OPTIONS, WORKFLOW_TRIGGER_OPTIONS } from '~/constants/workflows'
+import { workflowsApi, type WorkflowsResponse } from '@/services/api/workflows'
+import type { EventTypesResponse, TeamEventTypesResponse } from '@/services/api/event-types'
+import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { WORKFLOW_OFFSET_OPTIONS, WORKFLOW_RECIPIENT_OPTIONS, WORKFLOW_TRIGGER_OPTIONS } from '@/constants/workflows'
 
 const props = defineProps<{
   teamSlug?: string

@@ -1,7 +1,7 @@
 import { bookingEmailTemplateSettingsSchema } from '#shared/email-templates'
-import { savePersonalBookingEmailTemplateSettings } from '../../services/booking-email-template-settings'
-import { assertPersonalPro } from '../../services/personal-entitlement'
-import { requireAuthSession } from '../../services/session'
+import { savePersonalBookingEmailTemplateSettings } from '@@/server/services/booking-email-template-settings'
+import { assertPersonalPro } from '@@/server/services/personal-entitlement'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

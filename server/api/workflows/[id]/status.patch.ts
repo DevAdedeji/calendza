@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { workflowIdSchema } from '#shared/workflows'
-import { requireAuthSession } from '../../../services/session'
-import { setWorkflowActive } from '../../../services/workflows'
+import { requireAuthSession } from '@@/server/services/session'
+import { setWorkflowActive } from '@@/server/services/workflows'
 
 const statusSchema = z.object({ active: z.boolean() })
 

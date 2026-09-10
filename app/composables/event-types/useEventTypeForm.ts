@@ -1,14 +1,13 @@
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { useEventBookingMode } from '@/composables/event-types/useEventBookingMode'
 import { formatMoney } from '#shared/payments'
 import {
   eventTypeSchema,
-  type BookingQuestion,
-  type BookingQuestionType,
   type EventTypeInput
 } from '#shared/validation'
-import type { CalendarConnection, VideoConferenceConnection } from '~/services/schedra-api'
-import type { EventTypeRecord } from '~/types/event-type'
-import type { ScheduleRecord } from '~/types/schedule'
+import type { CalendarConnection, VideoConferenceConnection } from '@/services/api/integrations'
+import type { EventTypeRecord } from '@/types/event-type'
+import type { ScheduleRecord } from '@/types/schedule'
 
 export type EventTypeForm = Omit<EventTypeInput, 'bookingWindowDays' | 'maxPerDay' | 'maxPerWeek' | 'maxPerMonth'> & {
   bookingWindowDays?: number
@@ -19,12 +18,6 @@ export type EventTypeForm = Omit<EventTypeInput, 'bookingWindowDays' | 'maxPerDa
 
 export const EVENT_TYPE_ADVANCED_SECTIONS = ['questions', 'availability', 'notifications', 'payments', 'rules'] as const
 export type EventTypeAdvancedSection = typeof EVENT_TYPE_ADVANCED_SECTIONS[number]
-
-const QUESTION_TYPE_OPTIONS = [
-  { label: 'Short answer', value: 'short_text' },
-  { label: 'Long answer', value: 'long_text' },
-  { label: 'Choose one', value: 'select' }
-]
 
 const LOCATION_FIELDS = {
   video_link: { label: 'Meeting link', help: 'Guests receive this link after booking.', placeholder: 'https://zoom.us/j/…' },
@@ -138,28 +131,7 @@ export function useEventTypeForm(options: {
     get: () => form.maxPerMonth,
     set: (value) => { form.maxPerMonth = typeof value === 'number' ? value : undefined }
   })
-  const groupEventEnabled = computed({
-    get: () => form.capacity > 1,
-    set: (enabled) => {
-      form.capacity = enabled ? 10 : 1
-      if (enabled) form.recurringBookingEnabled = false
-    }
-  })
-  const paidBookingEnabled = computed({
-    get: () => form.paymentEnabled,
-    set: (enabled: boolean) => {
-      form.paymentEnabled = enabled
-      form.priceCents = enabled ? (form.priceCents ?? 2500) : null
-      if (enabled) {
-        form.requiresConfirmation = false
-        form.recurringBookingEnabled = false
-      }
-    }
-  })
-  const priceAmount = computed({
-    get: () => form.priceCents === null ? undefined : form.priceCents / 100,
-    set: (value: number | undefined) => { form.priceCents = value === undefined ? null : Math.round(value * 100) }
-  })
+  const { groupEventEnabled, paidBookingEnabled, priceAmount } = useEventBookingMode(form)
 
   function sectionOpen(id: EventTypeAdvancedSection) {
     return openSections.value.includes(id)
@@ -237,53 +209,17 @@ export function useEventTypeForm(options: {
       : form.reminderMinutes.filter(value => value !== minutes)
   }
 
-  function addQuestion() {
-    if (form.bookingQuestions.length >= 10) return
-    form.bookingQuestions.push({ id: crypto.randomUUID(), label: '', type: 'short_text', required: false, options: [] })
-  }
-
-  function removeQuestion(index: number) {
-    form.bookingQuestions.splice(index, 1)
-  }
-
-  function moveQuestion(index: number, direction: -1 | 1) {
-    const target = index + direction
-    if (target < 0 || target >= form.bookingQuestions.length) return
-    const [question] = form.bookingQuestions.splice(index, 1)
-    if (question) form.bookingQuestions.splice(target, 0, question)
-  }
-
-  function changeQuestionType(question: BookingQuestion, value: unknown) {
-    const type = value as BookingQuestionType
-    question.type = type
-    question.options = type === 'select'
-      ? question.options.length >= 2 ? question.options : ['Option 1', 'Option 2']
-      : []
-  }
-
-  function addQuestionOption(question: BookingQuestion) {
-    if (question.options.length < 20) question.options.push(`Option ${question.options.length + 1}`)
-  }
-
-  function removeQuestionOption(question: BookingQuestion, index: number) {
-    if (question.options.length > 2) question.options.splice(index, 1)
-  }
-
   watch(() => form.title, (title) => {
     if (!slugTouched.value && !toValue(options.eventType)) form.slug = slugifyEventType(title)
-  })
-  watch(() => form.requiresConfirmation, (required) => {
-    if (required) form.recurringBookingEnabled = false
   })
 
   return {
     form, slugTouched, openSections, scheduleOptions, selectedSchedule, valid, dirty,
-    locationOptions, questionTypeOptions: QUESTION_TYPE_OPTIONS, locationField,
+    locationOptions, locationField,
     selectedGeneratedProvider, breaksEnabled, dailyBookingLimit, weeklyBookingLimit,
     monthlyBookingLimit, groupEventEnabled,
     paidBookingEnabled, priceAmount, allSectionsOpen, sectionSummaries, sectionOpen,
     toggleSection, toggleAllSections, loadForm, reminderEnabled, toggleReminder,
-    addQuestion, removeQuestion, moveQuestion, changeQuestionType,
-    addQuestionOption, removeQuestionOption, slugify: slugifyEventType
+    slugify: slugifyEventType
   }
 }

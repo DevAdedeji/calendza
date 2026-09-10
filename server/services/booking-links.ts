@@ -8,10 +8,10 @@ import {
   findOwnedEventType,
   listBookingLinkRecords,
   revokeBookingLink
-} from '../repositories/booking-links'
-import { slotsFor } from './booking-page'
-import { requireLocationIntegration } from './event-location'
-import { addUtcCalendarDays, DAY_MS, utcCalendarDate } from '../utils/date-time'
+} from '@@/server/repositories/booking-links'
+import { slotsFor } from '@@/server/services/booking-page'
+import { requireLocationIntegration } from '@@/server/services/event-location'
+import { addUtcCalendarDays, DAY_MS, utcCalendarDate } from '@@/server/utils/date-time'
 
 const MAX_LIFETIME_MS = 90 * DAY_MS
 

@@ -1,8 +1,8 @@
 import { withdrawalCreateInputSchema } from '#shared/payments'
-import { createPaymentWithdrawal } from '../services/payment-withdrawal'
-import { enforceRateLimit } from '../services/rate-limit'
-import { requireAuthSession } from '../services/session'
-import { recordSecurityAudit } from '../services/security-audit'
+import { createPaymentWithdrawal } from '@@/server/services/payment-withdrawal'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

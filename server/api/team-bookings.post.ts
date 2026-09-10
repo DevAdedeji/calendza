@@ -1,6 +1,6 @@
 import { createTeamBookingSchema } from '#shared/validation'
-import { createTeamBooking } from '../services/team-booking-creation'
-import { enforceRateLimit } from '../services/rate-limit'
+import { createTeamBooking } from '@@/server/services/team-booking-creation'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'create-team-booking', limit: 12, windowSeconds: 600 })

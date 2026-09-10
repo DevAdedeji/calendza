@@ -1,5 +1,5 @@
-import { requirePlatformAdminSession } from '../../services/session'
-import { operationsDiagnostics } from '../../services/operations'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { operationsDiagnostics } from '@@/server/services/operations'
 
 export default defineEventHandler(async (event) => {
   await requirePlatformAdminSession(event)

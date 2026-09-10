@@ -1,5 +1,5 @@
-import { requireAuthSession } from '../../services/session'
-import { emailPreferencesForUser } from '../../services/email-notification-preferences'
+import { requireAuthSession } from '@@/server/services/session'
+import { emailPreferencesForUser } from '@@/server/services/email-notification-preferences'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

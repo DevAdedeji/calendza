@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { apiErrorMessage, schedulesApi, type SchedulesResponse } from '~/services/schedra-api'
-import type { ScheduleRecord } from '~/types/schedule'
-import { compactActionMenuUi } from '~/utils/action-menu'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { localTimeZone } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { schedulesApi, type SchedulesResponse } from '@/services/api/schedules'
+import type { ScheduleRecord } from '@/types/schedule'
+import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Availability schedules', robots: 'noindex, nofollow' })

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getCheckoutSession } from '../integrations/bachs'
-import { useDatabase } from '../database'
-import { expirePaidBookingHolds } from './paid-booking'
+import { getCheckoutSession } from '@@/server/integrations/bachs'
+import { useDatabase } from '@@/server/database'
+import { expirePaidBookingHolds } from '@@/server/services/paid-booking'
 
-vi.mock('../database', () => ({ useDatabase: vi.fn() }))
-vi.mock('../integrations/bachs', () => ({
+vi.mock('@@/server/database', () => ({ useDatabase: vi.fn() }))
+vi.mock('@@/server/integrations/bachs', () => ({
   createCheckoutSession: vi.fn(),
   createRefund: vi.fn(),
   getCheckoutSession: vi.fn()

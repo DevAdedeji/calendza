@@ -1,10 +1,10 @@
 import { eq, sql } from 'drizzle-orm'
 import { organizationBrandingSchema } from '#shared/branding'
-import { organizations } from '../../../database/schema'
-import { useDatabase } from '../../../database'
-import { assertTeamWritable } from '../../../services/entitlement'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
-import { storedTeamBranding } from '../../../services/team-branding'
+import { organizations } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
+import { storedTeamBranding } from '@@/server/services/team-branding'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

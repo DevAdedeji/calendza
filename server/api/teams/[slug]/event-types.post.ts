@@ -1,11 +1,11 @@
 import { teamEventTypeSchema } from '#shared/validation'
-import { eventTypes } from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { assertTeamWritable } from '../../../services/entitlement'
-import { requireTeamLocationIntegrations } from '../../../services/event-location'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
-import { replaceHosts, resolveHosts } from '../../../services/team-event-type'
-import { requirePaymentRecipient } from '../../../services/paid-booking'
+import { eventTypes } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { requireTeamLocationIntegrations } from '@@/server/services/event-location'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
+import { replaceHosts, resolveHosts } from '@@/server/services/team-event-type'
+import { requirePaymentRecipient } from '@@/server/services/paid-booking'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

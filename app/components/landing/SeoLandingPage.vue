@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SeoLandingPageContent } from '~/data/seo-landing-pages'
+import type { SeoLandingPageContent } from '@/data/seo-landing-pages'
 
 const props = defineProps<{ page: SeoLandingPageContent }>()
 const origin = useRuntimeConfig().public.siteUrl || useRequestURL().origin

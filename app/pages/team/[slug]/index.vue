@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { publicTeamApi, type PublicTeamProfile } from '~/services/schedra-api'
-import { getInitials } from '~/utils/text'
+import { publicTeamApi, type PublicTeamProfile } from '@/services/api/bookings'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'bare' })
 

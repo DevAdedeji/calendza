@@ -1,8 +1,8 @@
 import { withdrawalCreateInputSchema } from '#shared/payments'
-import { createPaymentWithdrawal } from '../../../services/payment-withdrawal'
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { requireOrganizationPermission } from '../../../services/organization'
-import { recordSecurityAudit } from '../../../services/security-audit'
+import { createPaymentWithdrawal } from '@@/server/services/payment-withdrawal'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

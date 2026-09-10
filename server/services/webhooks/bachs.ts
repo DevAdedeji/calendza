@@ -1,50 +1,23 @@
-import { getCheckoutSession, getConnectedAccount, type BachsSubscription } from '../../integrations/bachs'
-import { applySubscriptionState, markInvoiceFailed, markInvoicePaid } from '../billing'
+import { getCheckoutSession, getConnectedAccount } from '@@/server/integrations/bachs'
+import { bachsSubscriptionSchema, type BachsEvent } from '@@/server/integrations/bachs-payload'
+import { applySubscriptionState, markInvoiceFailed, markInvoicePaid } from '@@/server/services/billing'
 import {
   applyPersonalSubscriptionState,
   markPersonalInvoiceFailed,
   markPersonalInvoicePaid
-} from '../personal-billing'
-import { recordAudit } from '../organization'
-import { recordSecurityAudit } from '../security-audit'
+} from '@@/server/services/personal-billing'
+import { recordAudit } from '@@/server/services/organization'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 import {
   applyRefundEvent,
   completePaidBookingFromCheckout,
   failPaidBooking,
   recordPaidBookingProviderObservation
-} from '../paid-booking'
-import { updateRecipientFromWebhook } from '../payment-recipient'
-import { applyWithdrawalPayoutEvent } from '../payment-withdrawal'
+} from '@@/server/services/paid-booking'
+import { updateRecipientFromWebhook } from '@@/server/services/payment-recipient'
+import { applyWithdrawalPayoutEvent } from '@@/server/services/payment-withdrawal'
 
-export interface BachsEvent {
-  id?: string
-  type?: string
-  organization_id?: string
-  account?: string
-  data?: {
-    id?: string
-    charge_id?: string | null
-    checkout_id?: string | null
-    reference?: string
-    status?: string
-    amount?: string
-    amount_paid?: string | null
-    amount_collected?: string | null
-    amount_remaining?: string | null
-    settlement_amount?: string
-    settlement_currency?: string | null
-    fee?: string | { amount?: string | null } | null
-    fees?: { amount?: string | null } | null
-    payment_method?: string | { type?: string | null, name?: string | null } | null
-    metadata?: Record<string, string>
-    payment_status?: string | null
-    currency?: string | null
-    account?: string | null
-    refund_id?: string | null
-    withdrawal_id?: string | null
-    charge?: { id?: string | null, amount?: string | null, currency?: string | null, status?: string | null } | null
-  }
-}
+export type { BachsEvent } from '@@/server/integrations/bachs-payload'
 
 const PAID_EVENTS = new Set(['collection.succeeded', 'checkout.completed', 'invoice.paid'])
 const FAILED_EVENTS = new Set(['collection.failed', 'checkout.expired', 'invoice.payment_failed'])
@@ -135,8 +108,8 @@ export async function processBachsWebhook(payload: BachsEvent) {
   }
 
   if (SUBSCRIPTION_EVENTS.has(type)) {
-    const subscription = payload.data as unknown as BachsSubscription
-    if (!subscription?.id) return { received: true, ignored: 'no-subscription' }
+    if (!payload.data?.id) return { received: true, ignored: 'no-subscription' }
+    const subscription = bachsSubscriptionSchema.parse(payload.data)
     if (subscription.metadata?.schedraPlan === 'personal_pro') {
       const result = await applyPersonalSubscriptionState(subscription)
       if (result.applied && result.userId) {

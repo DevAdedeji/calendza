@@ -1,10 +1,6 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  teamEventTypesApi,
-  type TeamEventTypeDetail,
-  type TeamEventTypeRecord
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamEventTypesApi, type TeamEventTypeDetail, type TeamEventTypeRecord } from '@/services/api/event-types'
 
 const props = defineProps<{
   open: boolean
@@ -25,19 +21,28 @@ const feedback = useFeedback()
 
 const editableFields = computed(() => new Set(detail.value?.managed?.memberEditableFields ?? []))
 
-watch(() => props.open, async (open) => {
-  if (!open || !props.eventType) return
+watch([() => props.open, () => props.teamSlug, () => props.eventType?.id], async ([open, teamSlug, eventId], _, onCleanup) => {
+  let active = true
+  onCleanup(() => {
+    active = false
+  })
+  if (!open || !eventId) {
+    detail.value = null
+    loading.value = false
+    return
+  }
   loading.value = true
   error.value = ''
   detail.value = null
   try {
-    detail.value = await teamEventTypesApi.get(props.teamSlug, props.eventType.id)
+    const result = await teamEventTypesApi.get(teamSlug, eventId)
+    if (active) detail.value = result
   } catch (failure) {
-    error.value = apiErrorMessage(failure, 'Could not load this managed event.')
+    if (active) error.value = apiErrorMessage(failure, 'Could not load this managed event.')
   } finally {
-    loading.value = false
+    if (active) loading.value = false
   }
-})
+}, { immediate: true })
 
 async function save() {
   if (!detail.value || saving.value || !props.eventType) return

@@ -3,11 +3,11 @@ import {
   AppleCalendarUnavailableError,
   appleCalendarConnection,
   connectAppleCalendar
-} from '../../../integrations/calendar/caldav'
-import { logEvent } from '../../../observability/logger'
-import { enqueueFutureBookingsForCalendarSync } from '../../../services/calendar-sync'
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { requireAuthSession } from '../../../services/session'
+} from '@@/server/integrations/calendar/caldav'
+import { logEvent } from '@@/server/observability/logger'
+import { enqueueFutureBookingsForCalendarSync } from '@@/server/services/calendar-sync'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
 
 const credentialsSchema = z.object({
   username: z.string().trim().email('Enter the email address used by your Apple Account.').max(320),

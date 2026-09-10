@@ -1,5 +1,5 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'node:crypto'
-import { useEnv } from '../../config/env'
+import { useEnv } from '@@/server/config/env'
 
 const VERSION = 'v1'
 

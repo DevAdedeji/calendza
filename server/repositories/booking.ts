@@ -1,6 +1,6 @@
 import { asc, desc, eq, sql } from 'drizzle-orm'
-import { bookingHosts, bookings, bookingSeries, eventTypes, organizations, users } from '../database/schema'
-import { useDatabase } from '../database/index'
+import { bookingHosts, bookings, bookingSeries, eventTypes, organizations, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
 
 /**
  * Booking persistence lives here so HTTP handlers and lifecycle services do

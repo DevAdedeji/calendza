@@ -1,8 +1,8 @@
 import { eq, sql } from 'drizzle-orm'
-import { userAvatars, users } from '../../database/schema'
-import { AVATAR_CONTENT_TYPES, avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from '../../utils/avatar'
-import { useDatabase } from '../../database/index'
-import { requireAuthSession } from '../../services/session'
+import { userAvatars, users } from '@@/server/database/schema'
+import { AVATAR_CONTENT_TYPES, avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from '@@/server/utils/avatar'
+import { useDatabase } from '@@/server/database/index'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

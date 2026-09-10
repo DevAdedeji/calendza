@@ -1,8 +1,8 @@
 import postgres from 'postgres'
 import type { H3Event } from 'h3'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
-import { enforceRateLimit } from './rate-limit'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 
 const url = getTestDatabaseUrl()
 
@@ -18,7 +18,7 @@ describe.skipIf(!url)('API rate limiting', () => {
 
   beforeAll(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
 
     vi.stubGlobal('getHeader', () => undefined)

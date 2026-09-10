@@ -11,10 +11,10 @@ import {
   schedules,
   users,
   videoConferenceConnections
-} from '../../database/schema'
-import { useDatabase } from '../../database/index'
-import { requireAuthSession } from '../../services/session'
-import { recordSecurityAudit } from '../../services/security-audit'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireAuthSession } from '@@/server/services/session'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

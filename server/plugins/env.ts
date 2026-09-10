@@ -1,4 +1,4 @@
-import { useEnv } from '../config/env'
+import { useEnv } from '@@/server/config/env'
 
 export default defineNitroPlugin((nitro) => {
   if (import.meta.prerender) return

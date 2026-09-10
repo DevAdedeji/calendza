@@ -1,9 +1,9 @@
 import { and, count, desc, eq, ilike } from 'drizzle-orm'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
 import type { InvitableRole } from '#shared/billing'
-import { invitations, users } from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { requireOrganizationPermission } from '../../../services/organization'
+import { invitations, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

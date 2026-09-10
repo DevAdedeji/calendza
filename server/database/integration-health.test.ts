@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -67,7 +67,7 @@ describe.skipIf(!url)('Integration health and durable retry', () => {
 
   it('keeps one revisioned job per booking and preserves the newest action', async () => {
     const { bookingId } = await createBooking()
-    const { enqueueCalendarSync } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     await enqueueCalendarSync(bookingId, 'delete')
 
@@ -84,7 +84,7 @@ describe.skipIf(!url)('Integration health and durable retry', () => {
 
   it('reports provider failures and lets only the affected user retry them', async () => {
     const { hostId, bookingId } = await createBooking()
-    const { enqueueCalendarSync } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     await sql`
       update calendar_sync_jobs
@@ -93,7 +93,7 @@ describe.skipIf(!url)('Integration health and durable retry', () => {
       where booking_id = ${bookingId}
     `
 
-    const { integrationSyncHealth, retryFailedIntegrationSyncs } = await import('../services/integration-health')
+    const { integrationSyncHealth, retryFailedIntegrationSyncs } = await import('@@/server/services/integration-health')
     await expect(integrationSyncHealth(hostId)).resolves.toMatchObject({
       pending: 0,
       processing: 0,

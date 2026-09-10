@@ -1,7 +1,7 @@
-import { useEnv } from '../config/env'
-import { fetchWithTimeout } from './fetch'
+import { useEnv } from '@@/server/config/env'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
 import nodemailer from 'nodemailer'
-import { logEvent } from '../observability/logger'
+import { logEvent } from '@@/server/observability/logger'
 
 let smtpTransport: ReturnType<typeof nodemailer.createTransport> | null = null
 

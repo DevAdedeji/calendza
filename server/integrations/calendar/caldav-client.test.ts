@@ -6,7 +6,7 @@ import {
   deleteAppleCalendarEvent,
   discoverAppleCalendars,
   upsertAppleCalendarEvent
-} from './caldav-client'
+} from '@@/server/integrations/calendar/caldav-client'
 
 const credentials = { username: 'host@icloud.com', password: 'abcd-efgh-ijkl-mnop' }
 

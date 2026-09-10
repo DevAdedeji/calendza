@@ -1,7 +1,7 @@
 import { analyticsQuerySchema } from '#shared/analytics'
 import { organizationAccessRoles } from '#shared/organization-access'
-import { getBookingAnalytics } from '../../../services/analytics'
-import { requireOrganization } from '../../../services/organization'
+import { getBookingAnalytics } from '@@/server/services/analytics'
+import { requireOrganization } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganization(event, getRouterParam(event, 'slug') ?? '')

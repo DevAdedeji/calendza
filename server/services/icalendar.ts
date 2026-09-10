@@ -1,5 +1,5 @@
-import type { ManagedBooking } from '../repositories/booking'
-import { meetingLocationText } from './booking-emails'
+import type { ManagedBooking } from '@@/server/repositories/booking'
+import { meetingLocationText } from '@@/server/services/booking-emails'
 
 function escape(value: string) {
   return value

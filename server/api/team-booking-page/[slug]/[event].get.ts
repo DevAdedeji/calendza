@@ -1,5 +1,5 @@
-import { activeHostsFor, findPublicTeamEventType } from '../../../services/team-booking'
-import { enforceRateLimit } from '../../../services/rate-limit'
+import { activeHostsFor, findPublicTeamEventType } from '@@/server/services/team-booking'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 import { eventTypeDurationOptions } from '#shared/validation'
 
 export default defineEventHandler(async (request) => {

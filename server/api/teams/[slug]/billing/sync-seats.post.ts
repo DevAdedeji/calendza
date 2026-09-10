@@ -1,6 +1,6 @@
-import { requireOrganizationPermission } from '../../../../services/organization'
-import { enforceRateLimit } from '../../../../services/rate-limit'
-import { enqueueSubscriptionSeatSync } from '../../../../services/subscription-seat-sync'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { enqueueSubscriptionSeatSync } from '@@/server/services/subscription-seat-sync'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

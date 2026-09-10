@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { EmailDeliveryError, isPermanentEmailDeliveryError } from '../integrations/email'
-import { financialAlertCandidates, shouldNotifyOperationsAlert } from './operations-alerts'
-import { isRetryableEmailJob } from './operations'
+import { EmailDeliveryError, isPermanentEmailDeliveryError } from '@@/server/integrations/email'
+import { financialAlertCandidates, shouldNotifyOperationsAlert } from '@@/server/services/operations-alerts'
+import { isRetryableEmailJob } from '@@/server/services/operations'
 
 describe('operations email recovery', () => {
   const now = new Date('2026-08-28T12:00:00.000Z')

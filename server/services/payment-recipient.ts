@@ -7,12 +7,12 @@ import {
   updateConnectedAccountRepresentative,
   type BachsConnectedAccount,
   type BachsPayoutDestination
-} from '../integrations/bachs'
-import { paymentRecipients } from '../database/schema'
-import { useDatabase } from '../database'
-import { useEnv } from '../config/env'
-import { logEvent } from '../observability/logger'
-import { recordSecurityAudit } from './security-audit'
+} from '@@/server/integrations/bachs'
+import { paymentRecipients } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
+import { logEvent } from '@@/server/observability/logger'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export type PaymentRecipientOwner
   = | { userId: string, organizationId?: never }

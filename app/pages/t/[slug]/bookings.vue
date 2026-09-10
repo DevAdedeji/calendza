@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { teamBookingsApi, teamsApi, type TeamBookingsResponse, type TeamDetail } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatInstant, localTimeZone } from '~/utils/date-time'
+import { teamBookingsApi, type TeamBookingsResponse } from '@/services/api/bookings'
+import { teamsApi, type TeamDetail } from '@/services/api/teams'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatInstant, localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 

@@ -1,11 +1,11 @@
 import { and, eq, sql } from 'drizzle-orm'
-import { videoConferenceConnections } from '../../database/schema'
-import { useDatabase } from '../../database'
-import { useEnv } from '../../config/env'
-import { fetchWithTimeout } from '../fetch'
-import { decryptCredential, encryptCredential } from '../calendar/credential-crypto'
-import { deleteZoomConnectionData } from '../../services/zoom-connection'
-import { IntegrationUnavailableError, retryAfterMilliseconds } from '../errors'
+import { videoConferenceConnections } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { decryptCredential, encryptCredential } from '@@/server/integrations/calendar/credential-crypto'
+import { deleteZoomConnectionData } from '@@/server/services/zoom-connection'
+import { IntegrationUnavailableError, retryAfterMilliseconds } from '@@/server/integrations/errors'
 
 interface ZoomTokens {
   access_token: string

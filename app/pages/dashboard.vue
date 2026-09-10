@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { bookingsApi, eventTypesApi, schedulesApi, type BookingsResponse, type EventTypesResponse, type SchedulesResponse } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatInstant, localTimeZone } from '~/utils/date-time'
-import { getInitials } from '~/utils/text'
+import { bookingsApi, type BookingsResponse } from '@/services/api/bookings'
+import { eventTypesApi, type EventTypesResponse } from '@/services/api/event-types'
+import { schedulesApi, type SchedulesResponse } from '@/services/api/schedules'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatInstant, localTimeZone } from '@/utils/date-time'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Overview', robots: 'noindex, nofollow' })

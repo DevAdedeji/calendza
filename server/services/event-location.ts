@@ -1,6 +1,6 @@
 import type { MeetingLocationType } from '#shared/validation'
-import { writableGoogleCalendarUserIds, writableMicrosoftTeamsCalendarUserIds } from '../repositories/calendar-connection'
-import { connectedZoomUserIds } from '../repositories/video-conference-connection'
+import { writableGoogleCalendarUserIds, writableMicrosoftTeamsCalendarUserIds } from '@@/server/repositories/calendar-connection'
+import { connectedZoomUserIds } from '@@/server/repositories/video-conference-connection'
 
 export async function locationIntegrationReady(userId: string, locationType: MeetingLocationType) {
   if (!['google_meet', 'microsoft_teams', 'zoom'].includes(locationType)) return true

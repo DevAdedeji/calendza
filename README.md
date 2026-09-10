@@ -48,6 +48,18 @@ Bachs-provided test payment details. Never enter someone else's personal data.
 | Access | Better Auth handles authentication and 2FA; server-side checks enforce personal/team ownership and a separate administrator allowlist. |
 | Structure | `server/domain` owns pure rules; `services` orchestrate workflows; `repositories` and `database` own persistence; frontend composables/components are grouped by feature. |
 
+Frontend API clients live in `app/services/api/`, split by domain: bookings,
+event types, teams, billing, payments, integrations and the other product areas.
+Import the relevant module directly. `http.ts` contains only shared URL and
+error-message helpers.
+
+Use `@/` for imports from `app/` and `@@/` for imports from the repository root
+(for example, `@@/server/services/bookings`). Nuxt's `#shared` alias remains
+available for shared contracts. Vitest uses the same aliases. Standalone scripts
+and bootstrap configuration keep runtime-compatible relative imports.
+
+Review expectations are in [PR standards](.github/PR_STANDARDS.md).
+
 Provider tests use controlled fakes; passing them does not prove a deployed
 calendar account or payment provider is configured correctly. Sandbox acceptance
 and restore drills remain part of release verification.

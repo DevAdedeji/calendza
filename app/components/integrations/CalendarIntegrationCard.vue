@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { apiErrorMessage, type CalendarIntegrationProvider } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import type { CalendarIntegrationProvider } from '@/services/api/integrations'
 
 const props = defineProps<{
   provider: CalendarIntegrationProvider
@@ -18,7 +19,7 @@ const {
   loadingCalendars, calendarFailure, pageError, saving, disconnecting, isGoogle,
   writableCalendars, conflictCalendars, dirty, writeCalendarMissing,
   relationship, toggleConflict, loadCalendars, retryConnection, save, disconnect
-} = await useCalendarIntegration({
+} = useCalendarIntegration({
   provider: props.provider,
   name: () => props.name,
   refreshSignal: () => props.refreshSignal,

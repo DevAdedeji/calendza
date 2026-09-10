@@ -15,7 +15,7 @@ function sign(body: string, timestamp: number, secret = SECRET) {
 }
 
 describe('bachs webhook signatures', () => {
-  let verify: typeof import('./bachs').verifyWebhookSignature
+  let verify: typeof import('@@/server/integrations/bachs').verifyWebhookSignature
 
   beforeEach(async () => {
     process.env.DATABASE_URL ||= 'postgres://localhost:5432/schedra_test'
@@ -28,16 +28,16 @@ describe('bachs webhook signatures', () => {
       Object.assign(new Error(input.statusMessage), input)
     ))
 
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
-    verify = (await import('./bachs')).verifyWebhookSignature
+    verify = (await import('@@/server/integrations/bachs')).verifyWebhookSignature
   })
 
   afterEach(async () => {
     vi.unstubAllGlobals()
     delete process.env.BACHS_SECRET_KEY
     delete process.env.BACHS_WEBHOOK_SECRET
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   })
 
@@ -141,7 +141,7 @@ describe('bachs checkout payment methods', () => {
       Object.assign(new Error(input.statusMessage), input)
     ))
 
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   })
 
@@ -149,7 +149,7 @@ describe('bachs checkout payment methods', () => {
     vi.unstubAllGlobals()
     delete process.env.BACHS_SECRET_KEY
     delete process.env.BACHS_WEBHOOK_SECRET
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   })
 
@@ -161,7 +161,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200, headers: { 'content-type': 'application/json' } }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createSubscriptionCheckout } = await import('./bachs')
+    const { createSubscriptionCheckout } = await import('@@/server/integrations/bachs')
     await createSubscriptionCheckout({
       productId: 'prod_test',
       quantity: 1,
@@ -179,7 +179,7 @@ describe('bachs checkout payment methods', () => {
   })
 
   it('uses the documented card key for one-time NGN checkout restrictions', async () => {
-    const { NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS } = await import('./bachs')
+    const { NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS } = await import('@@/server/integrations/bachs')
 
     expect(NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS).toEqual({
       bank_transfer: { currencies: ['NGN'] },
@@ -199,7 +199,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createCheckoutSession } = await import('./bachs')
+    const { createCheckoutSession } = await import('@@/server/integrations/bachs')
     await createCheckoutSession({
       amount: '25.00',
       currency: 'USD',
@@ -241,7 +241,7 @@ describe('bachs checkout payment methods', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(providerCheckout), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getCheckoutSession } = await import('./bachs')
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
     await expect(getCheckoutSession('chk_paid_booking')).resolves.toEqual(providerCheckout)
     expect(fetchMock.mock.calls[0]?.[0].toString()).toBe(
       'https://sandbox-api.bachs.io/v1/checkout-sessions/chk_paid_booking'
@@ -263,7 +263,7 @@ describe('bachs checkout payment methods', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(providerCheckout), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getCheckoutSession } = await import('./bachs')
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
     await expect(getCheckoutSession('chk_retry')).resolves.toEqual(providerCheckout)
     expect(fetchMock).toHaveBeenCalledTimes(2)
   })
@@ -274,7 +274,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 404 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getCheckoutSession } = await import('./bachs')
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
     await expect(getCheckoutSession('chk_missing')).rejects.toMatchObject({ statusCode: 404 })
     expect(fetchMock).toHaveBeenCalledTimes(1)
   })
@@ -285,7 +285,7 @@ describe('bachs checkout payment methods', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ created: true }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { bachsFetch } = await import('./bachs')
+    const { bachsFetch } = await import('@@/server/integrations/bachs')
     await expect(bachsFetch('/unsafe-write', {
       method: 'POST',
       body: { amount: '5.00' }
@@ -306,7 +306,7 @@ describe('bachs checkout payment methods', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(refund), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createRefund } = await import('./bachs')
+    const { createRefund } = await import('@@/server/integrations/bachs')
     await expect(createRefund({
       chargeId: 'charge_123',
       reference: 'booking-refund-payment-123',
@@ -330,7 +330,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createRefund } = await import('./bachs')
+    const { createRefund } = await import('@@/server/integrations/bachs')
     await expect(createRefund({
       chargeId: 'charge_123',
       reference: 'booking-refund-payment-123',
@@ -342,7 +342,7 @@ describe('bachs checkout payment methods', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'acct_host' }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createConnectedAccount } = await import('./bachs')
+    const { createConnectedAccount } = await import('@@/server/integrations/bachs')
     await createConnectedAccount({
       email: 'shared@example.com',
       name: 'Example team',
@@ -366,7 +366,7 @@ describe('bachs checkout payment methods', () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ id: 'acct_host' }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { updateConnectedAccountRepresentative } = await import('./bachs')
+    const { updateConnectedAccountRepresentative } = await import('@@/server/integrations/bachs')
     await updateConnectedAccountRepresentative({
       accountId: 'acct_host',
       firstName: 'Ada',
@@ -393,7 +393,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getConnectedAccount } = await import('./bachs')
+    const { getConnectedAccount } = await import('@@/server/integrations/bachs')
     await getConnectedAccount('acct_host/unsafe')
 
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
@@ -409,7 +409,7 @@ describe('bachs checkout payment methods', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ total: 0, items: [] }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { getConnectedAccountBalance, listConnectedAccountPayouts } = await import('./bachs')
+    const { getConnectedAccountBalance, listConnectedAccountPayouts } = await import('@@/server/integrations/bachs')
     await getConnectedAccountBalance('acct_host')
     await listConnectedAccountPayouts('acct_host')
 
@@ -436,7 +436,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { listConnectedAccountPayoutDestinations } = await import('./bachs')
+    const { listConnectedAccountPayoutDestinations } = await import('@@/server/integrations/bachs')
     await expect(listConnectedAccountPayoutDestinations('acct_host')).resolves.toHaveLength(1)
 
     const [url, options] = fetchMock.mock.calls[0] as [URL, RequestInit]
@@ -456,7 +456,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { estimateConnectedAccountPayout } = await import('./bachs')
+    const { estimateConnectedAccountPayout } = await import('@@/server/integrations/bachs')
     await estimateConnectedAccountPayout({
       accountId: 'acct_host',
       fromCurrency: 'NGN',
@@ -488,7 +488,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 201 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createConnectedAccountPayoutQuote } = await import('./bachs')
+    const { createConnectedAccountPayoutQuote } = await import('@@/server/integrations/bachs')
     await createConnectedAccountPayoutQuote({
       accountId: 'acct_host',
       fromCurrency: 'USD',
@@ -522,7 +522,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createConnectedAccountPayout } = await import('./bachs')
+    const { createConnectedAccountPayout } = await import('@@/server/integrations/bachs')
     await createConnectedAccountPayout({
       accountId: 'acct_host',
       destinationId: 'pd_ready',
@@ -553,7 +553,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createConnectedAccountLink } = await import('./bachs')
+    const { createConnectedAccountLink } = await import('@@/server/integrations/bachs')
     await createConnectedAccountLink({
       accountId: 'acct_host',
       refreshUrl: 'https://staging.schedra.xyz/payments?payments=refresh',
@@ -580,7 +580,7 @@ describe('bachs checkout payment methods', () => {
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { createConnectedAccountLink } = await import('./bachs')
+    const { createConnectedAccountLink } = await import('@@/server/integrations/bachs')
     await createConnectedAccountLink({
       accountId: 'acct_host',
       type: 'update',
@@ -598,7 +598,7 @@ describe('bachs checkout payment methods', () => {
       error_code: 'CHECKOUT_RESTRICTION_LEAVES_NO_PAYMENT_METHOD'
     }), { status: 400, headers: { 'content-type': 'application/json' } })))
 
-    const { createSubscriptionCheckout } = await import('./bachs')
+    const { createSubscriptionCheckout } = await import('@@/server/integrations/bachs')
     await expect(createSubscriptionCheckout({
       productId: 'prod_test',
       quantity: 1,

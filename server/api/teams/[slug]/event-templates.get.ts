@@ -5,10 +5,10 @@ import {
   organizationEventTemplateAssignments,
   organizationEventTemplates,
   users
-} from '../../../database/schema'
-import { useDatabase } from '../../../database'
-import { requireOrganization } from '../../../services/organization'
-import { validStoredTemplateDefaults } from '../../../services/team-event-template'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { requireOrganization } from '@@/server/services/organization'
+import { validStoredTemplateDefaults } from '@@/server/services/team-event-template'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganization(event, getRouterParam(event, 'slug') ?? '')

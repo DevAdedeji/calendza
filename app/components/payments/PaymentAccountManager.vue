@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { formatMoney } from '#shared/payments'
-import {
-  apiErrorMessage,
-  paymentsApi,
-  type PaymentAccountSummary,
-  type PaymentMoneyTotal,
-  type PaymentSummary
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { paymentsApi, type PaymentAccountSummary, type PaymentMoneyTotal, type PaymentSummary } from '@/services/api/payments'
 
 const props = defineProps<{ teamSlug?: string }>()
 const endpoint = computed(() => props.teamSlug

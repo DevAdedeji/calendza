@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { revokeOwnedBookingLink } from '../../services/booking-links'
-import { requireAuthSession } from '../../services/session'
+import { revokeOwnedBookingLink } from '@@/server/services/booking-links'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

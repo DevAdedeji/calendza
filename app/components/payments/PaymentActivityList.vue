@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { formatMoney } from '#shared/payments'
-import { apiErrorMessage, operationsApi, paymentsApi, type PaymentActivityRecord, type PaymentActivityResponse } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatCalendarDate, formatDateTime } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { operationsApi } from '@/services/api/operations'
+import { paymentsApi, type PaymentActivityRecord, type PaymentActivityResponse } from '@/services/api/payments'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatCalendarDate, formatDateTime } from '@/utils/date-time'
 
 const props = withDefaults(defineProps<{ teamSlug?: string, operations?: boolean }>(), { operations: false })
 const feedback = useFeedback()

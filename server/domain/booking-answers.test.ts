@@ -5,7 +5,7 @@ import {
   bookingAnswersText,
   buildBookingAnswersSnapshot,
   readBookingAnswers
-} from './booking-answers'
+} from '@@/server/domain/booking-answers'
 
 const questions: BookingQuestion[] = [
   {

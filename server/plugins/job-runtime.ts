@@ -1,5 +1,5 @@
-import { useEnv } from '../config/env'
-import { createJobRuntime } from '../services/job-runtime'
+import { useEnv } from '@@/server/config/env'
+import { createJobRuntime } from '@@/server/services/job-runtime'
 
 const WORKER_HEALTH_PATHS = new Set(['/api/healthz', '/api/readyz'])
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { teamAuditApi, teamsApi, type TeamAuditResponse, type TeamDetail } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatInstant } from '~/utils/date-time'
+import { teamAuditApi, teamsApi, type TeamAuditResponse, type TeamDetail } from '@/services/api/teams'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatInstant } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 

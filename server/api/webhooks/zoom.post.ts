@@ -2,14 +2,14 @@ import { z } from 'zod'
 import {
   verifyZoomWebhookSignature,
   zoomEndpointValidationResponse
-} from '../../integrations/video/zoom-webhook'
-import { logEvent } from '../../observability/logger'
+} from '@@/server/integrations/video/zoom-webhook'
+import { logEvent } from '@@/server/observability/logger'
 import {
   claimWebhookDelivery,
   completeWebhookDelivery,
   failWebhookDelivery
-} from '../../services/webhook-delivery'
-import { processZoomWebhook, zoomWebhookIdentity } from '../../services/webhooks/zoom'
+} from '@@/server/services/webhook-delivery'
+import { processZoomWebhook, zoomWebhookIdentity } from '@@/server/services/webhooks/zoom'
 
 const validationSchema = z.object({
   event: z.literal('endpoint.url_validation'),

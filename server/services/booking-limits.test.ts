@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { reachedBookingLimit } from './booking-limits'
+import { reachedBookingLimit } from '@@/server/services/booking-limits'
 
 const unlimited = { maxPerDay: null, maxPerWeek: null, maxPerMonth: null }
 

@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { teamEventTemplateWriteSchema } from '#shared/validation'
-import { assertTeamWritable } from '../../../../services/entitlement'
-import { recordAudit, requireOrganizationPermission } from '../../../../services/organization'
-import { snapshotTeamEventDefaults, updateTeamEventTemplate } from '../../../../services/team-event-template'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
+import { snapshotTeamEventDefaults, updateTeamEventTemplate } from '@@/server/services/team-event-template'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

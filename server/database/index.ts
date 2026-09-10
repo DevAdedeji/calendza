@@ -1,5 +1,5 @@
-import { createDatabase, type Database } from './client'
-import { useEnv } from '../config/env'
+import { createDatabase, type Database } from '@@/server/database/client'
+import { useEnv } from '@@/server/config/env'
 
 let cached: Database | null = null
 

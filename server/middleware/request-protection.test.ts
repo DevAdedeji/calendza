@@ -6,7 +6,7 @@ import {
   requestProtectionFailure,
   sensitiveRateLimit,
   WEBHOOK_BODY_BYTES
-} from '../security/request-protection'
+} from '@@/server/security/request-protection'
 
 const request = {
   pathname: '/api/profile',

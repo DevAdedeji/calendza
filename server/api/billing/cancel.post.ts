@@ -1,6 +1,6 @@
-import { cancelPersonalPlan } from '../../services/personal-billing'
-import { enforceRateLimit } from '../../services/rate-limit'
-import { requireAuthSession } from '../../services/session'
+import { cancelPersonalPlan } from '@@/server/services/personal-billing'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

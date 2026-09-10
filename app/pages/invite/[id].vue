@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { apiErrorMessage, authApi, invitationsApi, type InvitationPreview } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { authApi } from '@/services/api/account'
+import { invitationsApi, type InvitationPreview } from '@/services/api/teams'
 
 definePageMeta({ layout: 'auth' })
 

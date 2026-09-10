@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getInitials } from '~/utils/text'
+import { getInitials } from '@/utils/text'
 
 const { data } = await useCurrentUser()
 const { signOut } = useAuthClient()

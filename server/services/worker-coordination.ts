@@ -1,7 +1,7 @@
 import { and, eq, lt, sql } from 'drizzle-orm'
-import { useDatabase } from '../database'
-import { workerInstances, workerLeases } from '../database/schema'
-import { logEvent } from '../observability/logger'
+import { useDatabase } from '@@/server/database'
+import { workerInstances, workerLeases } from '@@/server/database/schema'
+import { logEvent } from '@@/server/observability/logger'
 
 const DEFAULT_LEASE_MS = 60_000
 

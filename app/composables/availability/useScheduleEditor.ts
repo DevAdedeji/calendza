@@ -1,7 +1,8 @@
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { apiErrorMessage, schedulesApi } from '~/services/schedra-api'
-import type { ScheduleOverrideRecord, ScheduleRecord } from '~/types/schedule'
-import { addCalendarDateDays, formatCalendarDate, todayCalendarDate } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { schedulesApi } from '@/services/api/schedules'
+import type { ScheduleOverrideRecord, ScheduleRecord } from '@/types/schedule'
+import { addCalendarDateDays, formatCalendarDate, todayCalendarDate } from '@/utils/date-time'
 
 export interface ScheduleTimeWindow { id: number, start: string, end: string }
 export interface ScheduleDayRow { weekday: number, label: string, enabled: boolean, windows: ScheduleTimeWindow[] }

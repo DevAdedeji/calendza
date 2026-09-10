@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { controlApi, type ControlOverview } from '~/services/schedra-api'
-import { formatDateTime } from '~/utils/date-time'
+import { controlApi, type ControlOverview } from '@/services/api/control'
+import { formatDateTime } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: ['auth', 'platform-admin'] })
 useSeoMeta({ title: 'Control', robots: 'noindex, nofollow' })

@@ -1,6 +1,6 @@
-import { personalBookingEmailTemplateSettings } from '../../services/booking-email-template-settings'
-import { storedPersonalBranding } from '../../services/personal-branding'
-import { requireAuthSession } from '../../services/session'
+import { personalBookingEmailTemplateSettings } from '@@/server/services/booking-email-template-settings'
+import { storedPersonalBranding } from '@@/server/services/personal-branding'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

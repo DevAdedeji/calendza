@@ -1,33 +1,33 @@
 import { and, eq, inArray, lte, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   bookingPayments,
   bookings,
   eventTypes,
   paymentRecipients
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import {
   createCheckoutSession,
   createRefund,
   getCheckoutSession,
   type BachsCheckoutSession
-} from '../integrations/bachs'
+} from '@@/server/integrations/bachs'
 import { toDecimalString } from '#shared/billing'
-import { useEnv } from '../config/env'
-import { assignedHostsForBooking, findBookingByUid } from '../repositories/booking'
-import { appendPaymentLedgerEntry } from '../repositories/payment-ledger'
-import { bookingNoticeFromManaged, queueBookingEmails } from './booking-emails'
-import { enqueueCalendarSync } from './calendar-sync'
-import { publishBookingEvent } from './workflows'
-import { logEvent } from '../observability/logger'
-import { addToInstant } from '../utils/date-time'
-import { recordSecurityAudit } from './security-audit'
+import { useEnv } from '@@/server/config/env'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { appendPaymentLedgerEntry } from '@@/server/repositories/payment-ledger'
+import { bookingNoticeFromManaged, queueBookingEmails } from '@@/server/services/booking-emails'
+import { enqueueCalendarSync } from '@@/server/services/calendar-sync'
+import { publishBookingEvent } from '@@/server/services/workflows'
+import { logEvent } from '@@/server/observability/logger'
+import { addToInstant } from '@@/server/utils/date-time'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 import {
   findPaymentRecipient,
   syncPaymentRecipient,
   type PaymentRecipientOwner
-} from './payment-recipient'
+} from '@@/server/services/payment-recipient'
 
 type PaymentExecutor = Pick<Database, 'insert' | 'select' | 'update'>
 

@@ -1,5 +1,5 @@
 import { computed, ref, toValue, type MaybeRefOrGetter } from 'vue'
-import { useDebouncedSearch } from './useDebouncedSearch'
+import { useDebouncedSearch } from '@/composables/lists/useDebouncedSearch'
 
 type AsyncDataStatus = 'idle' | 'pending' | 'success' | 'error'
 

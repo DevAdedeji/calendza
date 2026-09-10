@@ -2,11 +2,11 @@ import { and, asc, count, eq, ilike, or, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
 import type { OrganizationRole } from '#shared/billing'
-import { members, users } from '../../../database/schema'
-import { useDatabase } from '../../../database/index'
-import { requireOrganization } from '../../../services/organization'
-import { writableGoogleCalendarUserIds, writableMicrosoftTeamsCalendarUserIds } from '../../../repositories/calendar-connection'
-import { connectedZoomUserIds } from '../../../repositories/video-conference-connection'
+import { members, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { requireOrganization } from '@@/server/services/organization'
+import { writableGoogleCalendarUserIds, writableMicrosoftTeamsCalendarUserIds } from '@@/server/repositories/calendar-connection'
+import { connectedZoomUserIds } from '@@/server/repositories/video-conference-connection'
 
 const querySchema = paginationQuerySchema.extend({
   filter: z.enum(['all', 'owner', 'admin', 'member']).default('all')
