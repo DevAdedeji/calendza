@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto'
 import { sql } from 'drizzle-orm'
 import { createEmailVerificationToken } from 'better-auth/api'
-import { users } from '../database/schema'
-import { useDatabase } from '../database'
-import { useEnv } from '../config/env'
-import { emailDedupeKey, enqueueEmails } from './email-outbox'
+import { users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
+import { emailDedupeKey, enqueueEmails } from '@@/server/services/email-outbox'
 
 const VERIFICATION_LIFETIME_SECONDS = 24 * 60 * 60
 

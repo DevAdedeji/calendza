@@ -1,5 +1,5 @@
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { reconcilePaidBooking } from '../../../services/paid-booking'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { reconcilePaidBooking } from '@@/server/services/paid-booking'
 
 export default defineEventHandler(async (event) => {
   const uid = getRouterParam(event, 'uid')

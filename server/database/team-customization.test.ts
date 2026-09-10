@@ -1,7 +1,7 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
-import { createDatabase } from './client'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
+import { createDatabase } from '@@/server/database/client'
 
 const url = getTestDatabaseUrl()
 
@@ -48,7 +48,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
 
   it('copies a validated snapshot only from the same team', async () => {
     const { team, other, eventType } = await fixture()
-    const { snapshotTeamEventDefaults } = await import('../services/team-event-template')
+    const { snapshotTeamEventDefaults } = await import('@@/server/services/team-event-template')
 
     const snapshot = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     expect(snapshot).toMatchObject({ title: 'Discovery call', durationMinutes: 30, additionalDurationMinutes: [60] })
@@ -57,7 +57,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
 
   it('keeps templates as snapshots when their source changes or is deleted', async () => {
     const { team, user, eventType } = await fixture()
-    const { snapshotTeamEventDefaults } = await import('../services/team-event-template')
+    const { snapshotTeamEventDefaults } = await import('@@/server/services/team-event-template')
     const snapshot = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     const [template] = await sql<{ id: string }[]>`
       insert into organization_event_templates (
@@ -80,7 +80,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
 
   it('enforces active template names and organization cascades', async () => {
     const { team, user, eventType } = await fixture()
-    const { snapshotTeamEventDefaults } = await import('../services/team-event-template')
+    const { snapshotTeamEventDefaults } = await import('@@/server/services/team-event-template')
     const snapshot = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     await sql`
       insert into organization_event_templates (organization_id, name, defaults, source_event_type_id, created_by_user_id)
@@ -109,7 +109,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
       createTeamEventTemplate,
       MAX_ACTIVE_TEAM_EVENT_TEMPLATES,
       snapshotTeamEventDefaults
-    } = await import('../services/team-event-template')
+    } = await import('@@/server/services/team-event-template')
     const defaults = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     await sql`
       insert into organization_event_templates (
@@ -185,7 +185,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
       createTeamEventTemplate,
       snapshotTeamEventDefaults,
       updateTeamEventTemplate
-    } = await import('../services/team-event-template')
+    } = await import('@@/server/services/team-event-template')
     const defaults = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     const created = await createTeamEventTemplate({
       organizationId: team.id,
@@ -280,7 +280,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
       insert into members (organization_id, user_id, role)
       values (${other.id}, ${outsider!.id}, 'member') returning id
     `
-    const { createTeamEventTemplate, snapshotTeamEventDefaults } = await import('../services/team-event-template')
+    const { createTeamEventTemplate, snapshotTeamEventDefaults } = await import('@@/server/services/team-event-template')
     const defaults = await snapshotTeamEventDefaults(team.id, eventType.id, appDatabase!.db)
     await expect(createTeamEventTemplate({
       organizationId: team.id,
@@ -295,7 +295,7 @@ describe.skipIf(!url)('team templates and branding persistence', () => {
 
   it('uses safe branding defaults and validates stored colours', async () => {
     const { team } = await fixture()
-    const { storedTeamBranding } = await import('../services/team-branding')
+    const { storedTeamBranding } = await import('@@/server/services/team-branding')
     await expect(storedTeamBranding(team.id)).resolves.toMatchObject({
       brandName: 'Acme',
       brandColor: '#FF3D00',

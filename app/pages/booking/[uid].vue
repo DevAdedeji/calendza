@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { apiErrorMessage, bookingsApi, type BookingDetail } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { bookingsApi, type BookingDetail } from '@/services/api/bookings'
 import { formatMoney } from '#shared/payments'
-import { formatInstant, isPast, localTimeZone } from '~/utils/date-time'
+import { formatInstant, isPast, localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'bare', middleware: 'booking-shell' })
 

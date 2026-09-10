@@ -5,8 +5,8 @@ import {
   organizationAuditLogs,
   organizationSlugHistory,
   organizations
-} from '../database/schema'
-import { useDatabase } from '../database/index'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
 
 const selection = {
   id: organizations.id,

@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -21,7 +21,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
     vi.stubGlobal('createError', (input: { statusCode: number, statusMessage: string }) => (
       Object.assign(new Error(input.statusMessage), input)
     ))
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   }
 
@@ -79,7 +79,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
     vi.restoreAllMocks()
     delete process.env.BACHS_SECRET_KEY
     delete process.env.BACHS_WEBHOOK_SECRET
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   })
 
@@ -133,7 +133,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
       return json({ detail: 'Unexpected test request' }, 500)
     }))
 
-    const { processSubscriptionSeatSyncJobs } = await import('../services/subscription-seat-sync')
+    const { processSubscriptionSeatSyncJobs } = await import('@@/server/services/subscription-seat-sync')
     expect(await processSubscriptionSeatSyncJobs()).toBe(1)
 
     const planChange = requests.find(request => request.body?.product_id)
@@ -161,7 +161,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
     const organizationId = await createTeam(2)
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({ detail: 'Temporary outage' }, 503)))
 
-    const { processSubscriptionSeatSyncJobs } = await import('../services/subscription-seat-sync')
+    const { processSubscriptionSeatSyncJobs } = await import('@@/server/services/subscription-seat-sync')
     expect(await processSubscriptionSeatSyncJobs()).toBe(1)
 
     const [job] = await sql<{
@@ -190,7 +190,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
     }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { processSubscriptionSeatSyncJobs } = await import('../services/subscription-seat-sync')
+    const { processSubscriptionSeatSyncJobs } = await import('@@/server/services/subscription-seat-sync')
     expect(await processSubscriptionSeatSyncJobs()).toBe(1)
 
     const [job] = await sql<{ status: string, last_error: string }[]>`
@@ -213,7 +213,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
     }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { processSubscriptionSeatSyncJobs } = await import('../services/subscription-seat-sync')
+    const { processSubscriptionSeatSyncJobs } = await import('@@/server/services/subscription-seat-sync')
     expect(await processSubscriptionSeatSyncJobs()).toBe(1)
 
     const [subscription] = await sql<{ seats: number }[]>`

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { formatMoney } from '#shared/payments'
-import { analyticsApi, type AnalyticsResponse } from '~/services/schedra-api'
-import { formatCalendarDate } from '~/utils/date-time'
+import { analyticsApi, type AnalyticsResponse } from '@/services/api/analytics'
+import { formatCalendarDate } from '@/utils/date-time'
 
 const props = withDefaults(defineProps<{ teamSlug?: string, personalPro?: boolean }>(), { personalPro: false })
 const days = ref<7 | 30 | 90>(30)

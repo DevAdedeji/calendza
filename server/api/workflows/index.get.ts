@@ -1,6 +1,6 @@
 import { paginationQuerySchema } from '#shared/pagination'
-import { requireAuthSession } from '../../services/session'
-import { listWorkflows } from '../../services/workflows'
+import { requireAuthSession } from '@@/server/services/session'
+import { listWorkflows } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

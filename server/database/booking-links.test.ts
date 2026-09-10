@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -11,7 +11,7 @@ describe.skipIf(!url)('private booking links', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
 
     await sql`truncate table booking_link_slots, booking_links, bookings, event_types, schedules, users, organizations restart identity cascade`
@@ -37,7 +37,7 @@ describe.skipIf(!url)('private booking links', () => {
   })
 
   it('stores only a token hash and resolves hidden event types through the capability', async () => {
-    const { createBookingLink, resolveBookingLink, bookingLinkTokenHash } = await import('../services/booking-links')
+    const { createBookingLink, resolveBookingLink, bookingLinkTokenHash } = await import('@@/server/services/booking-links')
     const created = await createBookingLink(userId, {
       kind: 'single_use',
       eventTypeId,
@@ -65,9 +65,9 @@ describe.skipIf(!url)('private booking links', () => {
   })
 
   it('lets exactly one concurrent request claim a link', async () => {
-    const { bookingLinkTokenHash } = await import('../services/booking-links')
-    const { claimBookingLink, createBookingLinkRecord } = await import('../repositories/booking-links')
-    const { useDatabase } = await import('../database')
+    const { bookingLinkTokenHash } = await import('@@/server/services/booking-links')
+    const { claimBookingLink, createBookingLinkRecord } = await import('@@/server/repositories/booking-links')
+    const { useDatabase } = await import('@@/server/database')
     const tokenHash = bookingLinkTokenHash('race-safe-private-token-that-is-long-enough')
 
     await createBookingLinkRecord({
@@ -93,7 +93,7 @@ describe.skipIf(!url)('private booking links', () => {
   })
 
   it('keeps one-off choices unique and rejects invalid time ranges', async () => {
-    const { createBookingLinkRecord } = await import('../repositories/booking-links')
+    const { createBookingLinkRecord } = await import('@@/server/repositories/booking-links')
     const start = new Date(Date.now() + 86_400_000)
     const end = new Date(start.getTime() + 30 * 60_000)
 
@@ -119,7 +119,7 @@ describe.skipIf(!url)('private booking links', () => {
   })
 
   it('lists empty meeting-link counts without serializing raw JavaScript dates', async () => {
-    const { listBookingLinkRecords } = await import('../repositories/booking-links')
+    const { listBookingLinkRecords } = await import('@@/server/repositories/booking-links')
 
     await expect(listBookingLinkRecords({
       userId,

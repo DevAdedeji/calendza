@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { teamsApi, type TeamDetail } from '~/services/schedra-api'
+import { teamsApi, type TeamDetail } from '@/services/api/teams'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 const route = useRoute()

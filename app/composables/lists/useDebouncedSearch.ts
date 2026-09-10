@@ -1,5 +1,5 @@
 import { onScopeDispose, ref, watch } from 'vue'
-import { LIST_SEARCH_DEBOUNCE_MS } from '~/constants/lists'
+import { LIST_SEARCH_DEBOUNCE_MS } from '@/constants/lists'
 
 export function useDebouncedSearch(options: {
   debounceMs?: number

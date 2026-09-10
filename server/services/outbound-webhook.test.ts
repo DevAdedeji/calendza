@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { isPublicWebhookAddress, validateWebhookDestination } from './outbound-webhook'
+import { isPublicWebhookAddress, validateWebhookDestination } from '@@/server/services/outbound-webhook'
 
 describe('outbound webhook destination security', () => {
   it.each([

@@ -1,8 +1,8 @@
 import { z } from 'zod'
-import { requirePlatformAdminSession } from '../../services/session'
-import { retryOperation } from '../../services/operations'
-import { logEvent } from '../../observability/logger'
-import { recordSecurityAudit } from '../../services/security-audit'
+import { requirePlatformAdminSession } from '@@/server/services/session'
+import { retryOperation } from '@@/server/services/operations'
+import { logEvent } from '@@/server/observability/logger'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 const bodySchema = z.object({
   kind: z.enum(['automation', 'calendar', 'billing', 'email', 'webhook']),

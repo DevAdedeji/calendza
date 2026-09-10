@@ -1,8 +1,12 @@
 <script setup lang="ts">
 import { eventTypeSchema } from '#shared/validation'
-import { apiErrorMessage, calendarIntegrationApi, eventTypesApi, paymentsApi, schedulesApi, zoomApi, type CalendarConnection, type PaymentAccountSummary, type SchedulesResponse, type VideoConferenceConnection } from '~/services/schedra-api'
-import type { EventTypeRecord } from '~/types/event-type'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
+import { apiErrorMessage } from '@/services/api/http'
+import { calendarIntegrationApi, zoomApi, type CalendarConnection, type VideoConferenceConnection } from '@/services/api/integrations'
+import { eventTypesApi } from '@/services/api/event-types'
+import { paymentsApi, type PaymentAccountSummary } from '@/services/api/payments'
+import { schedulesApi, type SchedulesResponse } from '@/services/api/schedules'
+import type { EventTypeRecord } from '@/types/event-type'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 const props = defineProps<{ open: boolean, eventType?: EventTypeRecord | null }>()
 const emit = defineEmits<{ 'update:open': [value: boolean], 'saved': [action: 'created' | 'updated'] }>()
@@ -33,18 +37,18 @@ const [
   { data: paymentAccount, refresh: refreshPaymentAccount }
 ] = await Promise.all([currentUserRequest, schedulesRequest, googleConnectionRequest, microsoftConnectionRequest, zoomConnectionRequest, paymentAccountRequest])
 const saving = ref(false)
+const loadingForm = ref(false)
 const error = ref('')
 
 const isOpen = computed({ get: () => props.open, set: value => emit('update:open', value) })
 const username = computed(() => currentUser.value?.user?.username ?? '')
 const {
   form, slugTouched, scheduleOptions, selectedSchedule, valid, dirty, locationOptions,
-  questionTypeOptions, locationField, selectedGeneratedProvider, breaksEnabled,
+  locationField, selectedGeneratedProvider, breaksEnabled,
   dailyBookingLimit, weeklyBookingLimit, monthlyBookingLimit,
   groupEventEnabled, paidBookingEnabled, priceAmount,
   allSectionsOpen, sectionSummaries, sectionOpen, toggleSection, toggleAllSections,
-  loadForm, reminderEnabled, toggleReminder, addQuestion, removeQuestion,
-  moveQuestion, changeQuestionType, addQuestionOption, removeQuestionOption, slugify
+  loadForm, reminderEnabled, toggleReminder, slugify
 } = useEventTypeForm({
   eventType: () => props.eventType,
   schedules: () => schedules.value?.items,
@@ -53,26 +57,28 @@ const {
   zoomConnection
 })
 
-watch(() => props.open, (open) => {
-  if (open) {
-    error.value = ''
-    Promise.allSettled([
-      refreshSchedules(),
-      refreshGoogleConnection(),
-      refreshMicrosoftConnection(),
-      refreshZoomConnection(),
-      refreshPaymentAccount()
-    ]).then(loadForm)
-  }
-})
-watch(() => props.eventType, () => {
-  if (props.open) {
-    error.value = ''
-    loadForm()
-  }
-})
+watch([() => props.open, () => props.eventType], async ([open], _, onCleanup) => {
+  let active = true
+  onCleanup(() => {
+    active = false
+  })
+  loadingForm.value = open
+  if (!open) return
+  error.value = ''
+  await Promise.allSettled([
+    refreshSchedules(),
+    refreshGoogleConnection(),
+    refreshMicrosoftConnection(),
+    refreshZoomConnection(),
+    refreshPaymentAccount()
+  ])
+  if (!active) return
+  loadForm()
+  loadingForm.value = false
+}, { immediate: true })
 
 async function save() {
+  if (saving.value || loadingForm.value || !props.open) return
   const parsed = eventTypeSchema.safeParse(form)
   if (!parsed.success) {
     error.value = parsed.error.issues[0]?.message ?? 'Check the event settings and try again.'
@@ -108,7 +114,12 @@ async function save() {
     }"
   >
     <template #body>
+      <ListLoadingSkeleton
+        v-if="loadingForm"
+        label="Loading event settings"
+      />
       <form
+        v-else
         id="event-type-form"
         class="min-h-0"
         @submit.prevent="save"
@@ -545,165 +556,7 @@ async function save() {
                 id="event-type-guest-settings"
                 class="border-t border-default"
               >
-                <div class="flex flex-col gap-3 border-b border-default px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <p class="text-[13px] leading-relaxed text-muted">
-                    Name and email are always requested. Add up to 10 of your own.
-                  </p>
-                  <UButton
-                    color="neutral"
-                    variant="outline"
-                    size="sm"
-                    icon="i-lucide-plus"
-                    class="w-full shrink-0 justify-center sm:w-auto"
-                    :disabled="form.bookingQuestions.length >= 10"
-                    @click="addQuestion"
-                  >
-                    Add question
-                  </UButton>
-                </div>
-
-                <div
-                  v-if="form.bookingQuestions.length"
-                  class="space-y-3 px-5 py-5"
-                >
-                  <div
-                    v-for="(question, questionIndex) in form.bookingQuestions"
-                    :key="question.id"
-                    class="rounded-xl border border-default bg-muted p-4"
-                  >
-                    <div class="flex items-center justify-between gap-3">
-                      <p class="text-[13px] font-semibold text-muted">
-                        Question {{ questionIndex + 1 }}
-                      </p>
-                      <div class="flex items-center gap-0.5">
-                        <UButton
-                          color="neutral"
-                          variant="ghost"
-                          size="xs"
-                          icon="i-lucide-arrow-up"
-                          class="size-7 justify-center p-0"
-                          :disabled="questionIndex === 0"
-                          :aria-label="`Move question ${questionIndex + 1} up`"
-                          @click="moveQuestion(questionIndex, -1)"
-                        />
-                        <UButton
-                          color="neutral"
-                          variant="ghost"
-                          size="xs"
-                          icon="i-lucide-arrow-down"
-                          class="size-7 justify-center p-0"
-                          :disabled="questionIndex === form.bookingQuestions.length - 1"
-                          :aria-label="`Move question ${questionIndex + 1} down`"
-                          @click="moveQuestion(questionIndex, 1)"
-                        />
-                        <UButton
-                          color="neutral"
-                          variant="ghost"
-                          size="xs"
-                          icon="i-lucide-trash-2"
-                          class="size-7 justify-center p-0 hover:text-error"
-                          :aria-label="`Delete question ${questionIndex + 1}`"
-                          @click="removeQuestion(questionIndex)"
-                        />
-                      </div>
-                    </div>
-
-                    <div class="mt-3 grid gap-4 sm:grid-cols-[minmax(0,1fr)_11rem]">
-                      <UFormField
-                        label="Question"
-                        :name="`bookingQuestions.${questionIndex}.label`"
-                        required
-                      >
-                        <UInput
-                          v-model="question.label"
-                          :maxlength="120"
-                          placeholder="What would you like to discuss?"
-                          class="w-full"
-                        />
-                      </UFormField>
-                      <UFormField
-                        label="Answer type"
-                        :name="`bookingQuestions.${questionIndex}.type`"
-                      >
-                        <USelectMenu
-                          :model-value="question.type"
-                          :items="questionTypeOptions"
-                          value-key="value"
-                          label-key="label"
-                          class="w-full"
-                          @update:model-value="changeQuestionType(question, $event)"
-                        />
-                      </UFormField>
-                    </div>
-
-                    <div
-                      v-if="question.type === 'select'"
-                      class="mt-4 rounded-lg border border-default bg-default p-3"
-                    >
-                      <div class="flex items-center justify-between gap-3">
-                        <p class="text-[13px] font-medium text-toned">
-                          Choices
-                        </p>
-                        <UButton
-                          color="neutral"
-                          variant="ghost"
-                          size="xs"
-                          icon="i-lucide-plus"
-                          :disabled="question.options.length >= 20"
-                          @click="addQuestionOption(question)"
-                        >
-                          Add choice
-                        </UButton>
-                      </div>
-                      <div class="mt-2 space-y-2">
-                        <div
-                          v-for="(_option, optionIndex) in question.options"
-                          :key="optionIndex"
-                          class="flex items-center gap-2"
-                        >
-                          <span class="size-2 shrink-0 rounded-full border border-default" />
-                          <UInput
-                            v-model="question.options[optionIndex]"
-                            :maxlength="80"
-                            :aria-label="`Choice ${optionIndex + 1}`"
-                            class="min-w-0 flex-1"
-                          />
-                          <UButton
-                            color="neutral"
-                            variant="ghost"
-                            size="xs"
-                            icon="i-lucide-x"
-                            class="size-7 justify-center p-0"
-                            :disabled="question.options.length <= 2"
-                            :aria-label="`Remove choice ${optionIndex + 1}`"
-                            @click="removeQuestionOption(question, optionIndex)"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <label class="mt-4 flex cursor-pointer items-center gap-2.5 text-[14px] text-toned">
-                      <UCheckbox v-model="question.required" />
-                      Guests must answer this question
-                    </label>
-                  </div>
-                </div>
-
-                <div
-                  v-else
-                  class="px-5 py-7 text-center"
-                >
-                  <UIcon
-                    name="i-lucide-message-circle-question"
-                    class="mx-auto size-5 text-dimmed"
-                  />
-                  <p class="mt-2 text-[14px] font-medium text-toned">
-                    No extra questions
-                  </p>
-                  <p class="mx-auto mt-1 max-w-sm text-[13px] leading-relaxed text-muted">
-                    Guests will only provide their name, email and optional notes.
-                  </p>
-                </div>
+                <BookingQuestionsEditor v-model="form.bookingQuestions" />
               </div>
             </section>
 
@@ -980,7 +833,7 @@ async function save() {
             type="submit"
             form="event-type-form"
             :loading="saving"
-            :disabled="!valid || (!dirty && Boolean(eventType))"
+            :disabled="loadingForm || !valid || (!dirty && Boolean(eventType))"
             class="min-w-32 justify-center font-medium"
           >
             {{ eventType ? 'Save changes' : 'Create event type' }}

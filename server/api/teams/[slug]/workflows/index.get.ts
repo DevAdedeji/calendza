@@ -1,6 +1,6 @@
 import { paginationQuerySchema } from '#shared/pagination'
-import { requireOrganization } from '../../../../services/organization'
-import { listWorkflows } from '../../../../services/workflows'
+import { requireOrganization } from '@@/server/services/organization'
+import { listWorkflows } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganization(event, getRouterParam(event, 'slug') ?? '')

@@ -4,11 +4,11 @@ import {
   estimateConnectedAccountPayout,
   getConnectedAccountBalance,
   listConnectedAccountPayoutDestinations
-} from '../integrations/bachs'
-import { findPaymentRecipient, syncPaymentRecipient } from './payment-recipient'
-import { createPaymentWithdrawal, previewPaymentWithdrawal, withdrawalTransitionStates } from './payment-withdrawal'
+} from '@@/server/integrations/bachs'
+import { findPaymentRecipient, syncPaymentRecipient } from '@@/server/services/payment-recipient'
+import { createPaymentWithdrawal, previewPaymentWithdrawal, withdrawalTransitionStates } from '@@/server/services/payment-withdrawal'
 
-vi.mock('../integrations/bachs', () => ({
+vi.mock('@@/server/integrations/bachs', () => ({
   createConnectedAccountPayout: vi.fn(),
   createConnectedAccountPayoutQuote: vi.fn(),
   estimateConnectedAccountPayout: vi.fn(),
@@ -17,13 +17,13 @@ vi.mock('../integrations/bachs', () => ({
   listConnectedAccountPayoutDestinations: vi.fn(),
   listConnectedAccountPayouts: vi.fn()
 }))
-vi.mock('./payment-recipient', () => ({
+vi.mock('@@/server/services/payment-recipient', () => ({
   findPaymentRecipient: vi.fn(),
   syncPaymentRecipient: vi.fn()
 }))
-vi.mock('../config/env', () => ({ useEnv: () => ({ authSecret: 'x'.repeat(32) }) }))
-vi.mock('../database', () => ({ useDatabase: vi.fn() }))
-vi.mock('../observability/logger', () => ({ logEvent: vi.fn() }))
+vi.mock('@@/server/config/env', () => ({ useEnv: () => ({ authSecret: 'x'.repeat(32) }) }))
+vi.mock('@@/server/database', () => ({ useDatabase: vi.fn() }))
+vi.mock('@@/server/observability/logger', () => ({ logEvent: vi.fn() }))
 
 const recipient = {
   id: 'recipient-1',

@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { FormSubmitEvent } from '@nuxt/ui'
 import { signUpFormSchema, type SignUpFormInput } from '#shared/validation'
-import { invitationsApi, usernameApi, type UsernameAvailability } from '~/services/schedra-api'
-import { localTimeZone } from '~/utils/date-time'
+import { invitationsApi } from '@/services/api/teams'
+import { usernameApi, type UsernameAvailability } from '@/services/api/profiles'
+import { localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'auth', middleware: 'guest' })
 useSeoMeta({ title: 'Create your Schedra link', robots: 'noindex, nofollow' })

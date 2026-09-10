@@ -3,8 +3,8 @@ import {
   readBookingEmailTemplateSettings,
   type BookingEmailTemplateSettings
 } from '#shared/email-templates'
-import { organizations, users } from '../database/schema'
-import { useDatabase } from '../database'
+import { organizations, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 export async function personalBookingEmailTemplateSettings(userId: string) {
   const [row] = await useDatabase().select({ value: users.bookingEmailTemplates })

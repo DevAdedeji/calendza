@@ -28,7 +28,7 @@ import type {
 import type { WorkflowAction } from '#shared/workflows'
 import type { RoutingCondition } from '#shared/routing'
 import type { BookingEmailTemplateSettings } from '#shared/email-templates'
-import type { EmailBranding } from '../integrations/email'
+import type { EmailBranding } from '@@/server/integrations/email'
 
 // PostgreSQL supplies creation time and migration 0041 maintains updated_at
 // with a trigger. Application writes may still use sql`now()` when several

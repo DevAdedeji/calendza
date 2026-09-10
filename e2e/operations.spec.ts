@@ -92,7 +92,8 @@ test('keeps operations private and retries a failed delivery job', async ({ page
   expect(overviewResponse.headers()['x-request-id']).toBeTruthy()
 
   await page.goto('/operations')
-  await expect(page.getByRole('heading', { name: 'Operations', exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/\/control\/operations$/)
+  await expect(page.getByRole('heading', { name: 'System operations', exact: true })).toBeVisible()
   await expect(page.getByTestId('operations-page')).toHaveAttribute('data-ready', 'true')
   expect(consoleErrors.filter(message => message.includes('Hydration'))).toEqual([])
   await expect(page.getByText('Active alerts')).toBeVisible()

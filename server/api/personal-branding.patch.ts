@@ -1,9 +1,9 @@
 import { eq, sql } from 'drizzle-orm'
 import { personalBrandingSchema } from '#shared/branding'
-import { users } from '../database/schema'
-import { useDatabase } from '../database'
-import { assertPersonalPro } from '../services/personal-entitlement'
-import { requireAuthSession } from '../services/session'
+import { users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { assertPersonalPro } from '@@/server/services/personal-entitlement'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

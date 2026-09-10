@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { googleAuthorizationUrl } from '../../../integrations/calendar/google'
-import { useEnv } from '../../../config/env'
-import { requireAuthSession } from '../../../services/session'
-import { createOAuthPkce } from '../../../security/oauth'
+import { googleAuthorizationUrl } from '@@/server/integrations/calendar/google'
+import { useEnv } from '@@/server/config/env'
+import { requireAuthSession } from '@@/server/services/session'
+import { createOAuthPkce } from '@@/server/security/oauth'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

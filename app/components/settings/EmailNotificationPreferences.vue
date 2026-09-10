@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DEFAULT_EMAIL_NOTIFICATION_PREFERENCES } from '#shared/email-notification-preferences'
-import { apiErrorMessage, emailNotificationPreferencesApi } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { emailNotificationPreferencesApi } from '@/services/api/email-settings'
 
 const feedback = useFeedback()
 const saving = ref(false)

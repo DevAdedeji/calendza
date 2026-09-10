@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { apiErrorMessage, bookingsApi, type BookingRecord, type BookingsResponse } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { calendarDateKey, formatInstant, formatTime, isPast, localTimeZone } from '~/utils/date-time'
-import { getInitials } from '~/utils/text'
+import { apiErrorMessage } from '@/services/api/http'
+import { bookingsApi, type BookingRecord, type BookingsResponse } from '@/services/api/bookings'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { calendarDateKey, formatInstant, formatTime, isPast, localTimeZone } from '@/utils/date-time'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Your bookings', robots: 'noindex, nofollow' })

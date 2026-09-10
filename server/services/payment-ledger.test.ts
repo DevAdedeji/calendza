@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { paymentActivityMoney } from './payment-ledger'
+import { paymentActivityMoney } from '@@/server/services/payment-ledger'
 
 describe('payment activity money', () => {
   const convertedCharge = {

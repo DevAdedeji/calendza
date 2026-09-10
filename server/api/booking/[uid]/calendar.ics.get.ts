@@ -1,7 +1,7 @@
-import { bookingCalendarFile } from '../../../services/icalendar'
-import { findBookingByUid } from '../../../repositories/booking'
-import { useEnv } from '../../../config/env'
-import { enforceRateLimit } from '../../../services/rate-limit'
+import { bookingCalendarFile } from '@@/server/services/icalendar'
+import { findBookingByUid } from '@@/server/repositories/booking'
+import { useEnv } from '@@/server/config/env'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
 
 export default defineEventHandler(async (event) => {
   const uid = getRouterParam(event, 'uid')

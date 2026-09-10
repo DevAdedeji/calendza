@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { apiErrorMessage, bookingLinksApi, type BookingLinkRecord, type BookingLinksResponse } from '~/services/schedra-api'
-import { compactActionMenuUi } from '~/utils/action-menu'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatDateTime } from '~/utils/date-time'
+import { apiErrorMessage } from '@/services/api/http'
+import { bookingLinksApi, type BookingLinkRecord, type BookingLinksResponse } from '@/services/api/booking-links'
+import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatDateTime } from '@/utils/date-time'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Meeting links', robots: 'noindex, nofollow' })

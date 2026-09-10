@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { awayPeriodInputSchema } from '#shared/away-periods'
-import { updateAwayPeriod } from '../../services/away-periods'
-import { requireAuthSession } from '../../services/session'
+import { updateAwayPeriod } from '@@/server/services/away-periods'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

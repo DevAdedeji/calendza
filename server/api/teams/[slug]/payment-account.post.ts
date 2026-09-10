@@ -1,7 +1,7 @@
-import { createPaymentOnboarding } from '../../../services/payment-recipient'
-import { enforceRateLimit } from '../../../services/rate-limit'
-import { requireOrganizationPermission } from '../../../services/organization'
-import { recordSecurityAudit } from '../../../services/security-audit'
+import { createPaymentOnboarding } from '@@/server/services/payment-recipient'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireOrganizationPermission } from '@@/server/services/organization'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 export default defineEventHandler(async (event) => {
   await enforceRateLimit(event, { namespace: 'team-payment-onboarding', limit: 3, windowSeconds: 600 })

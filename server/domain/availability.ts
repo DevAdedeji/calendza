@@ -9,7 +9,7 @@ import type {
   TimeZone,
   WallWindow,
   Weekday
-} from './types'
+} from '@@/server/domain/types'
 
 interface Span {
   start: Temporal.Instant

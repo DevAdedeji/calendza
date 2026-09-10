@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { resetEnv, useEnv } from './env'
+import { resetEnv, useEnv } from '@@/server/config/env'
 
 const keys = [
   'DATABASE_URL',

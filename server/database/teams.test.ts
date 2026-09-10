@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -13,9 +13,9 @@ describe.skipIf(!url)('teams', () => {
 
   async function auth() {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
-    const { useAuth } = await import('../services/auth')
+    const { useAuth } = await import('@@/server/services/auth')
     return useAuth()
   }
 
@@ -99,7 +99,7 @@ describe.skipIf(!url)('teams', () => {
     await sql`insert into organization_slug_history (organization_id, slug) values (${team!.id}, 'acme')`
     await sql`update organizations set slug = 'acme-design' where id = ${team!.id}`
 
-    const { findOrganizationBySlug } = await import('../services/organization')
+    const { findOrganizationBySlug } = await import('@@/server/services/organization')
     const found = await findOrganizationBySlug('acme')
 
     expect(found?.organization.id).toBe(team!.id)
@@ -116,7 +116,7 @@ describe.skipIf(!url)('teams', () => {
       headers: ada.headers
     })
 
-    const { organizationEntitlement } = await import('../services/entitlement')
+    const { organizationEntitlement } = await import('@@/server/services/entitlement')
     const entitlement = await organizationEntitlement(team!.id)
 
     // A pending invitation costs nothing until it is accepted.
@@ -176,7 +176,7 @@ describe.skipIf(!url)('teams', () => {
   it('treats an expired trial as past due, then read-only after the grace period', async () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
-    const { organizationEntitlement } = await import('../services/entitlement')
+    const { organizationEntitlement } = await import('@@/server/services/entitlement')
 
     await sql`
       update organization_subscriptions set trial_ends_at = now() - interval '1 day'
@@ -202,7 +202,7 @@ describe.skipIf(!url)('teams', () => {
 
     await sql`delete from organization_subscriptions where organization_id = ${team!.id}`
 
-    const { organizationEntitlement } = await import('../services/entitlement')
+    const { organizationEntitlement } = await import('@@/server/services/entitlement')
     const entitlement = await organizationEntitlement(team!.id)
 
     expect(entitlement.status).toBe('canceled')
@@ -214,7 +214,7 @@ describe.skipIf(!url)('teams', () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const grace = await signUp('Grace Hopper', 'grace', 'grace@example.com')
     const team = await createTeam(ada.headers)
-    const { personalPlanEntitlement } = await import('../services/personal-entitlement')
+    const { personalPlanEntitlement } = await import('@@/server/services/personal-entitlement')
 
     expect((await personalPlanEntitlement(ada.id)).source).toBe('free')
 
@@ -259,7 +259,7 @@ describe.skipIf(!url)('teams', () => {
   it('blocks account deletion while a team would be left ownerless', async () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
-    const { activeTeamsOwnedBy } = await import('../services/organization')
+    const { activeTeamsOwnedBy } = await import('@@/server/services/organization')
 
     expect(await activeTeamsOwnedBy(ada.id)).toHaveLength(1)
 
@@ -300,15 +300,15 @@ describe.skipIf(!url)('teams', () => {
     `
     expect(roles.map(row => row.role)).toEqual(['admin', 'owner'])
 
-    const { countMembersWithRole } = await import('../services/organization')
+    const { countMembersWithRole } = await import('@@/server/services/organization')
     expect(await countMembersWithRole(team!.id, 'owner')).toBe(1)
   })
 
   it('applies a payment once even when the webhook and redirect race', async () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
-    const { markInvoicePaid } = await import('../services/billing')
-    const { organizationEntitlement } = await import('../services/entitlement')
+    const { markInvoicePaid } = await import('@@/server/services/billing')
+    const { organizationEntitlement } = await import('@@/server/services/entitlement')
 
     const reference = 'schedra-team-test-reference'
     await sql`
@@ -340,7 +340,7 @@ describe.skipIf(!url)('teams', () => {
   })
 
   it('ignores a payment for a reference it does not know', async () => {
-    const { markInvoicePaid } = await import('../services/billing')
+    const { markInvoicePaid } = await import('@@/server/services/billing')
     const result = await markInvoicePaid({ reference: 'not-a-real-reference' })
 
     expect(result.applied).toBe(false)
@@ -351,7 +351,7 @@ describe.skipIf(!url)('teams', () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const grace = await signUp('Grace Hopper', 'grace', 'grace@example.com')
     const team = await createTeam(ada.headers)
-    const { resolveHosts } = await import('../services/team-event-type')
+    const { resolveHosts } = await import('@@/server/services/team-event-type')
 
     const [adaMember] = await sql<{ id: string }[]>`
       select id from members where organization_id = ${team!.id} and user_id = ${ada.id}
@@ -446,8 +446,8 @@ describe.skipIf(!url)('teams', () => {
       returning id
     `
 
-    const { useDatabase } = await import('../database')
-    const { hostsForEventType, replaceHosts } = await import('../services/team-event-type')
+    const { useDatabase } = await import('@@/server/database')
+    const { hostsForEventType, replaceHosts } = await import('@@/server/services/team-event-type')
     const input = [grace.id, ada.id].map(userId => ({
       memberId: memberByUser.get(userId)!,
       scheduleId: null,
@@ -459,7 +459,7 @@ describe.skipIf(!url)('teams', () => {
     const stored = await hostsForEventType(eventType!.id)
     expect(stored.map(host => host.userId)).toEqual([grace.id, ada.id])
 
-    const { activeHostsFor } = await import('../services/team-booking')
+    const { activeHostsFor } = await import('@@/server/services/team-booking')
     const active = await activeHostsFor(eventType!.id)
     expect(active.map(host => host.userId)).toEqual([grace.id, ada.id])
   })
@@ -522,8 +522,8 @@ describe.skipIf(!url)('teams', () => {
   it('lets Bachs own the lifecycle once a card subscription exists', async () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
-    const { applySubscriptionState } = await import('../services/billing')
-    const { organizationEntitlement } = await import('../services/entitlement')
+    const { applySubscriptionState } = await import('@@/server/services/billing')
+    const { organizationEntitlement } = await import('@@/server/services/entitlement')
 
     const applied = await applySubscriptionState({
       id: 'sub_test_1',
@@ -559,7 +559,7 @@ describe.skipIf(!url)('teams', () => {
   })
 
   it('ignores a subscription event that carries no team', async () => {
-    const { applySubscriptionState } = await import('../services/billing')
+    const { applySubscriptionState } = await import('@@/server/services/billing')
     const result = await applySubscriptionState({ id: 'sub_orphan', status: 'active' })
     expect(result.applied).toBe(false)
     expect(result.reason).toBe('no-organization')
@@ -613,7 +613,7 @@ describe.skipIf(!url)('teams', () => {
               now() + interval '2 days 30 minutes', 'Guest', 'guest@example.com', 'UTC')
     `
 
-    const { hostLoads } = await import('../services/team-booking')
+    const { hostLoads } = await import('@@/server/services/team-booking')
     await expect(hostLoads(eventType!.id, [ada.id])).resolves.toMatchObject([{
       userId: ada.id,
       recentCount: 1,
@@ -701,9 +701,9 @@ describe.skipIf(!url)('teams', () => {
     // non-billed environment never sends an irrelevant payment reminder.
     process.env.BACHS_SECRET_KEY = 'sk_sandbox_test'
     process.env.BACHS_WEBHOOK_SECRET = 'whsec-test'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
-    const { processBillingReminders } = await import('../services/billing-reminders')
+    const { processBillingReminders } = await import('@@/server/services/billing-reminders')
 
     // A card subscription is chased by Bachs, so it must not be emailed.
     await sql`
@@ -739,7 +739,7 @@ describe.skipIf(!url)('teams', () => {
   it('locks an invoice team only after the grace period', async () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
-    const { expireLapsedTeams } = await import('../services/billing-reminders')
+    const { expireLapsedTeams } = await import('@@/server/services/billing-reminders')
 
     await sql`
       update organization_subscriptions
@@ -762,7 +762,7 @@ describe.skipIf(!url)('teams', () => {
   })
 
   it('gives owners more than admins, and members nothing', async () => {
-    const { assertPermission } = await import('../services/organization')
+    const { assertPermission } = await import('@@/server/services/organization')
 
     expect(() => assertPermission('owner', { billing: ['manage'] })).not.toThrow()
     expect(() => assertPermission('owner', { ownership: ['transfer'] })).not.toThrow()

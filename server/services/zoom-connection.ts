@@ -3,8 +3,8 @@ import {
   bookingConferenceMeetings,
   bookings,
   videoConferenceConnections
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 interface ZoomConnectionIdentity {
   id: string

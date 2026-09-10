@@ -1,6 +1,6 @@
 import { bookingLinksQuerySchema } from '#shared/booking-links'
-import { listBookingLinks } from '../../services/booking-links'
-import { requireAuthSession } from '../../services/session'
+import { listBookingLinks } from '@@/server/services/booking-links'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

@@ -1,7 +1,7 @@
-import { assignedHostsForBooking, findBookingByUid } from '../../repositories/booking'
-import { readBookingAnswers } from '../../domain/booking-answers'
-import { getAuthSession } from '../../services/session'
-import { PAYMENT_HOLD_EXPIRED_REASON, paymentForBooking } from '../../services/paid-booking'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { readBookingAnswers } from '@@/server/domain/booking-answers'
+import { getAuthSession } from '@@/server/services/session'
+import { PAYMENT_HOLD_EXPIRED_REASON, paymentForBooking } from '@@/server/services/paid-booking'
 
 export default defineEventHandler(async (event) => {
   const uid = getRouterParam(event, 'uid')

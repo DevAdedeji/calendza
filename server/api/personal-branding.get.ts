@@ -1,5 +1,5 @@
-import { storedPersonalBranding } from '../services/personal-branding'
-import { requireAuthSession } from '../services/session'
+import { storedPersonalBranding } from '@@/server/services/personal-branding'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createOAuthPkce, matchesOAuthState, oauthCodeChallenge } from './oauth'
+import { createOAuthPkce, matchesOAuthState, oauthCodeChallenge } from '@@/server/security/oauth'
 
 describe('OAuth request protection', () => {
   it('creates a high-entropy S256 verifier and challenge for every request', () => {

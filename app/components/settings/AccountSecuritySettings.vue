@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { apiErrorMessage } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
 
 const authClient = useAuthClient()
 const { data } = await useCurrentUser()

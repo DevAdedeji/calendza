@@ -1,6 +1,6 @@
-import { teamBookingEmailTemplateSettings } from '../../../services/booking-email-template-settings'
-import { requireOrganization } from '../../../services/organization'
-import { storedTeamBranding } from '../../../services/team-branding'
+import { teamBookingEmailTemplateSettings } from '@@/server/services/booking-email-template-settings'
+import { requireOrganization } from '@@/server/services/organization'
+import { storedTeamBranding } from '@@/server/services/team-branding'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganization(event, getRouterParam(event, 'slug') ?? '')

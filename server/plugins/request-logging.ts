@@ -1,5 +1,5 @@
 import { getRequestURL, getResponseStatus, setResponseHeader } from 'h3'
-import { logEvent } from '../observability/logger'
+import { logEvent } from '@@/server/observability/logger'
 
 function safePath(pathname: string) {
   return pathname

@@ -1,5 +1,5 @@
 import type { AssignmentMode } from '#shared/validation'
-import type { Slot } from './types'
+import type { Slot } from '@@/server/domain/types'
 
 export interface HostSlots {
   userId: string

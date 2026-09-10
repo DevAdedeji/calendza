@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { BachsCheckoutSession } from '../integrations/bachs'
-import { checkoutPaymentState, platformFeeCents } from './paid-booking'
+import type { BachsCheckoutSession } from '@@/server/integrations/bachs'
+import { checkoutPaymentState, platformFeeCents } from '@@/server/services/paid-booking'
 
 function checkout(overrides: Partial<BachsCheckoutSession> = {}): BachsCheckoutSession {
   return {

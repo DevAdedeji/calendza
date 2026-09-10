@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config'
 import { existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
 
 if (existsSync('.env.test')) {
   process.loadEnvFile('.env.test')
@@ -11,13 +12,16 @@ export default defineConfig({
   // anything pulling a value (not just a type) out of shared/ needs it here.
   resolve: {
     alias: {
-      '#shared': fileURLToPath(new URL('./shared', import.meta.url))
+      '#shared': fileURLToPath(new URL('./shared', import.meta.url)),
+      '@': fileURLToPath(new URL('./app', import.meta.url)),
+      '@@': fileURLToPath(new URL('.', import.meta.url)),
+      'vue': createRequire(import.meta.resolve('nuxt/package.json')).resolve('vue')
     }
   },
 
   test: {
     environment: 'node',
-    include: ['server/**/*.test.ts'],
+    include: ['server/**/*.test.ts', 'test/unit/**/*.test.ts'],
 
     fileParallelism: false,
 

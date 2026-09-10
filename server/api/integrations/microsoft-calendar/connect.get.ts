@@ -1,8 +1,8 @@
 import { randomBytes } from 'node:crypto'
-import { microsoftAuthorizationUrl } from '../../../integrations/calendar/microsoft'
-import { useEnv } from '../../../config/env'
-import { requireAuthSession } from '../../../services/session'
-import { createOAuthPkce } from '../../../security/oauth'
+import { microsoftAuthorizationUrl } from '@@/server/integrations/calendar/microsoft'
+import { useEnv } from '@@/server/config/env'
+import { requireAuthSession } from '@@/server/services/session'
+import { createOAuthPkce } from '@@/server/security/oauth'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

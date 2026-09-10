@@ -1,25 +1,25 @@
-import type { CalendarProvider } from './provider'
+import type { CalendarProvider } from '@@/server/integrations/calendar/provider'
 import {
   deleteGoogleCalendarEvent,
   googleBusyTimes,
   googleConnectionFor,
   googleEventId,
   upsertGoogleCalendarEvent
-} from './google'
+} from '@@/server/integrations/calendar/google'
 import {
   deleteMicrosoftCalendarEvent,
   microsoftBusyTimes,
   microsoftConnectionFor,
   microsoftEventId,
   upsertMicrosoftCalendarEvent
-} from './microsoft'
+} from '@@/server/integrations/calendar/microsoft'
 import {
   appleBusyTimes,
   appleConnectionFor,
   appleEventId,
   deleteAppleCalendarEvent,
   upsertAppleCalendarEvent
-} from './caldav'
+} from '@@/server/integrations/calendar/caldav'
 
 const googleProvider: CalendarProvider = {
   id: 'google',

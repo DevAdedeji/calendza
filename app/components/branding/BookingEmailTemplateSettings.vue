@@ -10,12 +10,8 @@ import {
   type BookingEmailTemplateSettings
 } from '#shared/email-templates'
 import { DEFAULT_PERSONAL_BRANDING, readableTextColor } from '#shared/branding'
-import {
-  apiErrorMessage,
-  bookingEmailTemplatesApi,
-  teamBookingEmailTemplatesApi,
-  type BookingEmailTemplateSettingsResponse
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { bookingEmailTemplatesApi, teamBookingEmailTemplatesApi, type BookingEmailTemplateSettingsResponse } from '@/services/api/email-settings'
 
 const props = withDefaults(defineProps<{ teamSlug?: string, disabled?: boolean }>(), {
   disabled: false
@@ -32,7 +28,7 @@ const { data, status, error, refresh } = await useLazyFetch<BookingEmailTemplate
 
 watch(() => data.value?.settings, (value) => {
   if (!value || dirty.value) return
-  Object.assign(form, structuredClone(value))
+  Object.assign(form, bookingEmailTemplateSettingsSchema.parse(value))
 }, { immediate: true })
 
 const canCustomize = computed(() => props.teamSlug ? true : Boolean(data.value?.entitlement?.isPro))

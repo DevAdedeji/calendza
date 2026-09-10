@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { Temporal } from '@js-temporal/polyfill'
-import { bookingCalendarRange, lastBookingCalendarWeek } from '../../shared/booking-calendar'
+import { bookingCalendarRange, lastBookingCalendarWeek } from '@@/shared/booking-calendar'
 
 describe('public booking calendar pagination', () => {
   it('loads a fresh bounded page after eight weeks rather than stopping at nine', () => {

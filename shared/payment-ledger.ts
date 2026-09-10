@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { paginationQuerySchema } from './pagination'
+import { paginationQuerySchema } from '@@/shared/pagination'
 
 export const paymentActivityQuerySchema = paginationQuerySchema.extend({
   direction: z.enum(['all', 'in', 'out']).default('all'),

@@ -1,10 +1,10 @@
 import { z } from 'zod'
-import { activeHostsFor, findPublicTeamEventType, teamSlotsFor } from '../services/team-booking'
-import { enforceRateLimit } from '../services/rate-limit'
-import { CalendarUnavailableError } from '../integrations/calendar/google'
-import { requireTeamLocationIntegrations } from '../services/event-location'
-import { calendarDaysBetween } from '../utils/date-time'
-import { bookingToReschedule } from '../services/booking-reschedule'
+import { activeHostsFor, findPublicTeamEventType, teamSlotsFor } from '@@/server/services/team-booking'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { CalendarUnavailableError } from '@@/server/integrations/calendar/google'
+import { requireTeamLocationIntegrations } from '@@/server/services/event-location'
+import { calendarDaysBetween } from '@@/server/utils/date-time'
+import { bookingToReschedule } from '@@/server/services/booking-reschedule'
 
 const query = z.object({
   team: z.string().min(1),

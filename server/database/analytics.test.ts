@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -16,7 +16,7 @@ describe.skipIf(!url)('booking analytics scoping and aggregation', () => {
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
     bookingOffset = 0
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table booking_payments, payment_recipients, booking_hosts, bookings, event_types, members, organizations, users restart identity cascade`
     const [user] = await sql<{ id: string }[]>`insert into users (email, name, username) values ('analytics@example.com', 'Analytics Host', 'analytics-host') returning id`
@@ -62,7 +62,7 @@ describe.skipIf(!url)('booking analytics scoping and aggregation', () => {
     const [recipient] = await sql<{ id: string }[]>`insert into payment_recipients (user_id, bachs_account_id, status) values (${userId}, 'acct_analytics', 'active') returning id`
     await sql`insert into booking_payments (booking_id, recipient_id, reference, status, amount_cents, currency, platform_fee_cents) values (${paidBookingId}, ${recipient!.id}, 'analytics-paid', 'paid', 2500, 'USD', 125)`
 
-    const { getBookingAnalytics } = await import('../services/analytics')
+    const { getBookingAnalytics } = await import('@@/server/services/analytics')
     const result = await getBookingAnalytics({ userId }, { days: 30 })
     expect(result.summary).toMatchObject({ total: 2, confirmed: 1, cancelled: 1, cancellationRate: 50 })
     expect(result.sources).toEqual({ hosted: 1, embed: 1 })
@@ -73,7 +73,7 @@ describe.skipIf(!url)('booking analytics scoping and aggregation', () => {
   it('limits members to assigned team bookings while owners can aggregate the team', async () => {
     await booking({ eventTypeId: teamEventId, hostId: userId, organizationId, status: 'confirmed', source: 'hosted', uid: 'assigned-team' })
     await booking({ eventTypeId: teamEventId, hostId: otherUserId, organizationId, status: 'confirmed', source: 'hosted', uid: 'other-team' })
-    const { getBookingAnalytics } = await import('../services/analytics')
+    const { getBookingAnalytics } = await import('@@/server/services/analytics')
     const mine = await getBookingAnalytics({ organizationId, visibleUserId: userId }, { days: 30 })
     const team = await getBookingAnalytics({ organizationId }, { days: 30 })
     expect(mine.summary.total).toBe(1)
@@ -102,7 +102,7 @@ describe.skipIf(!url)('booking analytics scoping and aggregation', () => {
       where uid in ('attended-meeting', 'missed-meeting', 'future-meeting')
     `
 
-    const { getBookingAnalytics } = await import('../services/analytics')
+    const { getBookingAnalytics } = await import('@@/server/services/analytics')
     const result = await getBookingAnalytics({ userId }, { days: 30 })
 
     expect(result.summary).toMatchObject({ completed: 1, noShows: 1, noShowRate: 50 })
@@ -122,18 +122,18 @@ describe.skipIf(!url)('booking analytics scoping and aggregation', () => {
     `
     await booking({ eventTypeId: otherEvent!.id, hostId: userId, organizationId, status: 'confirmed', source: 'embed', uid: 'other-event-export' })
 
-    const { teamAnalyticsExportRows } = await import('../services/team-analytics-export')
+    const { teamAnalyticsExportRows } = await import('@@/server/services/team-analytics-export')
     const memberRows = await teamAnalyticsExportRows(
       { organizationId, visibleUserId: userId },
       { days: 30 },
-      { executor: (await import('./index')).useDatabase(), now: new Date() }
+      { executor: (await import('@@/server/database/index')).useDatabase(), now: new Date() }
     )
     expect(memberRows.map(row => row.bookingId).sort()).toEqual(['assigned-export', 'other-event-export'])
 
     const filtered = await teamAnalyticsExportRows(
       { organizationId },
       { days: 30, eventTypeId: teamEventId },
-      { executor: (await import('./index')).useDatabase(), now: new Date() }
+      { executor: (await import('@@/server/database/index')).useDatabase(), now: new Date() }
     )
     expect(filtered.map(row => row.bookingId).sort()).toEqual(['assigned-export', 'other-export'])
     expect(filtered[0]).toHaveProperty('attendanceStatus')

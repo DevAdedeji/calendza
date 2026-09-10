@@ -1,5 +1,5 @@
-import { requireOrganization } from '../../../../services/organization'
-import { getRoutingForm } from '../../../../services/routing-forms'
+import { requireOrganization } from '@@/server/services/organization'
+import { getRoutingForm } from '@@/server/services/routing-forms'
 
 export default defineEventHandler(async (event) => {
   const context = await requireOrganization(event, getRouterParam(event, 'slug') ?? '')

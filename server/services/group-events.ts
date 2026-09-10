@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, inArray, isNull, lte, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
-import { bookingHosts, bookings, groupEventSessions } from '../database/schema'
-import { useDatabase } from '../database'
+import type { Database } from '@@/server/database/client'
+import { bookingHosts, bookings, groupEventSessions } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 type GroupExecutor = Pick<Database, 'select' | 'insert'>
 

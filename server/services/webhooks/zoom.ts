@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto'
 import { z } from 'zod'
-import { useEnv } from '../../config/env'
-import { deauthorizeZoomUser } from '../zoom-connection'
+import { useEnv } from '@@/server/config/env'
+import { deauthorizeZoomUser } from '@@/server/services/zoom-connection'
 
 const envelopeSchema = z.object({
   event: z.string().min(1),

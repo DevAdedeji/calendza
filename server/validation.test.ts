@@ -9,7 +9,7 @@ import {
   scheduleSchema,
   updateProfileSchema,
   timeZoneSchema
-} from '../shared/validation'
+} from '@@/shared/validation'
 
 describe('authentication validation', () => {
   it('normalizes email addresses', () => {

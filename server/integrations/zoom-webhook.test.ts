@@ -1,10 +1,10 @@
 import { createHmac } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { resetEnv } from '../config/env'
+import { resetEnv } from '@@/server/config/env'
 import {
   verifyZoomWebhookSignature,
   zoomEndpointValidationResponse
-} from './video/zoom-webhook'
+} from '@@/server/integrations/video/zoom-webhook'
 
 describe('Zoom webhook verification', () => {
   beforeEach(() => {

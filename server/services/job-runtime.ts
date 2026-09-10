@@ -1,19 +1,19 @@
 import { randomUUID } from 'node:crypto'
-import { enqueueCalendarReconciliation, processCalendarSyncJobs } from './calendar-sync'
-import { processEmailOutbox } from './email-outbox'
-import { processSubscriptionSeatSyncJobs } from './subscription-seat-sync'
-import { expireLapsedTeams, processBillingReminders } from './billing-reminders'
-import { evaluateOperationsAlerts } from './operations-alerts'
-import { dispatchDomainEvents, processAutomationRuns } from './workflows'
-import { expirePaidBookingHolds, retryStalePaidBookingRefunds } from './paid-booking'
+import { enqueueCalendarReconciliation, processCalendarSyncJobs } from '@@/server/services/calendar-sync'
+import { processEmailOutbox } from '@@/server/services/email-outbox'
+import { processSubscriptionSeatSyncJobs } from '@@/server/services/subscription-seat-sync'
+import { expireLapsedTeams, processBillingReminders } from '@@/server/services/billing-reminders'
+import { evaluateOperationsAlerts } from '@@/server/services/operations-alerts'
+import { dispatchDomainEvents, processAutomationRuns } from '@@/server/services/workflows'
+import { expirePaidBookingHolds, retryStalePaidBookingRefunds } from '@@/server/services/paid-booking'
 import {
   heartbeatWorkerInstance,
   pruneWorkerInstances,
   registerWorkerInstance,
   stopWorkerInstance,
   withWorkerLease
-} from './worker-coordination'
-import { logEvent } from '../observability/logger'
+} from '@@/server/services/worker-coordination'
+import { logEvent } from '@@/server/observability/logger'
 
 export interface RuntimeTask {
   name: string

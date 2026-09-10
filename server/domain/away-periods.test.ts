@@ -1,6 +1,6 @@
 import { Temporal } from '@js-temporal/polyfill'
 import { describe, expect, it } from 'vitest'
-import { awayPeriodInterval } from './away-periods'
+import { awayPeriodInterval } from '@@/server/domain/away-periods'
 
 describe('away period calendar boundaries', () => {
   it('includes every selected date from local midnight through the final day', () => {

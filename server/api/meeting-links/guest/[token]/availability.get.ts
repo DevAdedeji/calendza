@@ -1,9 +1,9 @@
 import { z } from 'zod'
-import { bookingLinkDurationOptions, filterInvitationSlots, requireUsableBookingLink } from '../../../../services/booking-links'
-import { slotsFor } from '../../../../services/booking-page'
-import { enforceRateLimit } from '../../../../services/rate-limit'
-import { requireLocationIntegration } from '../../../../services/event-location'
-import { calendarDaysBetween } from '../../../../utils/date-time'
+import { bookingLinkDurationOptions, filterInvitationSlots, requireUsableBookingLink } from '@@/server/services/booking-links'
+import { slotsFor } from '@@/server/services/booking-page'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireLocationIntegration } from '@@/server/services/event-location'
+import { calendarDaysBetween } from '@@/server/utils/date-time'
 
 const querySchema = z.object({
   from: z.iso.date(),

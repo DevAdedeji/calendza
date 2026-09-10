@@ -2,9 +2,9 @@ import { createHmac, timingSafeEqual } from 'node:crypto'
 import { and, desc, eq, inArray, or, sql } from 'drizzle-orm'
 import type { PaymentCurrency, WithdrawalCreateInput, WithdrawalPreviewInput } from '#shared/payments'
 import { fromDecimalString, toDecimalString } from '#shared/billing'
-import { paymentRecipients, paymentWithdrawals } from '../database/schema'
-import { useDatabase } from '../database'
-import { useEnv } from '../config/env'
+import { paymentRecipients, paymentWithdrawals } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
 import {
   createConnectedAccountPayout,
   createConnectedAccountPayoutQuote,
@@ -16,13 +16,13 @@ import {
   type BachsPayout,
   type BachsPayoutDestination,
   type BachsPayoutEstimate
-} from '../integrations/bachs'
-import { logEvent } from '../observability/logger'
+} from '@@/server/integrations/bachs'
+import { logEvent } from '@@/server/observability/logger'
 import {
   findPaymentRecipient,
   syncPaymentRecipient,
   type PaymentRecipientOwner
-} from './payment-recipient'
+} from '@@/server/services/payment-recipient'
 
 const PREVIEW_VERSION = 1
 const PREVIEW_LIFETIME_MS = 5 * 60 * 1000

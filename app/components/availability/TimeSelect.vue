@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatTime } from '~/utils/date-time'
+import { formatTime } from '@/utils/date-time'
 
 const model = defineModel<string>({ required: true })
 

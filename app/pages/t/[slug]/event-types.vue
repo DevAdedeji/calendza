@@ -1,16 +1,10 @@
 <script setup lang="ts">
-import {
-  apiErrorMessage,
-  teamEventTypesApi,
-  teamsApi,
-  type TeamDetail,
-  type TeamEventTypeRecord,
-  type TeamEventTypesResponse,
-  type TeamMembersResponse
-} from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { teamEventTypesApi, type TeamEventTypeRecord, type TeamEventTypesResponse } from '@/services/api/event-types'
+import { teamsApi, type TeamDetail, type TeamMembersResponse } from '@/services/api/teams'
 import { formatMoney } from '#shared/payments'
-import { compactActionMenuUi } from '~/utils/action-menu'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
+import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 

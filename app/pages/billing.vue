@@ -7,7 +7,8 @@ import {
   type BillingInterval,
   type CollectionCurrency
 } from '#shared/billing'
-import { apiErrorMessage, personalBillingApi } from '~/services/schedra-api'
+import { apiErrorMessage } from '@/services/api/http'
+import { personalBillingApi } from '@/services/api/billing'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Plan & billing', robots: 'noindex, nofollow' })

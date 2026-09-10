@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray } from 'drizzle-orm'
 import type { TeamEventTypeHostInput } from '#shared/validation'
-import { eventTypeHosts, members, schedules } from '../database/schema'
-import { useDatabase } from '../database'
+import { eventTypeHosts, members, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 type Executor = Pick<ReturnType<typeof useDatabase>, 'select' | 'insert' | 'delete' | 'update'>
 

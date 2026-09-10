@@ -1,6 +1,6 @@
 import { z } from 'zod'
-import { deleteAwayPeriod } from '../../services/away-periods'
-import { requireAuthSession } from '../../services/session'
+import { deleteAwayPeriod } from '@@/server/services/away-periods'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

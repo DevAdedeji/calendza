@@ -1,23 +1,23 @@
 import { and, asc, count, eq, inArray, lt, lte, sql } from 'drizzle-orm'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   members,
   organizationSubscriptions,
   subscriptionSeatSyncJobs
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import {
   ensureTeamProduct,
   getSubscription,
   updateSubscriptionMetadata,
   updateSubscriptionPlan
-} from '../integrations/bachs'
+} from '@@/server/integrations/bachs'
 import { billableSeats, type BillingInterval } from '#shared/billing'
-import { recordAudit } from './organization'
-import { logEvent } from '../observability/logger'
-import { addToInstant } from '../utils/date-time'
-import { organizationEntitlement } from './entitlement'
-import { schedulePersonalRenewalCancellationsForTeam } from './personal-billing'
+import { recordAudit } from '@@/server/services/organization'
+import { logEvent } from '@@/server/observability/logger'
+import { addToInstant } from '@@/server/utils/date-time'
+import { organizationEntitlement } from '@@/server/services/entitlement'
+import { schedulePersonalRenewalCancellationsForTeam } from '@@/server/services/personal-billing'
 
 type SeatSyncExecutor = Pick<Database, 'insert'>
 

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { landingFeatureHighlights as features } from '~/data/product-features'
+import { landingFeatureHighlights as features } from '@/data/product-features'
 </script>
 
 <template>

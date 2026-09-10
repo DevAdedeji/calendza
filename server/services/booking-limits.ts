@@ -1,8 +1,8 @@
 import { and, eq, gte, isNull, lt } from 'drizzle-orm'
 import { Temporal } from '@js-temporal/polyfill'
-import type { Database } from '../database/client'
-import { bookingHosts, bookings } from '../database/schema'
-import { bookingLimitRange } from '../utils/date-time'
+import type { Database } from '@@/server/database/client'
+import { bookingHosts, bookings } from '@@/server/database/schema'
+import { bookingLimitRange } from '@@/server/utils/date-time'
 
 type LimitPeriod = 'day' | 'week' | 'month'
 

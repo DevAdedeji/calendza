@@ -1,7 +1,7 @@
 import { and, asc, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import type { RoutingFormInput } from '#shared/routing'
 import { routeSubmission } from '#shared/routing'
-import type { Database } from '../database/client'
+import type { Database } from '@@/server/database/client'
 import {
   eventTypes,
   organizations,
@@ -9,8 +9,8 @@ import {
   routingResponses,
   routingRules,
   users
-} from '../database/schema'
-import { useDatabase } from '../database'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 
 export type RoutingOwner
   = | { userId: string, organizationId?: never }

@@ -1,6 +1,6 @@
-import { bookingLinkEventOptions } from '../../repositories/booking-links'
-import { locationIntegrationReady } from '../../services/event-location'
-import { requireAuthSession } from '../../services/session'
+import { bookingLinkEventOptions } from '@@/server/repositories/booking-links'
+import { locationIntegrationReady } from '@@/server/services/event-location'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

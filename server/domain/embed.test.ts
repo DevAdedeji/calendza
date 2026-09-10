@@ -4,7 +4,7 @@ import {
   normalizeEmbedAccent,
   normalizeEmbedTheme,
   normalizeParentOrigin
-} from '../../shared/embed'
+} from '@@/shared/embed'
 
 describe('embed configuration', () => {
   it('maps personal and team booking paths to isolated embed routes', () => {

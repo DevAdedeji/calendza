@@ -7,11 +7,11 @@ import {
   type PersonalPlanEntitlement,
   type PersonalTeamCoverage
 } from '#shared/billing'
-import { members, organizations, organizationSubscriptions, personalSubscriptions } from '../database/schema'
-import { useDatabase } from '../database'
-import { addToInstant } from '../utils/date-time'
-import { useEnv } from '../config/env'
-import { organizationEntitlement } from './entitlement'
+import { members, organizations, organizationSubscriptions, personalSubscriptions } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { addToInstant } from '@@/server/utils/date-time'
+import { useEnv } from '@@/server/config/env'
+import { organizationEntitlement } from '@@/server/services/entitlement'
 
 function personalGraceEnd(periodEnd: Date) {
   return addToInstant(periodEnd, { hours: PERSONAL_PRO_PLAN.graceDays * 24 })

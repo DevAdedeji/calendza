@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -11,7 +11,7 @@ describe.skipIf(!url)('away periods', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table away_periods, users, organizations restart identity cascade`
     const users = await sql<{ id: string }[]>`
@@ -30,7 +30,7 @@ describe.skipIf(!url)('away periods', () => {
   })
 
   it('captures the account timezone and lets only the owner update or delete a period', async () => {
-    const { createAwayPeriod, deleteAwayPeriod, updateAwayPeriod } = await import('../services/away-periods')
+    const { createAwayPeriod, deleteAwayPeriod, updateAwayPeriod } = await import('@@/server/services/away-periods')
     const created = await createAwayPeriod(ownerId, {
       name: 'Annual leave',
       startDate: '2026-09-01',

@@ -1,5 +1,5 @@
-import { integrationSyncHealth } from '../../services/integration-health'
-import { requireAuthSession } from '../../services/session'
+import { integrationSyncHealth } from '@@/server/services/integration-health'
+import { requireAuthSession } from '@@/server/services/session'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

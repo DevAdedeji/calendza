@@ -1,8 +1,8 @@
-import { getAuthSession, isPlatformAdminEmail } from '../services/session'
-import { useEnv } from '../config/env'
-import { ensureStarterSetup } from '../services/onboarding'
-import { profileForUser } from '../repositories/profile'
-import { personalPlanEntitlement } from '../services/personal-entitlement'
+import { getAuthSession, isPlatformAdminEmail } from '@@/server/services/session'
+import { useEnv } from '@@/server/config/env'
+import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { profileForUser } from '@@/server/repositories/profile'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
 export default defineEventHandler(async (event) => {
   const env = useEnv()

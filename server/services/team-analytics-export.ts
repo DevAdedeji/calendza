@@ -1,9 +1,9 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm'
 import type { AnalyticsQuery } from '#shared/analytics'
-import { bookingHosts, bookingPayments, bookings, eventTypes } from '../database/schema'
-import { useDatabase } from '../database'
-import type { Database } from '../database/client'
-import { subtractFromInstant } from '../utils/date-time'
+import { bookingHosts, bookingPayments, bookings, eventTypes } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import type { Database } from '@@/server/database/client'
+import { subtractFromInstant } from '@@/server/utils/date-time'
 
 export async function teamAnalyticsExportRows(
   owner: { organizationId: string, visibleUserId?: string },

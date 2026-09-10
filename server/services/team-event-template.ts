@@ -11,10 +11,10 @@ import {
   organizationEventTemplateAssignments,
   organizationEventTemplates,
   users
-} from '../database/schema'
-import { useDatabase } from '../database'
-import type { Database } from '../database/client'
-import { requireTeamLocationIntegrations } from './event-location'
+} from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import type { Database } from '@@/server/database/client'
+import { requireTeamLocationIntegrations } from '@@/server/services/event-location'
 
 const templateSelection = {
   title: eventTypes.title,

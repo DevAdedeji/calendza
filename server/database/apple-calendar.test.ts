@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -21,7 +21,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
   async function configure() {
     configureAppTestEnvironment(url!)
     process.env.INTEGRATION_ENCRYPTION_KEY = 'integration-test-key-that-is-at-least-32-characters'
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
   }
 
@@ -60,7 +60,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
 
   async function connect(hostId: string) {
     vi.stubGlobal('fetch', discoveryFetch())
-    const { connectAppleCalendar } = await import('../integrations/calendar/caldav')
+    const { connectAppleCalendar } = await import('@@/server/integrations/calendar/caldav')
     await connectAppleCalendar(hostId, {
       username: 'host@icloud.com',
       password: 'abcd-efgh-ijkl-mnop'
@@ -84,7 +84,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
 
   beforeEach(async () => {
     await configure()
-    const { clearAppleBusyCache } = await import('../integrations/calendar/caldav')
+    const { clearAppleBusyCache } = await import('@@/server/integrations/calendar/caldav')
     clearAppleBusyCache()
     await sql`
       truncate table
@@ -137,7 +137,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
     expect(connection?.access_token_encrypted).not.toContain('host@icloud.com')
     expect(connection?.refresh_token_encrypted).not.toContain('abcd-efgh-ijkl-mnop')
 
-    const { appleCalendarConnection } = await import('../integrations/calendar/caldav')
+    const { appleCalendarConnection } = await import('@@/server/integrations/calendar/caldav')
     const status = await appleCalendarConnection(hostId)
     expect(JSON.stringify(status)).not.toContain('abcd-efgh-ijkl-mnop')
   })
@@ -150,7 +150,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
       `<d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:response><d:propstat><d:prop><c:calendar-data>${data}</c:calendar-data></d:prop></d:propstat></d:response></d:multistatus>`
     )))
 
-    const { findPublicEventType, slotsFor } = await import('../services/booking-page')
+    const { findPublicEventType, slotsFor } = await import('@@/server/services/booking-page')
     const event = await findPublicEventType('host', 'intro')
     const slots = await slotsFor(event!, '2026-09-07', '2026-09-07', '2026-09-01T00:00:00Z')
     expect(slots.map(slot => slot.start)).toEqual([
@@ -164,7 +164,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
     const { hostId } = await createHost()
     await connect(hostId)
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 401 })))
-    const { listAppleCalendars } = await import('../integrations/calendar/caldav')
+    const { listAppleCalendars } = await import('@@/server/integrations/calendar/caldav')
     await expect(listAppleCalendars(hostId)).rejects.toMatchObject({
       provider: 'caldav',
       retryable: false
@@ -188,7 +188,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
       .mockResolvedValueOnce(new Response(null, { status: 204 }))
     vi.stubGlobal('fetch', fetchMock)
 
-    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('../services/calendar-sync')
+    const { enqueueCalendarSync, processCalendarSyncJobs } = await import('@@/server/services/calendar-sync')
     await enqueueCalendarSync(bookingId, 'upsert')
     expect(await processCalendarSyncJobs()).toBe(1)
     const [mapping] = await sql<{ provider: string, calendar_id: string, event_id: string }[]>`

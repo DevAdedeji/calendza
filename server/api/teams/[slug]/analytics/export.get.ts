@@ -1,7 +1,7 @@
 import { analyticsQuerySchema } from '#shared/analytics'
 import { organizationAccessRoles } from '#shared/organization-access'
-import { recordAudit, requireOrganization } from '../../../../services/organization'
-import { teamAnalyticsExportRows } from '../../../../services/team-analytics-export'
+import { recordAudit, requireOrganization } from '@@/server/services/organization'
+import { teamAnalyticsExportRows } from '@@/server/services/team-analytics-export'
 
 function csvCell(value: unknown) {
   const text = value instanceof Date ? value.toISOString() : value == null ? '' : String(value)

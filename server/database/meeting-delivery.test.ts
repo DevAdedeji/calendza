@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -9,7 +9,7 @@ describe.skipIf(!url)('meeting delivery', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`
       truncate table
@@ -85,8 +85,8 @@ describe.skipIf(!url)('meeting delivery', () => {
 
   it('schedules reminder messages and cancels them with the booking', async () => {
     await bookingFixture()
-    const { queueBookingEmails } = await import('../services/booking-emails')
-    const { cancelBookingReminders, processEmailOutbox } = await import('../services/email-outbox')
+    const { queueBookingEmails } = await import('@@/server/services/booking-emails')
+    const { cancelBookingReminders, processEmailOutbox } = await import('@@/server/services/email-outbox')
 
     await queueBookingEmails({
       uid: 'meeting-delivery-booking',
@@ -169,7 +169,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       where id = ${hostId}
     `
 
-    const { queueBookingEmails } = await import('../services/booking-emails')
+    const { queueBookingEmails } = await import('@@/server/services/booking-emails')
     await queueBookingEmails({
       uid: 'custom-email-booking',
       eventTitle: 'Intro call',
@@ -213,8 +213,8 @@ describe.skipIf(!url)('meeting delivery', () => {
 
   it('generates a standards-shaped calendar file with the booking snapshot', async () => {
     await bookingFixture()
-    const { findBookingByUid } = await import('../repositories/booking')
-    const { bookingCalendarFile } = await import('../services/icalendar')
+    const { findBookingByUid } = await import('@@/server/repositories/booking')
+    const { bookingCalendarFile } = await import('@@/server/services/icalendar')
     const booking = await findBookingByUid('meeting-delivery-booking')
     const calendar = bookingCalendarFile(booking!, 'https://schedra.example')
 
@@ -228,7 +228,7 @@ describe.skipIf(!url)('meeting delivery', () => {
 
   it('notifies every additional guest without sharing the primary guest management link', async () => {
     await bookingFixture()
-    const { queueBookingRequestEmails } = await import('../services/booking-emails')
+    const { queueBookingRequestEmails } = await import('@@/server/services/booking-emails')
     await queueBookingRequestEmails({
       uid: 'meeting-delivery-booking',
       eventTitle: 'Intro call',
@@ -260,7 +260,7 @@ describe.skipIf(!url)('meeting delivery', () => {
   })
 
   it('describes a reschedule clearly, preserves series context and deduplicates every recipient', async () => {
-    const { queueBookingRescheduledEmails } = await import('../services/booking-emails')
+    const { queueBookingRescheduledEmails } = await import('@@/server/services/booking-emails')
     const notice = {
       uid: 'rescheduled-booking',
       eventTitle: 'Coaching session',
@@ -324,7 +324,7 @@ describe.skipIf(!url)('meeting delivery', () => {
   })
 
   it('makes a confirmation-required reschedule an explicit approval request', async () => {
-    const { queueBookingRescheduledEmails } = await import('../services/booking-emails')
+    const { queueBookingRescheduledEmails } = await import('@@/server/services/booking-emails')
     await queueBookingRescheduledEmails({
       uid: 'pending-reschedule',
       eventTitle: 'Portfolio review',
@@ -380,7 +380,7 @@ describe.skipIf(!url)('meeting delivery', () => {
         (${guest!.id}, false, false, false, false)
     `
 
-    const { queueBookingEmails, queueCancellationEmails } = await import('../services/booking-emails')
+    const { queueBookingEmails, queueCancellationEmails } = await import('@@/server/services/booking-emails')
     await queueBookingEmails({
       uid: 'preference-booking',
       eventTitle: 'Intro call',
@@ -399,11 +399,11 @@ describe.skipIf(!url)('meeting delivery', () => {
       locationDetails: 'https://meet.example.com/original',
       reminderMinutes: [60]
     })
-    const { findBookingByUid } = await import('../repositories/booking')
+    const { findBookingByUid } = await import('@@/server/repositories/booking')
     const booking = await findBookingByUid('meeting-delivery-booking')
     await queueCancellationEmails(booking!, 'Plans changed')
 
-    const { queueVerificationEmail } = await import('../services/verification-email')
+    const { queueVerificationEmail } = await import('@@/server/services/verification-email')
     await queueVerificationEmail(
       { email: 'host@example.com' },
       'http://localhost:3002/api/auth/verify-email?token=critical-notice'
@@ -429,7 +429,7 @@ describe.skipIf(!url)('meeting delivery', () => {
 
   it('returns enabled defaults and persists all account notification choices', async () => {
     const { hostId } = await bookingFixture()
-    const { emailPreferencesForUser, saveEmailPreferences } = await import('../services/email-notification-preferences')
+    const { emailPreferencesForUser, saveEmailPreferences } = await import('@@/server/services/email-notification-preferences')
     await expect(emailPreferencesForUser(hostId)).resolves.toEqual({
       newBookingEmails: true,
       rescheduleEmails: true,

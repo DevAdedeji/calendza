@@ -1,11 +1,12 @@
 import { computed, reactive, ref, shallowRef, toValue, watch, type MaybeRefOrGetter } from 'vue'
+import { useEventBookingMode } from '@/composables/event-types/useEventBookingMode'
 import {
   meetingLocationTypeSchema,
   teamEventTypeSchema,
   type AssignmentMode,
   type TeamEventTypeInput
 } from '#shared/validation'
-import type { TeamMemberRecord } from '~/services/schedra-api'
+import type { TeamMemberRecord } from '@/services/api/teams'
 
 function emptyTeamEventTypeForm(): TeamEventTypeInput {
   return {
@@ -28,28 +29,7 @@ export function useTeamEventTypeForm(options: {
   const slugTouched = ref(false)
   const knownMembers = shallowRef(new Map<string, TeamMemberRecord>())
 
-  const groupEventEnabled = computed({
-    get: () => form.capacity > 1,
-    set: (enabled) => {
-      form.capacity = enabled ? 10 : 1
-      if (enabled) form.recurringBookingEnabled = false
-    }
-  })
-  const paidBookingEnabled = computed({
-    get: () => form.paymentEnabled,
-    set: (enabled: boolean) => {
-      form.paymentEnabled = enabled
-      form.priceCents = enabled ? (form.priceCents ?? 2500) : null
-      if (enabled) {
-        form.requiresConfirmation = false
-        form.recurringBookingEnabled = false
-      }
-    }
-  })
-  const priceAmount = computed({
-    get: () => form.priceCents === null ? undefined : form.priceCents / 100,
-    set: (value: number | undefined) => { form.priceCents = value === undefined ? null : Math.round(value * 100) }
-  })
+  const { groupEventEnabled, paidBookingEnabled, priceAmount } = useEventBookingMode(form)
 
   const assignmentOptions = [
     { value: 'single' as const, label: 'One host', icon: 'i-lucide-user', hint: 'The same person takes every booking.' },
@@ -94,9 +74,10 @@ export function useTeamEventTypeForm(options: {
   })))
 
   const selectedIds = computed(() => new Set(form.hosts.map(host => host.memberId)))
-  const valid = computed(() => teamEventTypeSchema.safeParse(form).success)
+  const validation = computed(() => teamEventTypeSchema.safeParse(form))
+  const valid = computed(() => validation.value.success)
   const validationMessage = computed(() => {
-    const result = teamEventTypeSchema.safeParse(form)
+    const result = validation.value
     return result.success ? '' : result.error.issues[0]?.message ?? ''
   })
 
@@ -104,8 +85,10 @@ export function useTeamEventTypeForm(options: {
     Object.assign(form, {
       ...emptyTeamEventTypeForm(),
       ...value,
-      additionalDurationMinutes: value?.additionalDurationMinutes ?? [],
-      hosts: value?.hosts ?? []
+      additionalDurationMinutes: [...(value?.additionalDurationMinutes ?? [])],
+      reminderMinutes: [...(value?.reminderMinutes ?? [1440, 60])],
+      bookingQuestions: (value?.bookingQuestions ?? []).map(question => ({ ...question, options: [...question.options] })),
+      hosts: (value?.hosts ?? []).map(host => ({ ...host }))
     })
   }
 
@@ -126,9 +109,6 @@ export function useTeamEventTypeForm(options: {
     if (mode !== 'single') return
     const first = form.hosts.find(host => host.enabled) ?? form.hosts[0]
     form.hosts = first ? [{ ...first, enabled: true }] : []
-  })
-  watch(() => form.requiresConfirmation, (required) => {
-    if (required) form.recurringBookingEnabled = false
   })
 
   return {

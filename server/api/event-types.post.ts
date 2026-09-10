@@ -1,11 +1,11 @@
 import { and, count, desc, eq } from 'drizzle-orm'
 import { eventTypeSchema } from '#shared/validation'
-import { eventTypes, schedules } from '../database/schema'
-import { useDatabase } from '../database/index'
-import { ensureStarterSetup } from '../services/onboarding'
-import { requireLocationIntegration } from '../services/event-location'
-import { requireAuthSession } from '../services/session'
-import { requirePaymentRecipient } from '../services/paid-booking'
+import { eventTypes, schedules } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { requireLocationIntegration } from '@@/server/services/event-location'
+import { requireAuthSession } from '@@/server/services/session'
+import { requirePaymentRecipient } from '@@/server/services/paid-booking'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

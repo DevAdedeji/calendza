@@ -1,27 +1,27 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { getCheckoutSession } from '../../integrations/bachs'
-import { applyRefundEvent, completePaidBookingFromCheckout } from '../paid-booking'
-import { applyWithdrawalPayoutEvent } from '../payment-withdrawal'
-import { processBachsWebhook } from './bachs'
+import { getCheckoutSession } from '@@/server/integrations/bachs'
+import { applyRefundEvent, completePaidBookingFromCheckout } from '@@/server/services/paid-booking'
+import { applyWithdrawalPayoutEvent } from '@@/server/services/payment-withdrawal'
+import { processBachsWebhook } from '@@/server/services/webhooks/bachs'
 
-vi.mock('../../integrations/bachs', () => ({
+vi.mock('@@/server/integrations/bachs', () => ({
   getCheckoutSession: vi.fn(),
   getConnectedAccount: vi.fn()
 }))
-vi.mock('../paid-booking', () => ({
+vi.mock('@@/server/services/paid-booking', () => ({
   applyRefundEvent: vi.fn(),
   completePaidBookingFromCheckout: vi.fn(),
   failPaidBooking: vi.fn(),
   recordPaidBookingProviderObservation: vi.fn()
 }))
-vi.mock('../billing', () => ({
+vi.mock('@@/server/services/billing', () => ({
   applySubscriptionState: vi.fn(),
   markInvoiceFailed: vi.fn(),
   markInvoicePaid: vi.fn()
 }))
-vi.mock('../organization', () => ({ recordAudit: vi.fn() }))
-vi.mock('../payment-recipient', () => ({ updateRecipientFromWebhook: vi.fn() }))
-vi.mock('../payment-withdrawal', () => ({ applyWithdrawalPayoutEvent: vi.fn() }))
+vi.mock('@@/server/services/organization', () => ({ recordAudit: vi.fn() }))
+vi.mock('@@/server/services/payment-recipient', () => ({ updateRecipientFromWebhook: vi.fn() }))
+vi.mock('@@/server/services/payment-withdrawal', () => ({ applyWithdrawalPayoutEvent: vi.fn() }))
 
 describe('Bachs paid-booking webhooks', () => {
   beforeEach(() => vi.clearAllMocks())

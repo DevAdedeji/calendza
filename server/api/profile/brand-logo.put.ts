@@ -1,9 +1,9 @@
 import { eq, sql } from 'drizzle-orm'
-import { userBrandLogos, users } from '../../database/schema'
-import { useDatabase } from '../../database'
-import { assertPersonalPro } from '../../services/personal-entitlement'
-import { requireAuthSession } from '../../services/session'
-import { AVATAR_CONTENT_TYPES, avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from '../../utils/avatar'
+import { userBrandLogos, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { assertPersonalPro } from '@@/server/services/personal-entitlement'
+import { requireAuthSession } from '@@/server/services/session'
+import { AVATAR_CONTENT_TYPES, avatarHash, MAX_AVATAR_BYTES, validAvatarBytes } from '@@/server/utils/avatar'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

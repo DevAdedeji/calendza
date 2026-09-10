@@ -1,8 +1,8 @@
 import { and, asc, eq, sql } from 'drizzle-orm'
-import { eventTypes, users } from '../../database/schema'
-import { useDatabase } from '../../database/index'
-import { enforceRateLimit } from '../../services/rate-limit'
-import { publicPersonalBranding } from '../../services/personal-branding'
+import { eventTypes, users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database/index'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { publicPersonalBranding } from '@@/server/services/personal-branding'
 import { eventTypeDurationOptions } from '#shared/validation'
 
 export default defineEventHandler(async (event) => {

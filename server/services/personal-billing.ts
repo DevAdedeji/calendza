@@ -6,8 +6,8 @@ import {
   personalProPriceCents,
   toDecimalString
 } from '#shared/billing'
-import { members, personalInvoices, personalSubscriptions } from '../database/schema'
-import { useDatabase } from '../database'
+import { members, personalInvoices, personalSubscriptions } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
 import {
   cancelSubscription,
   createCheckoutSession,
@@ -16,11 +16,11 @@ import {
   NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
   quoteConversion,
   type BachsSubscription
-} from '../integrations/bachs'
-import { useEnv } from '../config/env'
-import { addUtcCalendarPeriod } from '../utils/date-time'
-import { paidTeamCoverageForUser, personalPlanEntitlement } from './personal-entitlement'
-import { recordSecurityAudit } from './security-audit'
+} from '@@/server/integrations/bachs'
+import { useEnv } from '@@/server/config/env'
+import { addUtcCalendarPeriod } from '@@/server/utils/date-time'
+import { paidTeamCoverageForUser, personalPlanEntitlement } from '@@/server/services/personal-entitlement'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
 
 function personalPeriodEnd(from: Date, interval: BillingInterval) {
   return addUtcCalendarPeriod(from, interval === 'yearly' ? { years: 1 } : { months: 1 })

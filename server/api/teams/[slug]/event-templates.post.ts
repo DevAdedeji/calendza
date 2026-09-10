@@ -1,7 +1,7 @@
 import { teamEventTemplateWriteSchema } from '#shared/validation'
-import { assertTeamWritable } from '../../../services/entitlement'
-import { recordAudit, requireOrganizationPermission } from '../../../services/organization'
-import { createTeamEventTemplate, snapshotTeamEventDefaults } from '../../../services/team-event-template'
+import { assertTeamWritable } from '@@/server/services/entitlement'
+import { recordAudit, requireOrganizationPermission } from '@@/server/services/organization'
+import { createTeamEventTemplate, snapshotTeamEventDefaults } from '@@/server/services/team-event-template'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

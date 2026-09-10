@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -17,9 +17,9 @@ describe.skipIf(!url)('authentication', () => {
 
   async function auth() {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
-    const { useAuth } = await import('../services/auth')
+    const { useAuth } = await import('@@/server/services/auth')
     return useAuth()
   }
 
@@ -68,7 +68,7 @@ describe.skipIf(!url)('authentication', () => {
   it('queues a distinct verification email every time an unverified user resends', async () => {
     const instance = await auth()
     await instance.api.signUpEmail({ body: credentials })
-    const { resendVerificationEmail } = await import('../services/verification-email')
+    const { resendVerificationEmail } = await import('@@/server/services/verification-email')
 
     expect(await resendVerificationEmail(
       credentials.email,
@@ -91,7 +91,7 @@ describe.skipIf(!url)('authentication', () => {
     const instance = await auth()
     await instance.api.signUpEmail({ body: credentials })
     await confirmEmail(credentials.email)
-    const { resendVerificationEmail } = await import('../services/verification-email')
+    const { resendVerificationEmail } = await import('@@/server/services/verification-email')
 
     expect(await resendVerificationEmail(credentials.email, '/verify-email?verified=1')).toBe(false)
     expect(await resendVerificationEmail('missing@example.com', '/verify-email?verified=1')).toBe(false)

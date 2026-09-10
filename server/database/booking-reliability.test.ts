@@ -1,8 +1,8 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
-vi.mock('../integrations/calendar/providers', () => ({ calendarBusyTimes: vi.fn(async () => []) }))
+vi.mock('@@/server/integrations/calendar/providers', () => ({ calendarBusyTimes: vi.fn(async () => []) }))
 const url = getTestDatabaseUrl()
 
 describe.skipIf(!url)('booking reliability', () => {
@@ -11,7 +11,7 @@ describe.skipIf(!url)('booking reliability', () => {
   let eventTypeId: string
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { calendarBusyTimes } = await import('../integrations/calendar/providers')
+    const { calendarBusyTimes } = await import('@@/server/integrations/calendar/providers')
     vi.mocked(calendarBusyTimes).mockReset().mockResolvedValue([])
     vi.stubGlobal('createError', (input: { statusCode: number, statusMessage: string }) => Object.assign(new Error(input.statusMessage), input))
     await sql`truncate users, organizations cascade`
@@ -38,7 +38,7 @@ describe.skipIf(!url)('booking reliability', () => {
     return row!
   }
   async function event() {
-    const { findPublicEventType } = await import('../services/booking-page')
+    const { findPublicEventType } = await import('@@/server/services/booking-page')
     return (await findPublicEventType('reliability', 'intro'))!
   }
   const request = () => ({ username: 'reliability', slug: 'intro', start: '2030-09-09T12:00:00Z', name: 'Guest', email: 'guest@example.com', timeZone: 'UTC', source: 'hosted' as const })
@@ -46,7 +46,7 @@ describe.skipIf(!url)('booking reliability', () => {
   it('moves a booking on a full day without consuming another daily/weekly/monthly allowance', async () => {
     await sql`update event_types set max_per_day = 1, max_per_week = 1, max_per_month = 1 where id = ${eventTypeId}`
     const old = await insertBooking('2030-09-09T09:00:00Z', '2030-09-09T09:30:00Z')
-    const { createPersonalBooking } = await import('../services/personal-booking-creation')
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
     const moved = await createPersonalBooking({ ...request(), rescheduleOf: old.uid })
     expect(moved).toMatchObject({ moved: true, start: '2030-09-09T12:00:00Z', status: 'confirmed' })
     const rows = await sql`select status from bookings order by starts_at`
@@ -56,7 +56,7 @@ describe.skipIf(!url)('booking reliability', () => {
 
   it('validates the management capability before excluding any reservation', async () => {
     const old = await insertBooking('2030-09-09T09:00:00Z', '2030-09-09T09:30:00Z')
-    const { bookingToReschedule } = await import('../services/booking-reschedule')
+    const { bookingToReschedule } = await import('@@/server/services/booking-reschedule')
     await expect(bookingToReschedule(old.uid, crypto.randomUUID())).rejects.toMatchObject({ statusCode: 404 })
     await expect(bookingToReschedule(old.uid, eventTypeId, 'other@example.com')).rejects.toMatchObject({ statusCode: 409 })
     expect(await bookingToReschedule(old.uid, eventTypeId, 'GUEST@example.com')).toMatchObject({ id: old.id })
@@ -64,9 +64,9 @@ describe.skipIf(!url)('booking reliability', () => {
 
   it('preserves another calendar commitment when moving the local booking', async () => {
     const old = await insertBooking('2030-09-09T09:00:00Z', '2030-09-09T09:30:00Z')
-    const { calendarBusyTimes } = await import('../integrations/calendar/providers')
+    const { calendarBusyTimes } = await import('@@/server/integrations/calendar/providers')
     vi.mocked(calendarBusyTimes).mockResolvedValueOnce([{ start: '2030-09-09T12:00:00Z', end: '2030-09-09T12:30:00Z' }])
-    const { createPersonalBooking } = await import('../services/personal-booking-creation')
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
     await expect(createPersonalBooking({ ...request(), rescheduleOf: old.uid })).rejects.toMatchObject({ statusCode: 409 })
     expect((await sql`select status from bookings where id = ${old.id}`)[0]!.status).toBe('confirmed')
   })
@@ -75,7 +75,7 @@ describe.skipIf(!url)('booking reliability', () => {
     await sql`update event_types set buffer_after_minutes = 30 where id = ${eventTypeId}`
     await insertBooking('2030-09-09T09:00:00Z', '2030-09-09T09:30:00Z')
     await sql`update event_types set buffer_after_minutes = 0 where id = ${eventTypeId}`
-    const { slotsFor } = await import('../services/booking-page')
+    const { slotsFor } = await import('@@/server/services/booking-page')
     const slots = await slotsFor(await event(), '2030-09-09', '2030-09-09', '2030-09-01T00:00:00Z')
     expect(slots.some(slot => slot.start === '2030-09-09T09:30:00Z')).toBe(false)
     expect(slots.some(slot => slot.start === '2030-09-09T10:00:00Z')).toBe(true)
@@ -89,7 +89,7 @@ describe.skipIf(!url)('booking reliability', () => {
       values (${eventTypeId}, ${other!.id}, ${crypto.randomUUID()}, '2030-09-09T09:00Z', '2030-09-09T10:00Z', 'Guest', 'guest@example.com', 'UTC') returning id`
     await sql`insert into booking_hosts (booking_id, user_id, starts_at, ends_at)
       values (${meeting!.id}, ${hostId}, '2030-09-09T09:00Z', '2030-09-09T10:00Z')`
-    const { slotsFor } = await import('../services/booking-page')
+    const { slotsFor } = await import('@@/server/services/booking-page')
     const slots = await slotsFor(await event(), '2030-09-09', '2030-09-09', '2030-09-01T00:00:00Z')
     expect(slots[0]!.start).toBe('2030-09-09T10:00:00Z')
   })
@@ -106,7 +106,7 @@ describe.skipIf(!url)('booking reliability', () => {
 
   it('returns a recoverable conflict to the guest when concurrent booking requests overlap buffers', async () => {
     await sql`update event_types set buffer_after_minutes = 30 where id = ${eventTypeId}`
-    const { createPersonalBooking } = await import('../services/personal-booking-creation')
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
     const results = await Promise.allSettled([
       createPersonalBooking({ ...request(), start: '2030-09-09T09:00:00Z' }),
       createPersonalBooking({ ...request(), start: '2030-09-09T09:30:00Z' })
@@ -117,7 +117,7 @@ describe.skipIf(!url)('booking reliability', () => {
 
   it('replays a recurring request after moving and cancelling an occurrence without creating or emailing again', async () => {
     await sql`update event_types set recurring_booking_enabled = true where id = ${eventTypeId}`
-    const { createPersonalBooking } = await import('../services/personal-booking-creation')
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
     const originalRequest = {
       ...request(), requestId: crypto.randomUUID(),
       recurrence: { frequency: 'weekly' as const, occurrences: 2 }
@@ -146,11 +146,11 @@ describe.skipIf(!url)('booking reliability', () => {
   it('loads external busy time covering full-day buffers across extreme host timezone boundaries', async () => {
     await sql`update schedules set time_zone = 'Pacific/Kiritimati' where user_id = ${hostId}`
     await sql`update event_types set buffer_before_minutes = 1440 where id = ${eventTypeId}`
-    const { calendarBusyTimes } = await import('../integrations/calendar/providers')
+    const { calendarBusyTimes } = await import('@@/server/integrations/calendar/providers')
     const external = { start: '2030-09-07T20:00:00Z', end: '2030-09-07T21:00:00Z' }
     vi.mocked(calendarBusyTimes).mockImplementation(async (_user, from, to) =>
       Date.parse(external.end) > Date.parse(from) && Date.parse(external.start) < Date.parse(to) ? [external] : [])
-    const { slotsFor } = await import('../services/booking-page')
+    const { slotsFor } = await import('@@/server/services/booking-page')
     const slots = await slotsFor(await event(), '2030-09-09', '2030-09-09', '2030-09-01T00:00:00Z')
     expect(slots.some(slot => slot.start === '2030-09-08T19:00:00Z')).toBe(false)
     expect(slots.some(slot => slot.start === '2030-09-08T21:00:00Z')).toBe(true)
@@ -176,7 +176,7 @@ describe.skipIf(!url)('booking reliability', () => {
     await sql`insert into event_type_hosts (event_type_id, member_id, user_id) values (${teamEvent!.id}, ${member!.id}, ${hostId})`
     const old = await insertBooking('2030-09-09T09:00:00Z', '2030-09-09T09:30:00Z', teamEvent!.id)
     await sql`update bookings set organization_id = ${team!.id} where id = ${old.id}`
-    const { createTeamBooking } = await import('../services/team-booking-creation')
+    const { createTeamBooking } = await import('@@/server/services/team-booking-creation')
     const result = await createTeamBooking({ ...request(), team: 'reliability-team', slug: 'team-intro', rescheduleOf: old.uid })
     expect(result).toMatchObject({ moved: true, status: 'confirmed', start: '2030-09-09T12:00:00Z' })
     expect((await sql`select count(*)::int as count from booking_hosts where released_at is null`)[0]!.count).toBe(1)
@@ -184,11 +184,11 @@ describe.skipIf(!url)('booking reliability', () => {
     await sql`update bookings set status = 'cancelled'`
     await sql`update schedules set time_zone = 'Pacific/Kiritimati' where user_id = ${hostId}`
     await sql`update event_types set buffer_before_minutes = 1440 where id = ${teamEvent!.id}`
-    const { calendarBusyTimes } = await import('../integrations/calendar/providers')
+    const { calendarBusyTimes } = await import('@@/server/integrations/calendar/providers')
     const external = { start: '2030-09-07T20:00:00Z', end: '2030-09-07T21:00:00Z' }
     vi.mocked(calendarBusyTimes).mockImplementation(async (_user, from, to) =>
       Date.parse(external.end) > Date.parse(from) && Date.parse(external.start) < Date.parse(to) ? [external] : [])
-    const { activeHostsFor, findPublicTeamEventType, teamSlotsFor } = await import('../services/team-booking')
+    const { activeHostsFor, findPublicTeamEventType, teamSlotsFor } = await import('@@/server/services/team-booking')
     const config = (await findPublicTeamEventType('reliability-team', 'team-intro'))!
     const slots = await teamSlotsFor(config, await activeHostsFor(config.id), '2030-09-09', '2030-09-09', '2030-09-01T00:00:00Z')
     expect(slots.some(slot => slot.start === '2030-09-08T19:00:00Z')).toBe(false)

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createBookingSchema, deleteAccountSchema, eventTypeSchema } from '../../shared/validation'
+import { createBookingSchema, deleteAccountSchema, eventTypeSchema } from '@@/shared/validation'
 
 describe('new booking and account validation', () => {
   const booking = {

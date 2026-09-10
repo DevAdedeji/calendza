@@ -7,9 +7,9 @@ import {
   seatPriceCents,
   toDecimalString
 } from '#shared/billing'
-import { fetchWithTimeout } from './fetch'
-import { logEvent } from '../observability/logger'
-import { useEnv } from '../config/env'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { logEvent } from '@@/server/observability/logger'
+import { useEnv } from '@@/server/config/env'
 
 const SANDBOX_API = 'https://sandbox-api.bachs.io/v1'
 const LIVE_API = 'https://api.bachs.io/v1'
@@ -122,8 +122,7 @@ export async function bachsFetch<T>(path: string, options: BachsRequest = {}): P
       path,
       status: response.status,
       attempt,
-      errorCode: payload?.error_code ?? null,
-      detail
+      errorCode: payload?.error_code ?? null
     })
     const errorCode = String(payload?.error_code ?? '')
     const unavailablePaymentMethod = [

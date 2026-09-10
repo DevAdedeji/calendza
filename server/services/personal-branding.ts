@@ -4,9 +4,9 @@ import {
   type BookingPageTheme,
   type PublicPersonalBranding
 } from '#shared/branding'
-import { users } from '../database/schema'
-import { useDatabase } from '../database'
-import { personalPlanEntitlement } from './personal-entitlement'
+import { users } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
 export async function storedPersonalBranding(userId: string) {
   const [[row], entitlement] = await Promise.all([

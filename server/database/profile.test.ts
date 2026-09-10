@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -47,7 +47,7 @@ describe.skipIf(!url)('profile persistence', () => {
       values ('profile@example.com', 'Original Name', 'profile', null, 'Africa/Lagos')
       returning id
     `
-    const { profileForUser } = await import('../repositories/profile')
+    const { profileForUser } = await import('@@/server/repositories/profile')
 
     await sql`
       update users
@@ -72,7 +72,7 @@ describe.skipIf(!url)('profile persistence', () => {
       insert into accounts (user_id, account_id, provider_id)
       values (${user!.id}, 'google-account', 'google')
     `
-    const { profileForUser } = await import('../repositories/profile')
+    const { profileForUser } = await import('@@/server/repositories/profile')
 
     await expect(profileForUser(user!.id)).resolves.toMatchObject({ hasPassword: false })
 
@@ -90,8 +90,8 @@ describe.skipIf(!url)('profile persistence', () => {
       returning id
     `
     const { eq } = await import('drizzle-orm')
-    const { userAvatars, users } = await import('./schema')
-    const { useDatabase } = await import('../database/index')
+    const { userAvatars, users } = await import('@@/server/database/schema')
+    const { useDatabase } = await import('@@/server/database/index')
     const bytes = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])
 
     await useDatabase().insert(userAvatars).values({

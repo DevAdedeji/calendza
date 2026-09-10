@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { emailSchema } from './validation'
+import { emailSchema } from '@@/shared/validation'
 
 export const workflowTriggerSchema = z.enum([
   'booking_created',

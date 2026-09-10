@@ -2,13 +2,13 @@ import type { PaymentCurrency } from '#shared/payments'
 import {
   getConnectedAccountBalance,
   listConnectedAccountPayouts
-} from '../integrations/bachs'
-import { collectedPaymentTotals } from '../repositories/payment-ledger'
-import { logEvent } from '../observability/logger'
+} from '@@/server/integrations/bachs'
+import { collectedPaymentTotals } from '@@/server/repositories/payment-ledger'
+import { logEvent } from '@@/server/observability/logger'
 import {
   findPaymentRecipient,
   type PaymentRecipientOwner
-} from './payment-recipient'
+} from '@@/server/services/payment-recipient'
 
 export interface MoneyTotal {
   currency: PaymentCurrency

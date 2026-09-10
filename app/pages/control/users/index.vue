@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { controlApi, type ControlListResponse, type ControlUserRecord } from '~/services/schedra-api'
-import { DEFAULT_LIST_PAGE_SIZE } from '~/constants/lists'
-import { formatDate } from '~/utils/date-time'
-import { getInitials } from '~/utils/text'
+import { controlApi, type ControlListResponse, type ControlUserRecord } from '@/services/api/control'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
+import { formatDate } from '@/utils/date-time'
+import { getInitials } from '@/utils/text'
 
 definePageMeta({ layout: 'app', middleware: ['auth', 'platform-admin'] })
 useSeoMeta({ title: 'Users · Control', robots: 'noindex, nofollow' })

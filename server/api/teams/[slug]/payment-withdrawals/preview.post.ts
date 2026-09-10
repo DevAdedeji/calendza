@@ -1,7 +1,7 @@
 import { withdrawalPreviewInputSchema } from '#shared/payments'
-import { previewPaymentWithdrawal } from '../../../../services/payment-withdrawal'
-import { enforceRateLimit } from '../../../../services/rate-limit'
-import { requireOrganizationPermission } from '../../../../services/organization'
+import { previewPaymentWithdrawal } from '@@/server/services/payment-withdrawal'
+import { enforceRateLimit } from '@@/server/services/rate-limit'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

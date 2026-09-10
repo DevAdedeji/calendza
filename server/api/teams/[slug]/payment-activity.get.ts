@@ -1,6 +1,6 @@
 import { paymentActivityQuerySchema } from '#shared/payment-ledger'
-import { listPaymentActivity } from '../../../services/payment-ledger'
-import { requireOrganizationPermission } from '../../../services/organization'
+import { listPaymentActivity } from '@@/server/services/payment-ledger'
+import { requireOrganizationPermission } from '@@/server/services/organization'
 
 export default defineEventHandler(async (event) => {
   const slug = getRouterParam(event, 'slug') ?? ''

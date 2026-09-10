@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { retryPaidBookingRefundByReference } from '../../../services/paid-booking'
-import { recordSecurityAudit } from '../../../services/security-audit'
-import { requirePlatformAdminSession } from '../../../services/session'
+import { retryPaidBookingRefundByReference } from '@@/server/services/paid-booking'
+import { recordSecurityAudit } from '@@/server/services/security-audit'
+import { requirePlatformAdminSession } from '@@/server/services/session'
 
 const bodySchema = z.object({
   paymentReference: z.string().trim().min(1).max(255)

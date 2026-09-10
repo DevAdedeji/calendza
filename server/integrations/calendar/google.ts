@@ -1,13 +1,13 @@
 import { createHash } from 'node:crypto'
 import { and, eq, sql } from 'drizzle-orm'
-import { calendarConnections } from '../../database/schema'
-import { useDatabase } from '../../database'
-import { decryptCredential, encryptCredential } from './credential-crypto'
-import { useEnv } from '../../config/env'
-import { fetchWithTimeout } from '../fetch'
-import type { CalendarEventInput } from './provider'
-import { IntegrationUnavailableError, retryAfterMilliseconds } from '../errors'
-import { ensureDefaultCalendarDestination } from '../../repositories/calendar-connection'
+import { calendarConnections } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { decryptCredential, encryptCredential } from '@@/server/integrations/calendar/credential-crypto'
+import { useEnv } from '@@/server/config/env'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import type { CalendarEventInput } from '@@/server/integrations/calendar/provider'
+import { IntegrationUnavailableError, retryAfterMilliseconds } from '@@/server/integrations/errors'
+import { ensureDefaultCalendarDestination } from '@@/server/repositories/calendar-connection'
 
 export const GOOGLE_CALENDAR_SCOPES = [
   'https://www.googleapis.com/auth/calendar.calendarlist.readonly',

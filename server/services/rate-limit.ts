@@ -2,9 +2,9 @@ import { createHmac } from 'node:crypto'
 import { isIP } from 'node:net'
 import { lt, sql } from 'drizzle-orm'
 import type { H3Event } from 'h3'
-import { apiRateLimits } from '../database/schema'
-import { useDatabase } from '../database'
-import { useEnv } from '../config/env'
+import { apiRateLimits } from '@@/server/database/schema'
+import { useDatabase } from '@@/server/database'
+import { useEnv } from '@@/server/config/env'
 
 interface RateLimitOptions {
   namespace: string

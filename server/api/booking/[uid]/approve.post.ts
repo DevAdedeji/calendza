@@ -1,11 +1,11 @@
 import { and, eq, gt, sql } from 'drizzle-orm'
-import { bookings } from '../../../database/schema'
-import { bookingNoticeFromManaged, queueBookingEmails } from '../../../services/booking-emails'
-import { assignedHostsForBooking, findBookingByUid } from '../../../repositories/booking'
-import { enqueueCalendarSync } from '../../../services/calendar-sync'
-import { requireAuthSession } from '../../../services/session'
-import { useDatabase } from '../../../database/index'
-import { publishBookingEvent } from '../../../services/workflows'
+import { bookings } from '@@/server/database/schema'
+import { bookingNoticeFromManaged, queueBookingEmails } from '@@/server/services/booking-emails'
+import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { enqueueCalendarSync } from '@@/server/services/calendar-sync'
+import { requireAuthSession } from '@@/server/services/session'
+import { useDatabase } from '@@/server/database/index'
+import { publishBookingEvent } from '@@/server/services/workflows'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)

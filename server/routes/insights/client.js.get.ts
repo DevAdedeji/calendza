@@ -1,9 +1,9 @@
-import { fetchWithTimeout } from '../../integrations/fetch'
-import { logEvent } from '../../observability/logger'
+import { fetchWithTimeout } from '@@/server/integrations/fetch'
+import { logEvent } from '@@/server/observability/logger'
 import {
   UMAMI_PROXY_TIMEOUT_MS,
   UMAMI_SCRIPT_URL
-} from '../../services/umami-proxy'
+} from '@@/server/services/umami-proxy'
 
 export default defineEventHandler(async (event) => {
   try {

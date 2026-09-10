@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { configureAppTestEnvironment, getTestDatabaseUrl } from '../../test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -12,7 +12,7 @@ describe.skipIf(!url)('workflow automation durability', () => {
 
   beforeEach(async () => {
     configureAppTestEnvironment(url!)
-    const { resetEnv } = await import('../config/env')
+    const { resetEnv } = await import('@@/server/config/env')
     resetEnv()
     await sql`truncate table automation_runs, domain_events, automation_workflows, email_outbox, booking_hosts, bookings, event_types, schedules, users, organizations restart identity cascade`
 
@@ -45,7 +45,7 @@ describe.skipIf(!url)('workflow automation durability', () => {
   })
 
   it('dispatches one idempotent run and queues its email once', async () => {
-    const { createWorkflow, dispatchDomainEvents, processAutomationRuns, publishBookingEvent } = await import('../services/workflows')
+    const { createWorkflow, dispatchDomainEvents, processAutomationRuns, publishBookingEvent } = await import('@@/server/services/workflows')
     await createWorkflow({ userId }, userId, {
       name: 'Welcome guest',
       trigger: 'booking_created',
@@ -87,7 +87,7 @@ describe.skipIf(!url)('workflow automation durability', () => {
   })
 
   it('backfills a timed workflow and cancels it when the booking is cancelled', async () => {
-    const { cancelPendingAutomationRuns, createWorkflow } = await import('../services/workflows')
+    const { cancelPendingAutomationRuns, createWorkflow } = await import('@@/server/services/workflows')
     await createWorkflow({ userId }, userId, {
       name: 'One day reminder',
       trigger: 'before_start',
@@ -124,7 +124,7 @@ describe.skipIf(!url)('workflow automation durability', () => {
       insert into event_types (user_id, slug, title, duration_minutes)
       values (${other!.id}, 'private', 'Private call', 30) returning id
     `
-    const { createWorkflow } = await import('../services/workflows')
+    const { createWorkflow } = await import('@@/server/services/workflows')
     await expect(createWorkflow({ userId }, userId, {
       name: 'Cross-account workflow',
       trigger: 'booking_created',
@@ -148,7 +148,7 @@ describe.skipIf(!url)('workflow automation durability', () => {
       insert into automation_runs (workflow_id, booking_id, status, attempts, last_error)
       values (${workflow!.id}, ${bookingId}, 'failed', 8, 'Provider unavailable') returning id
     `
-    const { retryOperation } = await import('../services/operations')
+    const { retryOperation } = await import('@@/server/services/operations')
     await expect(retryOperation('automation', run!.id)).resolves.toBe(true)
     const [retried] = await sql<{ status: string, attempts: number, last_error: string | null }[]>`
       select status::text, attempts, last_error from automation_runs where id = ${run!.id}
