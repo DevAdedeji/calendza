@@ -14,6 +14,7 @@ import { enqueueCalendarSync } from '@@/server/services/calendar-sync'
 import { CalendarUnavailableError } from '@@/server/integrations/calendar/google'
 import { BookingAnswerValidationError, buildBookingAnswersSnapshot } from '@@/server/domain/booking-answers'
 import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositories/booking'
+import { requireZoomRescheduleReady, transferRescheduledZoomMeeting } from '@@/server/services/booking-reschedule'
 import { cancelBookingReminders } from '@@/server/services/email-outbox'
 import { cancelPendingAutomationRuns, publishBookingEvent } from '@@/server/services/workflows'
 import { requireTeamLocationIntegrations } from '@@/server/services/event-location'
@@ -181,6 +182,7 @@ export async function createTeamBooking(input: CreateTeamBookingInput): Promise<
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${eventType.id}, 0))`)
 
       if (previous) {
+        await requireZoomRescheduleReady(previous, tx)
         const [moved] = await tx.update(bookings)
           .set({
             status: 'cancelled',
@@ -291,6 +293,15 @@ export async function createTeamBooking(input: CreateTeamBookingInput): Promise<
       }).returning({ id: bookings.id })
 
       if (!created) throw new Error('Booking insert did not return a record.')
+      if (previous) {
+        await transferRescheduledZoomMeeting(previous, {
+          id: created.id,
+          hostId: organizer.userId,
+          locationType: eventType.locationType,
+          status: awaitingPayment ? 'awaiting_payment' : eventType.requiresConfirmation ? 'pending' : 'confirmed',
+          groupSessionId: groupSession?.id ?? null
+        }, tx)
+      }
       if (awaitingPayment && payment) {
         await createPaymentRecord({
           bookingId: created.id,

@@ -74,7 +74,7 @@ export default defineEventHandler(async (event) => {
       ))
     }
 
-    if (booking.status === 'confirmed') await enqueueCalendarSync(booking.id, 'delete', tx)
+    if (booking.status === 'confirmed' || booking.locationType === 'zoom') await enqueueCalendarSync(booking.id, 'delete', tx)
     await cancelBookingReminders(booking.uid, tx)
     await cancelPendingAutomationRuns(booking.id, tx)
     if (booking.status !== 'awaiting_payment') await publishBookingEvent({

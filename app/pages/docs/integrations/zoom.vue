@@ -19,8 +19,14 @@ useSeoMeta({
       <p>
         When a confirmed booking uses Zoom as its location, Calendza creates one scheduled Zoom
         meeting in the organizer’s connected account and shares the protected join link with the
-        host and invited guests. Rescheduling updates that meeting. Cancelling removes it while the
-        Zoom connection remains active.
+        host and invited guests. Rescheduling an individual booking with the same organizer keeps
+        its Zoom meeting ID and join link, and updates the meeting’s time and duration. Cancelling
+        removes it while the Zoom connection remains active.
+      </p>
+      <p>
+        Moving one guest to a different group session does not move the other guests’ meeting.
+        A different organizer or a new unpaid reservation receives a separate meeting. If the new
+        time needs host approval, the existing meeting is updated after approval.
       </p>
       <p>
         Calendza does not access meeting audio, video, chat, recordings, transcripts, participant

@@ -377,7 +377,10 @@ export async function upsertZoomMeeting(userId: string, meetingId: string | null
   // If a worker stopped after Zoom accepted the request but before Calendza
   // saved its mapping, recover the remote meeting instead of duplicating it.
   const existing = await findZoomMeeting(userId, input.uid)
-  if (existing) return { id: String(existing.id), joinUrl: existing.join_url }
+  if (existing) {
+    await zoomRequest(userId, `/meetings/${encodeURIComponent(existing.id)}`, { method: 'PATCH', body })
+    return { id: String(existing.id), joinUrl: existing.join_url }
+  }
 
   const created = await zoomRequest<ZoomMeeting>(userId, '/users/me/meetings', {
     method: 'POST',
