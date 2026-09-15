@@ -173,7 +173,7 @@ describe.skipIf(!url)('operations and durable webhooks', () => {
         available_at, updated_at
       ) values (
         'future-reminder', 'guest@example.com', 'Future reminder', 'Reminder',
-        'Your meeting is tomorrow.', 'View booking', 'https://schedra.xyz/booking/test',
+        'Your meeting is tomorrow.', 'View booking', 'https://calendza.xyz/booking/test',
         now() + interval '1 day', now() - interval '1 day'
       )
       returning id

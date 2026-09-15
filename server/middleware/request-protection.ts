@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     contentLength: getHeader(event, 'content-length'),
     fetchSite: getHeader(event, 'sec-fetch-site'),
     origin: getHeader(event, 'origin'),
-    expectedOrigin: useEnv().schedraUrl,
+    expectedOrigin: useEnv().siteUrl,
     maxBodyBytes
   })
   if (failure) throw createError(failure)

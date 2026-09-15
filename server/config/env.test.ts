@@ -3,13 +3,14 @@ import { resetEnv, useEnv } from '@@/server/config/env'
 
 const keys = [
   'DATABASE_URL',
-  'SCHEDRA_URL',
+  'CALENDZA_URL',
   'AUTH_SECRET',
-  'SCHEDRA_ENVIRONMENT',
+  'CALENDZA_ENVIRONMENT',
   'INTEGRATION_ENCRYPTION_KEY',
   'BACHS_SECRET_KEY',
   'BACHS_WEBHOOK_SECRET',
-  'SCHEDRA_BILLING_MODE',
+  'CALENDZA_BILLING_MODE',
+  'CALENDZA_PROCESS_ROLE',
   'PLATFORM_ADMIN_EMAILS',
   'DATABASE_POOL_MAX',
   'SMTP_URL',
@@ -22,17 +23,18 @@ describe('environment validation', () => {
 
   beforeEach(() => {
     for (const key of keys) original.set(key, process.env[key])
-    process.env.DATABASE_URL = 'postgres://schedra:schedra@localhost:5442/schedra'
-    process.env.SCHEDRA_URL = 'http://localhost:3002'
+    delete process.env.CALENDZA_PROCESS_ROLE
+    process.env.DATABASE_URL = 'postgres://calendza:calendza@localhost:5442/calendza'
+    process.env.CALENDZA_URL = 'http://localhost:3002'
     process.env.AUTH_SECRET = 'test-secret-that-is-longer-than-thirty-two-characters'
     delete process.env.SMTP_URL
     delete process.env.RESEND_API_KEY
     delete process.env.EMAIL_FROM
-    delete process.env.SCHEDRA_ENVIRONMENT
+    delete process.env.CALENDZA_ENVIRONMENT
     delete process.env.INTEGRATION_ENCRYPTION_KEY
     delete process.env.BACHS_SECRET_KEY
     delete process.env.BACHS_WEBHOOK_SECRET
-    delete process.env.SCHEDRA_BILLING_MODE
+    delete process.env.CALENDZA_BILLING_MODE
     delete process.env.PLATFORM_ADMIN_EMAILS
     delete process.env.DATABASE_POOL_MAX
     resetEnv()
@@ -55,35 +57,65 @@ describe('environment validation', () => {
     expect(() => useEnv()).not.toThrow(/database-password/)
   })
 
+  it('requires the Calendza public URL', () => {
+    delete process.env.CALENDZA_URL
+    expect(() => useEnv()).toThrow('Missing environment variables: CALENDZA_URL.')
+  })
+
+  it('loads Calendza settings and normalizes the public origin', () => {
+    Object.assign(process.env, {
+      CALENDZA_URL: 'https://staging.calendza.xyz/',
+      CALENDZA_ENVIRONMENT: 'staging',
+      CALENDZA_PROCESS_ROLE: 'worker',
+      CALENDZA_BILLING_MODE: 'sandbox',
+      BACHS_SECRET_KEY: 'sk_sandbox_example',
+      BACHS_WEBHOOK_SECRET: 'whsec_example',
+      SMTP_URL: 'smtp://localhost:1025',
+      EMAIL_FROM: 'Calendza <hello@calendza.xyz>'
+    })
+    expect(useEnv()).toMatchObject({
+      siteUrl: 'https://staging.calendza.xyz', environment: 'staging', processRole: 'worker', billingMode: 'sandbox'
+    })
+  })
+
+  it.each([
+    'https://calendza.xyz/path', 'https://calendza.xyz?token=secret',
+    'https://calendza.xyz#fragment', 'https://user:secret@calendza.xyz'
+  ])('rejects non-origin site configuration without exposing credentials: %s', (url) => {
+    process.env.CALENDZA_URL = url
+    expect(() => useEnv()).toThrow('CALENDZA_URL must be an origin')
+    expect(() => useEnv()).not.toThrow(/secret/)
+  })
+
   it('requires HTTPS and independent credential encryption in production', () => {
-    process.env.SCHEDRA_ENVIRONMENT = 'production'
-    expect(() => useEnv()).toThrow('Production SCHEDRA_URL must use HTTPS.')
+    process.env.CALENDZA_ENVIRONMENT = 'production'
+    expect(() => useEnv()).toThrow('Production CALENDZA_URL must use HTTPS.')
 
     resetEnv()
-    process.env.SCHEDRA_URL = 'https://schedra.example'
+    process.env.CALENDZA_URL = 'https://calendza.example'
     expect(() => useEnv()).toThrow('INTEGRATION_ENCRYPTION_KEY is required in production')
   })
 
   it('rejects sandbox payment credentials in production', () => {
-    process.env.SCHEDRA_ENVIRONMENT = 'production'
-    process.env.SCHEDRA_URL = 'https://schedra.example'
+    process.env.CALENDZA_ENVIRONMENT = 'production'
+    process.env.CALENDZA_URL = 'https://calendza.example'
     process.env.INTEGRATION_ENCRYPTION_KEY = 'separate-encryption-key-that-is-long-enough'
     process.env.BACHS_SECRET_KEY = 'sk_sandbox_example'
     process.env.BACHS_WEBHOOK_SECRET = 'whsec_example'
-    process.env.PLATFORM_ADMIN_EMAILS = 'admin@schedra.example'
+    process.env.PLATFORM_ADMIN_EMAILS = 'admin@calendza.example'
 
     expect(() => useEnv()).toThrow('Production requires a BACHS_SECRET_KEY beginning with sk_live_.')
   })
 
   it('accepts a fully configured production environment', () => {
-    process.env.SCHEDRA_ENVIRONMENT = 'production'
-    process.env.SCHEDRA_URL = 'https://schedra.example'
+    process.env.CALENDZA_ENVIRONMENT = 'production'
+    process.env.CALENDZA_URL = 'https://calendza.example'
     process.env.INTEGRATION_ENCRYPTION_KEY = 'separate-encryption-key-that-is-long-enough'
     process.env.BACHS_SECRET_KEY = 'sk_live_example'
     process.env.BACHS_WEBHOOK_SECRET = 'whsec_example'
-    process.env.PLATFORM_ADMIN_EMAILS = 'admin@schedra.example'
+    process.env.PLATFORM_ADMIN_EMAILS = 'admin@calendza.example'
     process.env.RESEND_API_KEY = 're_example'
-    process.env.EMAIL_FROM = 'Schedra <hello@schedra.example>'
+    process.env.EMAIL_FROM = 'Calendza <hello@calendza.example>'
 
     expect(useEnv().environment).toBe('production')
     expect(useEnv().billingMode).toBe('live')
@@ -91,15 +123,15 @@ describe('environment validation', () => {
 
   it('allows an explicitly sandboxed portfolio deployment without weakening production protections', () => {
     Object.assign(process.env, {
-      SCHEDRA_ENVIRONMENT: 'production',
-      SCHEDRA_URL: 'https://schedra.example',
-      SCHEDRA_BILLING_MODE: 'sandbox',
+      CALENDZA_ENVIRONMENT: 'production',
+      CALENDZA_URL: 'https://calendza.example',
+      CALENDZA_BILLING_MODE: 'sandbox',
       INTEGRATION_ENCRYPTION_KEY: 'separate-encryption-key-that-is-long-enough',
       BACHS_SECRET_KEY: 'sk_sandbox_example',
       BACHS_WEBHOOK_SECRET: 'whsec_example',
-      PLATFORM_ADMIN_EMAILS: 'admin@schedra.example',
+      PLATFORM_ADMIN_EMAILS: 'admin@calendza.example',
       RESEND_API_KEY: 're_example',
-      EMAIL_FROM: 'Schedra <hello@schedra.example>'
+      EMAIL_FROM: 'Calendza <hello@calendza.example>'
     })
     expect(useEnv().environment).toBe('production')
     expect(useEnv().billingMode).toBe('sandbox')
@@ -109,20 +141,20 @@ describe('environment validation', () => {
   })
 
   it('rejects a sandbox label with a live key and rejects unknown billing modes', () => {
-    process.env.SCHEDRA_BILLING_MODE = 'sandbox'
+    process.env.CALENDZA_BILLING_MODE = 'sandbox'
     process.env.BACHS_SECRET_KEY = 'sk_live_example'
-    expect(() => useEnv()).toThrow('SCHEDRA_BILLING_MODE must match')
+    expect(() => useEnv()).toThrow('CALENDZA_BILLING_MODE must match')
     resetEnv()
-    process.env.SCHEDRA_BILLING_MODE = 'demo'
-    expect(() => useEnv()).toThrow('SCHEDRA_BILLING_MODE must be sandbox or live.')
+    process.env.CALENDZA_BILLING_MODE = 'demo'
+    expect(() => useEnv()).toThrow('CALENDZA_BILLING_MODE must be sandbox or live.')
   })
 
   it('keeps sandbox payment credentials valid on staging', () => {
-    process.env.SCHEDRA_URL = 'https://staging.schedra.example'
+    process.env.CALENDZA_URL = 'https://staging.calendza.example'
     process.env.BACHS_SECRET_KEY = 'sk_sandbox_example'
     process.env.BACHS_WEBHOOK_SECRET = 'whsec_example'
     process.env.RESEND_API_KEY = 're_example'
-    process.env.EMAIL_FROM = 'Schedra <hello@schedra.example>'
+    process.env.EMAIL_FROM = 'Calendza <hello@calendza.example>'
 
     expect(useEnv().environment).toBe('staging')
   })

@@ -258,14 +258,14 @@ async function notify(alert: AlertCandidate, now: Date, incidentStartedAt: Date)
     email: {
       to: recipient,
       subject: `[${alert.severity.toUpperCase()}] ${alert.summary}`,
-      preheader: 'Schedra operations needs attention.',
-      heading: 'Schedra operations alert',
+      preheader: 'Calendza operations needs attention.',
+      heading: 'Calendza operations alert',
       body: `${alert.summary}. Open the private operations dashboard to review the affected records and retry them safely.`,
       details: [
         { label: 'Severity', value: alert.severity },
         { label: 'Detected', value: now.toISOString() }
       ],
-      action: { label: 'Open operations', url: `${env.schedraUrl}/operations` },
+      action: { label: 'Open operations', url: `${env.siteUrl}/operations` },
       footer: 'This grouped alert is sent once for this incident. It will not repeat while the condition remains active.'
     }
   })))

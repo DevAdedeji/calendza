@@ -62,7 +62,7 @@ export interface AvailabilityQuery {
   /** Existing group occurrences that remain bookable when a limit is full. */
   limitExemptSlots?: Interval[]
   externalBusy?: Interval[]
-  /** Schedra-owned blocks such as vacation or away periods. */
+  /** Calendza-owned blocks such as vacation or away periods. */
   unavailable?: Interval[]
 
   from: IsoDate

@@ -23,11 +23,11 @@ useSeoMeta({
   description: () => profile.value?.bio ?? `Choose a time to meet with ${profile.value?.name ?? 'this host'}.`,
   robots: () => indexable.value && profile.value ? 'index, follow' : 'noindex, nofollow',
   ogType: 'profile',
-  ogTitle: () => profile.value ? `Book time with ${profile.value.name}` : 'Schedra booking page',
+  ogTitle: () => profile.value ? `Book time with ${profile.value.name}` : 'Calendza booking page',
   ogDescription: () => profile.value?.bio ?? `Choose a time to meet with ${profile.value?.name ?? 'this host'}.`,
   ogUrl: () => `${siteUrl.value}/${encodeURIComponent(username)}`,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => profile.value ? `Book time with ${profile.value.name}` : 'Schedra booking page',
+  twitterTitle: () => profile.value ? `Book time with ${profile.value.name}` : 'Calendza booking page',
   twitterDescription: () => profile.value?.bio ?? `Choose a time to meet with ${profile.value?.name ?? 'this host'}.`
 })
 </script>
@@ -84,7 +84,7 @@ useSeoMeta({
             size="lg"
             class="mt-8 rounded-full px-6 font-medium"
           >
-            What is Schedra?
+            What is Calendza?
           </UButton>
         </div>
 
@@ -174,14 +174,14 @@ useSeoMeta({
     </main>
 
     <footer
-      v-if="!profile?.branding?.hideSchedraBranding"
+      v-if="!profile?.branding?.hideCalendzaBranding"
       class="px-5 pb-10 pt-6 text-center text-xs text-dimmed"
     >
       Scheduling by
       <NuxtLink
         to="/"
         class="underline underline-offset-4 transition-colors hover:text-muted"
-      >Schedra</NuxtLink>
+      >Calendza</NuxtLink>
     </footer>
   </div>
 </template>

@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
 
   setResponseHeaders(event, {
     'content-type': 'text/csv; charset=utf-8',
-    'content-disposition': `attachment; filename="schedra-bookings-${new Date().toISOString().slice(0, 10)}.csv"`,
+    'content-disposition': `attachment; filename="calendza-bookings-${new Date().toISOString().slice(0, 10)}.csv"`,
     'cache-control': 'private, no-store'
   })
   return `\uFEFF${csv}`

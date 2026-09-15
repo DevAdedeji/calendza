@@ -55,19 +55,19 @@ const COPY: Record<Stage, (input: { name: string, amount: string, days: number }
   action: string
 }> = {
   trial_ending: ({ name, amount, days }) => ({
-    subject: `${name}: ${days} ${days === 1 ? 'day' : 'days'} left on your Schedra trial`,
+    subject: `${name}: ${days} ${days === 1 ? 'day' : 'days'} left on your Calendza trial`,
     heading: 'Your trial is nearly up',
     body: `${name} has ${days} ${days === 1 ? 'day' : 'days'} left of its free trial. Paying keeps your team booking pages taking bookings — it is ${amount} for the members who have joined.\n\nNothing is charged automatically, so this needs a moment from you.`,
     action: 'Pay and keep the team running'
   }),
   trial_over: ({ name, amount }) => ({
-    subject: `${name}: your Schedra trial has ended`,
+    subject: `${name}: your Calendza trial has ended`,
     heading: 'Your trial has ended',
     body: `${name} is now in its ${TEAM_PLAN.graceDays}-day grace period. Team booking pages are still taking bookings, and paying ${amount} keeps them that way.\n\nNothing has been deleted, and nothing will be.`,
     action: 'Pay now'
   }),
   period_ending: ({ name, amount, days }) => ({
-    subject: `${name}: your Schedra invoice is due`,
+    subject: `${name}: your Calendza invoice is due`,
     heading: 'Time to renew',
     body: `${name} renews in ${Math.max(days, 0)} ${days === 1 ? 'day' : 'days'}, and it is ${amount} for the members who have joined.\n\nBank transfer cannot be charged automatically, so renewals always need a moment from you.`,
     action: 'Pay this invoice'
@@ -161,7 +161,7 @@ export async function processBillingReminders(now = new Date()) {
       amount,
       days: Math.max(daysBetween(now, team.deadline), 0)
     })
-    const url = `${env.schedraUrl}/t/${team.slug}/billing`
+    const url = `${env.siteUrl}/t/${team.slug}/billing`
 
     await enqueueEmails(owners.map(owner => ({
       // Keyed by stage and deadline, so a stage is announced once even though
@@ -177,7 +177,7 @@ export async function processBillingReminders(now = new Date()) {
         heading: copy.heading,
         body: copy.body,
         action: { label: copy.action, url },
-        footer: 'You are getting this because you own this team on Schedra.'
+        footer: 'You are getting this because you own this team on Calendza.'
       }
     })))
 

@@ -17,12 +17,12 @@ const callbackQuery = z.object({
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
   const parsed = await getValidatedQuery(event, callbackQuery.safeParse)
-  const expected = getCookie(event, 'schedra_microsoft_calendar_state')
-  const codeVerifier = getCookie(event, 'schedra_microsoft_calendar_pkce')
-  deleteCookie(event, 'schedra_microsoft_calendar_state', {
+  const expected = getCookie(event, 'calendza_microsoft_calendar_state')
+  const codeVerifier = getCookie(event, 'calendza_microsoft_calendar_pkce')
+  deleteCookie(event, 'calendza_microsoft_calendar_state', {
     path: '/api/integrations/microsoft-calendar'
   })
-  deleteCookie(event, 'schedra_microsoft_calendar_pkce', {
+  deleteCookie(event, 'calendza_microsoft_calendar_pkce', {
     path: '/api/integrations/microsoft-calendar'
   })
 

@@ -166,7 +166,7 @@ export async function openPaidBookingCheckout(uid: string) {
   }
 
   try {
-    const base = useEnv().schedraUrl
+    const base = useEnv().siteUrl
     const session = await createCheckoutSession({
       amount: toDecimalString(payment.amountCents),
       currency: payment.currency,
@@ -236,7 +236,7 @@ type CheckoutPaymentState = 'paid' | 'pending' | 'failed'
 
 /**
  * A browser redirect is never payment proof. This classification is only used
- * after Schedra has fetched the checkout directly from Bachs with its secret
+ * after Calendza has fetched the checkout directly from Bachs with its secret
  * key. A successful charge is authoritative even if the checkout lifecycle
  * briefly lags behind it.
  */
@@ -699,7 +699,7 @@ async function markRefundRequestFailed(payment: typeof bookingPayments.$inferSel
 }
 
 async function recordAmbiguousRefundRequest(payment: typeof bookingPayments.$inferSelect, error: unknown) {
-  const message = 'Bachs may have accepted this refund, but Schedra could not confirm its current state yet.'
+  const message = 'Bachs may have accepted this refund, but Calendza could not confirm its current state yet.'
   await appendPaymentLedgerEntry({
     bookingPaymentId: payment.id,
     dedupeKey: `payment:${payment.id}:refund-state-unknown`,
@@ -955,7 +955,7 @@ async function recordSuccessfulPaymentEntries(
     currency: payment.currency as 'USD' | 'NGN',
     providerEventId: input.providerEventId,
     providerObjectId: objectId,
-    message: 'Schedra platform fee recorded.'
+    message: 'Calendza platform fee recorded.'
   }, executor)
   if (input.providerFeeCents != null) {
     await appendPaymentLedgerEntry({

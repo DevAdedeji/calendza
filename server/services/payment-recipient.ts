@@ -112,7 +112,7 @@ export function recipientStatus(
   if (moneyMovementReady && providerFlagsReady) return 'active' as const
 
   // Submitted/complete account details with capabilities still unavailable is
-  // a provider review state, not a prompt to collect bank details in Schedra.
+  // a provider review state, not a prompt to collect bank details in Calendza.
   if (account.details_submitted === true
     || COMPLETE_STATUSES.has(accountStatus)
     || COMPLETE_STATUSES.has(setupStatus)) return 'pending_review' as const
@@ -143,7 +143,7 @@ export function unavailableRecipient(row: Awaited<ReturnType<typeof findPaymentR
     status: 'unavailable' as const,
     ready: false,
     nextAction: 'none' as const,
-    lastError: 'Schedra could not verify the payout account directly with Bachs.'
+    lastError: 'Calendza could not verify the payout account directly with Bachs.'
   }
 }
 
@@ -228,7 +228,7 @@ export async function createPaymentOnboarding(input: {
   const accountId = row?.bachsAccountId
   if (!accountId) throw new Error('Payment account setup did not return an account.')
   await prefillRepresentativeIfRequired(accountId, representative)
-  const base = useEnv().schedraUrl
+  const base = useEnv().siteUrl
   const path = input.returnPath.startsWith('/') ? input.returnPath : `/${input.returnPath}`
   const link = await createConnectedAccountLink({
     accountId,

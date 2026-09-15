@@ -3,7 +3,7 @@ import type { FormSubmitEvent } from '@nuxt/ui'
 import { signInSchema, type SignInInput } from '#shared/validation'
 
 definePageMeta({ layout: 'auth', middleware: 'guest' })
-useSeoMeta({ title: 'Sign in to Schedra', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Sign in to Calendza', robots: 'noindex, nofollow' })
 
 const route = useRoute()
 const { signIn } = useAuthClient()

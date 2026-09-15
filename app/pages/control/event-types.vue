@@ -21,7 +21,7 @@ const eventTypes = computed(() => data.value?.items ?? [])
     <ControlNavigation />
     <PageHeader
       title="Event types"
-      description="Review personal and team booking links across Schedra."
+      description="Review personal and team booking links across Calendza."
     />
 
     <section class="mt-7 overflow-hidden rounded-xl border border-default bg-default">

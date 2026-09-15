@@ -32,18 +32,18 @@ async function signUpAndSignIn(page: Page) {
   await expect(page.getByTestId('signup-form')).toHaveAttribute('data-ready', 'true')
   await page.getByLabel('Your name').fill('Ada Automation')
   await page.getByLabel('Your booking link').fill('ada-automation')
-  await page.getByLabel('Email').fill('ada-automation@schedra.test')
+  await page.getByLabel('Email').fill('ada-automation@calendza.test')
   await page.locator('input[name="password"]').fill(password)
   await expect(page.getByText('Available', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Create my link' }).click()
   await expect(page).toHaveURL(/\/verify-email/)
-  await sql`update users set email_verified = true where email = 'ada-automation@schedra.test'`
+  await sql`update users set email_verified = true where email = 'ada-automation@calendza.test'`
 
-  await page.goto('/login?email=ada-automation%40schedra.test')
+  await page.goto('/login?email=ada-automation%40calendza.test')
   await page.waitForLoadState('networkidle')
-  await page.getByLabel('Email').fill('ada-automation@schedra.test')
+  await page.getByLabel('Email').fill('ada-automation@calendza.test')
   await page.locator('input[name="password"]').fill(password)
-  await expect(page.getByLabel('Email')).toHaveValue('ada-automation@schedra.test')
+  await expect(page.getByLabel('Email')).toHaveValue('ada-automation@calendza.test')
   await expect(page.locator('input[name="password"]')).toHaveValue(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)

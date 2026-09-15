@@ -18,7 +18,7 @@ RUN pnpm install --frozen-lockfile
 # Railway exposes public deploy variables to Docker as build arguments. Nuxt
 # needs the canonical origin now, not only when the container starts, because
 # the marketing pages are rendered into static HTML in this stage.
-ARG SCHEDRA_URL
+ARG CALENDZA_URL
 RUN pnpm build
 
 FROM node:22-alpine AS runtime

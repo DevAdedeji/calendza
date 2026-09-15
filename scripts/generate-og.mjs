@@ -55,7 +55,7 @@ const template = box(
   [
     box({ display: 'flex', alignItems: 'center', gap: 18 }, [
       mark,
-      text({ fontSize: 36, fontWeight: 600, color: INK, letterSpacing: '-0.03em' }, 'schedra')
+      text({ fontSize: 36, fontWeight: 600, color: INK, letterSpacing: '-0.03em' }, 'calendza')
     ]),
 
     box({ display: 'flex', flexDirection: 'column' }, [

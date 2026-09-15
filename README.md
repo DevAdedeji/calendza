@@ -1,10 +1,10 @@
-# Schedra
+# Calendza
 
-Schedra is a full-stack scheduling application built as a portfolio project:
+Calendza is a full-stack scheduling application built as a portfolio project:
 shareable booking pages, personal and team availability, calendar integrations,
 video meetings, recurring bookings, and payment-aware booking workflows.
 
-[Application](https://schedra.xyz) · [Features](https://schedra.xyz/features) ·
+[Application](https://calendza.xyz) · [Features](https://calendza.xyz/features) ·
 [Security reporting](SECURITY.md)
 
 The source is available for viewing and evaluation under the proprietary
@@ -83,6 +83,10 @@ pnpm dev
 The application runs at `http://localhost:3002` by default. The values required
 for local development are documented in `.env.example`.
 
+This Calendza release keeps the existing databases and saved integrations.
+See [setup and deployment instructions](docs/CALENDZA_SETUP.md) before deploying.
+The separate local database runs on port `5443`.
+
 ## Checks
 
 ```bash
@@ -96,15 +100,20 @@ pnpm build
 Database and browser tests require an isolated test database configured with
 `TEST_DATABASE_URL` in `.env.test`. Test commands may erase that database.
 
-Production builds require `SCHEDRA_URL` during the build as well as at runtime.
+Production builds require `CALENDZA_URL` during the build as well as at runtime.
 The build fails if prerendered marketing pages contain the wrong canonical URL
 or indexing directive. For Docker builds, pass it as a build argument, for
-example `--build-arg SCHEDRA_URL=https://schedra.xyz`.
+example `--build-arg CALENDZA_URL=https://calendza.xyz`.
 
 ## Production deployment
 
+For the Calendza → Calendza domain change, follow the
+[domain migration checklist](docs/CALENDZA_MIGRATION.md) before deploying.
+The new `CALENDZA_*` settings take precedence; existing `CALENDZA_*` equivalents
+remain supported as fallbacks. Keep encryption keys and the database unchanged.
+
 For a portfolio deployment on the production domain, keep
-`SCHEDRA_ENVIRONMENT=production` and explicitly set `SCHEDRA_BILLING_MODE=sandbox`
+`CALENDZA_ENVIRONMENT=production` and explicitly set `CALENDZA_BILLING_MODE=sandbox`
 with matching sandbox `BACHS_SECRET_KEY` and `BACHS_WEBHOOK_SECRET` values.
 Register the sandbox webhook at `/api/webhooks/bachs` on that deployment's HTTPS
 origin. Do not weaken application security by calling the deployment staging.
@@ -130,8 +139,8 @@ release candidate includes four ordered migrations that must not be skipped:
   existing conflicting buffers deliberately block deployment without moving guests.
 
 Background work must be running in every deployed environment. For a small
-deployment, use `SCHEDRA_PROCESS_ROLE=all` on the application process. For
-separate services, run the web service with `SCHEDRA_PROCESS_ROLE=web` and run
+deployment, use `CALENDZA_PROCESS_ROLE=all` on the application process. For
+separate services, run the web service with `CALENDZA_PROCESS_ROLE=web` and run
 `node scripts/start-worker.mjs` from the same built image as a continuously
 running worker (`pnpm worker` is the equivalent source-checkout command). The
 worker delivers queued email and workflows, synchronizes and periodically
@@ -154,7 +163,7 @@ iCloud or Bachs validation.
 Apple Calendar connects through iCloud CalDAV. Users must enable two-factor
 authentication on their Apple Account and create an app-specific password at
 `account.apple.com` under **Sign-In and Security → App-Specific Passwords**.
-Schedra encrypts that password using `INTEGRATION_ENCRYPTION_KEY`; the normal
+Calendza encrypts that password using `INTEGRATION_ENCRYPTION_KEY`; the normal
 Apple Account password must never be entered. Changing the main Apple Account
 password revokes app-specific passwords, so the integration will then show
 **Needs attention** until it is reconnected with a new one.
@@ -173,6 +182,6 @@ reporting instructions in [SECURITY.md](SECURITY.md).
 
 ## License
 
-Copyright © 2026 Schedra. All rights reserved. This project is proprietary;
+Copyright © 2026 Calendza. All rights reserved. This project is proprietary;
 access to its source code does not grant permission to copy, modify,
 distribute or operate the software. See [LICENSE](LICENSE).

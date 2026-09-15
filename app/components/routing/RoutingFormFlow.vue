@@ -44,7 +44,7 @@ async function continueToBooking() {
       method: 'POST',
       body: { name: name.value, email: email.value, answers }
     })
-    sessionStorage.setItem(`schedra:routing-prefill:${result.redirectUrl}`, JSON.stringify({
+    sessionStorage.setItem(`calendza:routing-prefill:${result.redirectUrl}`, JSON.stringify({
       name: name.value.trim(),
       email: email.value.trim().toLocaleLowerCase(),
       expiresAt: Date.now() + 10 * 60 * 1000
@@ -67,7 +67,7 @@ async function continueToBooking() {
     <div class="mx-auto max-w-2xl">
       <NuxtLink
         :to="props.mode === 'team' && branding ? `/team/${props.owner}` : '/'"
-        :aria-label="branding?.brandName ? `${branding.brandName} booking page` : 'Schedra home'"
+        :aria-label="branding?.brandName ? `${branding.brandName} booking page` : 'Calendza home'"
         class="mb-7 inline-flex"
       ><PersonalBookingBrand :branding="branding" /></NuxtLink>
       <section class="overflow-hidden rounded-2xl border border-default bg-default shadow-sm">
@@ -166,10 +166,10 @@ async function continueToBooking() {
         </template>
       </section>
       <p
-        v-if="!branding?.hideSchedraBranding"
+        v-if="!branding?.hideCalendzaBranding"
         class="mt-5 text-center text-[12px] text-dimmed"
       >
-        Scheduling powered by Schedra
+        Scheduling powered by Calendza
       </p>
     </div>
   </main>

@@ -1,42 +1,47 @@
-# Port 5442 rather than 5432 so this never fights another Postgres on the host.
+name: calendza
+
+# Keep the clean Calendza database separate from other local Postgres instances.
 services:
   app:
-    build: .
-    container_name: schedra-app
+    build:
+      context: .
+      args:
+        CALENDZA_URL: http://localhost:3002
+    container_name: calendza-app
     restart: unless-stopped
     command: ['sh', '-c', 'node scripts/migrate.mjs && node .output/server/index.mjs']
     depends_on:
       db:
         condition: service_healthy
     environment:
-      DATABASE_URL: postgres://schedra:schedra@db:5432/schedra
-      SCHEDRA_URL: http://localhost:3002
+      DATABASE_URL: postgres://calendza:calendza@db:5432/calendza
+      CALENDZA_URL: http://localhost:3002
       AUTH_SECRET: local-compose-secret-change-before-production
       # A single local container can serve requests and run durable jobs.
-      SCHEDRA_PROCESS_ROLE: all
+      CALENDZA_PROCESS_ROLE: all
       PORT: 3000
     ports:
       - '3002:3000'
 
   db:
     image: postgres:18-alpine
-    container_name: schedra-db
+    container_name: calendza-db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: schedra
-      POSTGRES_PASSWORD: schedra
-      POSTGRES_DB: schedra
+      POSTGRES_USER: calendza
+      POSTGRES_PASSWORD: calendza
+      POSTGRES_DB: calendza
     ports:
-      - '5442:5432'
+      - '5443:5432'
     volumes:
       # Postgres 18+ wants the mount one level up, at /var/lib/postgresql, and
       # keeps data in a major-version subdirectory so pg_upgrade can work.
-      - schedra-data:/var/lib/postgresql
+      - calendza-data:/var/lib/postgresql
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U schedra -d schedra']
+      test: ['CMD-SHELL', 'pg_isready -U calendza -d calendza']
       interval: 5s
       timeout: 5s
       retries: 10
 
 volumes:
-  schedra-data:
+  calendza-data:

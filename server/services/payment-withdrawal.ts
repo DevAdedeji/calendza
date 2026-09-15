@@ -159,7 +159,7 @@ async function readyRecipient(owner: PaymentRecipientOwner) {
   try {
     recipient = await syncPaymentRecipient(current)
   } catch {
-    throw createError({ statusCode: 503, statusMessage: 'Schedra could not verify your payout account with Bachs. No money was moved.' })
+    throw createError({ statusCode: 503, statusMessage: 'Calendza could not verify your payout account with Bachs. No money was moved.' })
   }
   if (recipient.status !== 'active') {
     throw createError({
@@ -436,7 +436,7 @@ export async function createPaymentWithdrawal(input: {
     if (isAmbiguousProviderFailure(error)) {
       const [unknown] = await useDatabase().update(paymentWithdrawals).set({
         status: 'unknown',
-        failureReason: 'Bachs received the request, but Schedra could not confirm its current state yet.',
+        failureReason: 'Bachs received the request, but Calendza could not confirm its current state yet.',
         lastCheckedAt: sql`now()`,
         updatedAt: sql`now()`
       }).where(eq(paymentWithdrawals.id, row.id)).returning()

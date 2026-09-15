@@ -17,9 +17,9 @@ const promises = [
       <NuxtLink
         to="/"
         class="relative"
-        aria-label="Schedra home"
+        aria-label="Calendza home"
       >
-        <SchedraMark
+        <CalendzaMark
           variant="line"
           inverted
         />

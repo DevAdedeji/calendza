@@ -35,7 +35,7 @@ const ANALYTICS_ROUTE_PAGES: Record<string, { path: string, title: string }> = {
 /**
  * Umami receives route categories, never the concrete URL. Dynamic usernames,
  * team slugs, booking IDs, invitation IDs, private tokens, query strings and
- * hashes therefore remain inside Schedra.
+ * hashes therefore remain inside Calendza.
  */
 export function analyticsPageForRoute(routeName: unknown) {
   const name = String(routeName ?? '').trim()

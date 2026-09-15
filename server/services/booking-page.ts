@@ -180,7 +180,7 @@ export async function slotsFor(
     row.groupSessionId ? `group:${row.groupSessionId}` : `booking:${row.id}`,
     { start: row.start, end: row.end }
   ])).values()]
-  // Calendar providers report Schedra's own shared invite as busy. Ignore only
+  // Calendar providers report Calendza's own shared invite as busy. Ignore only
   // an exact open session span; unrelated and partially overlapping events
   // continue to protect the host.
   const effectiveExternalBusy = externalBusy.filter(interval => !openSessions.some(session =>

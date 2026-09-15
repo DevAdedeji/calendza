@@ -46,7 +46,7 @@ export type UmamiEvent = z.infer<typeof umamiEventSchema>
 export function parseUmamiEvent(value: unknown, expectedHostname: string): UmamiEvent {
   const event = umamiEventSchema.parse(value)
   if (event.payload.hostname !== expectedHostname) {
-    throw new Error('Analytics hostname does not match this Schedra environment.')
+    throw new Error('Analytics hostname does not match this Calendza environment.')
   }
   return event
 }
@@ -66,7 +66,7 @@ export function umamiForwardHeaders(input: {
   const headers = new Headers({
     'Accept': 'application/json',
     'Content-Type': 'application/json',
-    'User-Agent': boundedHeader(input.userAgent, 512) ?? 'Schedra-Analytics-Proxy/1.0',
+    'User-Agent': boundedHeader(input.userAgent, 512) ?? 'Calendza-Analytics-Proxy/1.0',
     'x-umami-website-id': UMAMI_WEBSITE_ID,
     'x-umami-hostname': input.hostname
   })

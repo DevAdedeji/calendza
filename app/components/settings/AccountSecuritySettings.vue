@@ -46,7 +46,7 @@ async function beginSetup() {
   pending.value = true
   error.value = ''
   try {
-    const result = await authClient.twoFactor.enable({ password: password.value || undefined, issuer: 'Schedra' })
+    const result = await authClient.twoFactor.enable({ password: password.value || undefined, issuer: 'Calendza' })
     if (result.error || !result.data) {
       error.value = result.error?.code === 'INVALID_PASSWORD'
         ? 'That password is not correct.'
@@ -264,7 +264,7 @@ async function copyValue(value: string, label: string) {
       >
         <ol class="list-decimal space-y-2 pl-5 text-[14px] leading-relaxed text-muted">
           <li>Open your authenticator app and add an account manually.</li>
-          <li>Use <strong class="text-highlighted">Schedra</strong> as the account name and enter the setup key below.</li>
+          <li>Use <strong class="text-highlighted">Calendza</strong> as the account name and enter the setup key below.</li>
           <li>Enter the 6-digit code the app generates.</li>
         </ol>
         <div class="rounded-lg border border-default bg-muted p-3">

@@ -26,7 +26,7 @@ const stats = computed(() => data.value
     <ControlNavigation />
     <PageHeader
       title="Control"
-      description="A private view of Schedra accounts, activity and system health."
+      description="A private view of Calendza accounts, activity and system health."
     >
       <template #actions>
         <UButton

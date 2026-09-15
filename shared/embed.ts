@@ -1,4 +1,4 @@
-export const EMBED_MESSAGE_SOURCE = 'schedra-embed'
+export const EMBED_MESSAGE_SOURCE = 'calendza-embed'
 export const EMBED_MESSAGE_VERSION = 1
 
 export const embedThemes = ['auto', 'light', 'dark'] as const

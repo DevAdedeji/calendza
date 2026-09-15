@@ -8,7 +8,7 @@ const notFound = computed(() => props.error.statusCode === 404)
 const title = computed(() => notFound.value ? 'Page not found' : 'Something went wrong')
 const description = computed(() => notFound.value
   ? 'The page may have moved, or the link may no longer be available.'
-  : 'Your data is safe. Try this page again, or return to Schedra.')
+  : 'Your data is safe. Try this page again, or return to Calendza.')
 
 useSeoMeta({
   title,
@@ -26,10 +26,10 @@ function retry() {
       <section class="w-full max-w-lg rounded-2xl border border-default bg-default px-7 py-12 text-center shadow-sm sm:px-12">
         <NuxtLink
           to="/"
-          aria-label="Schedra home"
+          aria-label="Calendza home"
           class="inline-flex"
         >
-          <SchedraMark />
+          <CalendzaMark />
         </NuxtLink>
 
         <span class="mx-auto mt-10 grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
@@ -65,7 +65,7 @@ function retry() {
             variant="outline"
             class="justify-center rounded-full px-6"
           >
-            Go to Schedra
+            Go to Calendza
           </UButton>
         </div>
       </section>

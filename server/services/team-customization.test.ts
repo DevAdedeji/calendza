@@ -47,7 +47,7 @@ describe('team managed customization rules', () => {
       brandColor: '#fefefe',
       brandDarkColor: '#123456',
       bookingPageTheme: 'system',
-      hideSchedraBranding: false
+      hideCalendzaBranding: false
     })
     expect(branding.brandColor).toBe('#FEFEFE')
     expect(readableTextColor(branding.brandColor)).toBe('#1C1917')

@@ -58,7 +58,7 @@ async function resend() {
       block
       class="mt-8 rounded-full font-medium"
     >
-      Continue to Schedra
+      Continue to Calendza
     </UButton>
   </div>
 

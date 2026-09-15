@@ -13,7 +13,7 @@ interface ZoomConnectionIdentity {
 
 /**
  * Deletes locally held Zoom data without requiring a working Zoom token.
- * This is shared by Schedra's disconnect action and Zoom's deauthorization
+ * This is shared by Calendza's disconnect action and Zoom's deauthorization
  * webhook, where the access token has already been revoked upstream.
  */
 export async function deleteZoomConnectionData(connection: ZoomConnectionIdentity) {

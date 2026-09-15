@@ -96,18 +96,18 @@ async function signUpAndSignIn(page: Page, account: {
 async function openExternalEmbed(page: Page, path: '/personal' | '/team' | '/floating') {
   const attribution = path === '/personal' ? '?utm_source=customer-site&utm_campaign=demo' : ''
   await page.goto(`http://127.0.0.1:3103${path}${attribution}`)
-  await page.waitForFunction(() => Boolean((window as Window & { SchedraEmbed?: unknown }).SchedraEmbed))
+  await page.waitForFunction(() => Boolean((window as Window & { CalendzaEmbed?: unknown }).CalendzaEmbed))
 
   const triggerName = path === '/floating' ? 'Book now' : 'Book a demo'
   const trigger = page.getByRole('button', { name: triggerName })
   await trigger.click()
 
-  const overlay = page.locator('[data-schedra-overlay]')
+  const overlay = page.locator('[data-calendza-overlay]')
   await expect(overlay).toHaveCount(1)
   await expect(overlay.getByRole('button', { name: 'Close booking' })).toBeFocused()
   await expect.poll(() => page.evaluate(() => document.documentElement.style.overflow)).toBe('hidden')
 
-  return { trigger, overlay, frame: page.frameLocator('[data-schedra-overlay] iframe') }
+  return { trigger, overlay, frame: page.frameLocator('[data-calendza-overlay] iframe') }
 }
 
 test('generates an embed and completes a personal booking without leaving the customer website', async ({ page, request }) => {
@@ -115,7 +115,7 @@ test('generates an embed and completes a personal booking without leaving the cu
   await signUpAndSignIn(page, {
     name: 'Embed Host',
     username: 'embed-host',
-    email: 'embed-host@schedra.test'
+    email: 'embed-host@calendza.test'
   })
 
   await page.goto('/event-types')
@@ -137,10 +137,10 @@ test('generates an embed and completes a personal booking without leaving the cu
   await page.getByRole('menuitem', { name: 'Embed on website' }).click()
   const generator = page.getByRole('dialog', { name: 'Embed on your website' })
   await expect(generator).toBeVisible()
-  await expect(generator).toContainText('data-schedra-embed="http://127.0.0.1:3102/embed-host/website-demo"')
+  await expect(generator).toContainText('data-calendza-embed="http://127.0.0.1:3102/embed-host/website-demo"')
   await generator.getByRole('button', { name: 'Embed type' }).click()
   await page.getByText('Floating button', { exact: true }).click()
-  await expect(generator).toContainText('data-schedra-floating=')
+  await expect(generator).toContainText('data-calendza-floating=')
   await generator.getByRole('button', { name: 'Preview' }).click()
   const preview = page.getByRole('dialog', { name: 'Preview: Website demo' })
   await expect(preview).toBeVisible()
@@ -214,7 +214,7 @@ test('books a team event through the same cross-origin overlay', async ({ page, 
   await signUpAndSignIn(page, {
     name: 'Team Embed Owner',
     username: 'team-embed-owner',
-    email: 'team-embed-owner@schedra.test'
+    email: 'team-embed-owner@calendza.test'
   })
 
   await page.getByRole('button', { name: /Current team: Personal\. Switch team/ }).click()

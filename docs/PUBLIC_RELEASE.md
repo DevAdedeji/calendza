@@ -21,7 +21,7 @@ each check has already passed.
 ## Demo payments
 
 1. Keep the correct public HTTPS origin and production application environment.
-2. Set `SCHEDRA_BILLING_MODE=sandbox` and both sandbox Bachs secrets in the
+2. Set `CALENDZA_BILLING_MODE=sandbox` and both sandbox Bachs secrets in the
    deployment platform, not in source control.
 3. Configure the sandbox provider webhook for that origin's
    `/api/webhooks/bachs`. A live webhook secret is not interchangeable.

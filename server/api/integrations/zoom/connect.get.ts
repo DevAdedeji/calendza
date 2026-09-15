@@ -11,16 +11,16 @@ export default defineEventHandler(async (event) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: new URL(useEnv().schedraUrl).protocol === 'https:',
+    secure: new URL(useEnv().siteUrl).protocol === 'https:',
     sameSite: 'lax' as const,
     path: '/api/integrations/zoom',
     maxAge: 10 * 60
   }
 
-  setCookie(event, 'schedra_zoom_state', state, {
+  setCookie(event, 'calendza_zoom_state', state, {
     ...cookieOptions
   })
-  setCookie(event, 'schedra_zoom_pkce', pkce.verifier, cookieOptions)
+  setCookie(event, 'calendza_zoom_pkce', pkce.verifier, cookieOptions)
 
   return sendRedirect(event, zoomAuthorizationUrl(state, pkce.challenge))
 })

@@ -71,7 +71,7 @@ describe('booking email customization', () => {
       subject: 'Default subject',
       heading: 'You are booked',
       body: 'Default body',
-      action: { label: 'View booking', url: 'https://schedra.example/booking/token' },
+      action: { label: 'View booking', url: 'https://calendza.example/booking/token' },
       footer: 'Default footer'
     }, owner, {
       settings: {
@@ -87,7 +87,7 @@ describe('booking email customization', () => {
       branding: {
         name: 'Alex & Co',
         accentColor: '#123456',
-        hideSchedraBranding: true
+        hideCalendzaBranding: true
       }
     })
 
@@ -95,7 +95,7 @@ describe('booking email customization', () => {
       subject: 'Welcome <Maya>',
       body: 'Discovery call is booked with Alex & Co.',
       heading: 'You are booked',
-      action: { label: 'View booking', url: 'https://schedra.example/booking/token' },
+      action: { label: 'View booking', url: 'https://calendza.example/booking/token' },
       footer: 'Thank you for choosing us.',
       branding: { name: 'Alex & Co', accentColor: '#123456' }
     })

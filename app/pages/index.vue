@@ -3,7 +3,7 @@ const origin = useRuntimeConfig().public.siteUrl || useRequestURL().origin
 
 useHead({
   script: [{
-    key: 'schedra-home-structured-data',
+    key: 'calendza-home-structured-data',
     type: 'application/ld+json',
     innerHTML: JSON.stringify({
       '@context': 'https://schema.org',
@@ -11,22 +11,22 @@ useHead({
         {
           '@type': 'Organization',
           '@id': `${origin}/#organization`,
-          'name': 'Schedra',
+          'name': 'Calendza',
           'url': origin,
           'logo': `${origin}/favicon.svg`,
-          'email': 'support@schedra.xyz'
+          'email': 'support@calendza.xyz'
         },
         {
           '@type': 'WebSite',
           '@id': `${origin}/#website`,
-          'name': 'Schedra',
+          'name': 'Calendza',
           'url': origin,
           'publisher': { '@id': `${origin}/#organization` }
         },
         {
           '@type': 'SoftwareApplication',
           '@id': `${origin}/#software`,
-          'name': 'Schedra',
+          'name': 'Calendza',
           'url': origin,
           'applicationCategory': 'BusinessApplication',
           'operatingSystem': 'Web',

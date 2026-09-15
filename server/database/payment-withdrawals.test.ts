@@ -28,7 +28,7 @@ describe.skipIf(!url)('payment withdrawal database invariants', () => {
     recipientId = recipient!.id
   })
 
-  it('deduplicates both the Schedra request and provider payout', async () => {
+  it('deduplicates both the Calendza request and provider payout', async () => {
     const requestId = crypto.randomUUID()
     await sql`
       insert into payment_withdrawals (

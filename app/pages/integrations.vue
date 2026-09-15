@@ -415,7 +415,7 @@ async function disconnectZoom() {
     <UModal
       v-model:open="zoomDisconnectOpen"
       title="Disconnect Zoom?"
-      description="Schedra will stop creating and updating Zoom meetings for future booking changes."
+      description="Calendza will stop creating and updating Zoom meetings for future booking changes."
     >
       <template #body>
         <p class="text-[14px] leading-relaxed text-muted">

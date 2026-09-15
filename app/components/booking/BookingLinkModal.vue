@@ -23,7 +23,7 @@ const {
     v-model:open="open"
     :dismissible="!submitting"
     :title="createdUrl ? 'Your private link is ready' : 'Create a private meeting link'"
-    :description="createdUrl ? 'Copy it now. For security, Schedra never stores a recoverable copy of the private token.' : 'Share a controlled invitation without changing your regular booking page.'"
+    :description="createdUrl ? 'Copy it now. For security, Calendza never stores a recoverable copy of the private token.' : 'Share a controlled invitation without changing your regular booking page.'"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>

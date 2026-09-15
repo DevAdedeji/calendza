@@ -9,7 +9,7 @@ const { isSignedIn, accountDestination } = await useLandingNavigation()
 
 useSeoMeta({
   title: 'Scheduling, automation, analytics and payments',
-  description: 'Explore Schedra features for booking pages, private meeting links, routing, workflows, team scheduling, analytics, paid bookings and website overlays.',
+  description: 'Explore Calendza features for booking pages, private meeting links, routing, workflows, team scheduling, analytics, paid bookings and website overlays.',
   ogTitle: 'Everything you need to turn availability into a confirmed meeting',
   ogDescription: 'Scheduling, private invitations, routing, automation, integrations, analytics, paid bookings and team workspaces in one clear flow.',
   ogUrl: canonical
@@ -22,7 +22,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
     <section class="border-b border-default">
       <div class="mx-auto max-w-312 px-6 py-20 text-center lg:px-10 lg:py-28">
         <p class="eyebrow text-primary">
-          Schedra features
+          Calendza features
         </p>
         <h1 class="mx-auto mt-6 max-w-4xl font-editorial text-[clamp(3rem,7vw,5.75rem)] leading-[0.98] tracking-[-0.025em] text-highlighted">
           More powerful scheduling.<br><em class="text-primary">Less work to use it.</em>
@@ -107,7 +107,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
           size="xl"
           class="mt-8 rounded-full px-7 font-medium"
         >
-          {{ isSignedIn ? 'Open Schedra' : 'Start free' }}
+          {{ isSignedIn ? 'Open Calendza' : 'Start free' }}
         </UButton>
       </div>
     </section>

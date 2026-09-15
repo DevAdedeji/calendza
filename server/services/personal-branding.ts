@@ -16,7 +16,7 @@ export async function storedPersonalBranding(userId: string) {
       brandColor: users.brandColor,
       brandDarkColor: users.brandDarkColor,
       bookingPageTheme: users.bookingPageTheme,
-      hideSchedraBranding: users.hideSchedraBranding
+      hideCalendzaBranding: users.hideCalendzaBranding
     }).from(users).where(eq(users.id, userId)).limit(1),
     personalPlanEntitlement(userId)
   ])
@@ -29,7 +29,7 @@ export async function storedPersonalBranding(userId: string) {
       brandColor: row.brandColor ?? DEFAULT_PERSONAL_BRANDING.brandColor,
       brandDarkColor: row.brandDarkColor ?? DEFAULT_PERSONAL_BRANDING.brandDarkColor,
       bookingPageTheme: row.bookingPageTheme as BookingPageTheme,
-      hideSchedraBranding: row.hideSchedraBranding
+      hideCalendzaBranding: row.hideCalendzaBranding
     } satisfies PublicPersonalBranding,
     entitlement
   }

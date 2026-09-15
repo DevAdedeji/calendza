@@ -381,7 +381,7 @@ function eventCalendar(input: CalendarEventInput, eventId: string) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Schedra//Booking Calendar//EN',
+    'PRODID:-//Calendza//Booking Calendar//EN',
     'CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     `UID:${uid}`,

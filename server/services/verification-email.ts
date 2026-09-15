@@ -13,12 +13,12 @@ export async function queueVerificationEmail(user: { email: string }, url: strin
     dedupeKey: emailDedupeKey('email-verification', url),
     email: {
       to: user.email,
-      subject: 'Confirm your email for Schedra',
+      subject: 'Confirm your email for Calendza',
       preheader: 'Confirm your email address and finish setting up your booking page.',
       heading: 'Confirm your email',
-      body: 'You are one step away from sharing your Schedra booking page. Confirm your email address to finish setting up your account.',
+      body: 'You are one step away from sharing your Calendza booking page. Confirm your email address to finish setting up your account.',
       action: { label: 'Confirm my email', url },
-      footer: 'This link expires in 24 hours. If you did not create a Schedra account, you can safely ignore this email.'
+      footer: 'This link expires in 24 hours. If you did not create a Calendza account, you can safely ignore this email.'
     }
   }])
 }
@@ -46,7 +46,7 @@ export async function resendVerificationEmail(email: string, callbackURL: string
     // requests made within the same second.
     { resendId: randomUUID() }
   )
-  const url = new URL('/api/auth/verify-email', env.schedraUrl)
+  const url = new URL('/api/auth/verify-email', env.siteUrl)
   url.searchParams.set('token', token)
   url.searchParams.set('callbackURL', callbackURL)
   await queueVerificationEmail(user, url.toString())

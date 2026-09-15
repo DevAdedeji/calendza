@@ -18,8 +18,8 @@ describe('bachs webhook signatures', () => {
   let verify: typeof import('@@/server/integrations/bachs').verifyWebhookSignature
 
   beforeEach(async () => {
-    process.env.DATABASE_URL ||= 'postgres://localhost:5432/schedra_test'
-    process.env.SCHEDRA_URL ||= 'http://localhost:3002'
+    process.env.DATABASE_URL ||= 'postgres://localhost:5432/calendza_test'
+    process.env.CALENDZA_URL ||= 'http://localhost:3002'
     process.env.AUTH_SECRET ||= 'x'.repeat(32)
     process.env.BACHS_SECRET_KEY = 'sk_sandbox_test'
     process.env.BACHS_WEBHOOK_SECRET = SECRET
@@ -131,8 +131,8 @@ describe('money at the bachs boundary', () => {
 
 describe('bachs checkout payment methods', () => {
   beforeEach(async () => {
-    process.env.DATABASE_URL ||= 'postgres://localhost:5432/schedra_test'
-    process.env.SCHEDRA_URL ||= 'https://staging.schedra.xyz'
+    process.env.DATABASE_URL ||= 'postgres://localhost:5432/calendza_test'
+    process.env.CALENDZA_URL ||= 'https://staging.calendza.xyz'
     process.env.AUTH_SECRET ||= 'x'.repeat(32)
     process.env.BACHS_SECRET_KEY = 'sk_sandbox_test'
     process.env.BACHS_WEBHOOK_SECRET = SECRET
@@ -165,10 +165,10 @@ describe('bachs checkout payment methods', () => {
     await createSubscriptionCheckout({
       productId: 'prod_test',
       quantity: 1,
-      reference: 'schedra-test',
+      reference: 'calendza-test',
       customer: { email: 'owner@example.com', name: 'Example team' },
-      successUrl: 'https://staging.schedra.xyz/paid',
-      cancelUrl: 'https://staging.schedra.xyz/billing',
+      successUrl: 'https://staging.calendza.xyz/paid',
+      cancelUrl: 'https://staging.calendza.xyz/billing',
       metadata: { organizationId: 'org_test' }
     })
 
@@ -205,8 +205,8 @@ describe('bachs checkout payment methods', () => {
       currency: 'USD',
       reference: 'booking-uid',
       customer: { email: 'guest@example.com', name: 'Guest' },
-      successUrl: 'https://schedra.xyz/booking/uid',
-      cancelUrl: 'https://schedra.xyz/booking/uid?payment=cancelled',
+      successUrl: 'https://calendza.xyz/booking/uid',
+      cancelUrl: 'https://calendza.xyz/booking/uid?payment=cancelled',
       metadata: { schedra_booking_uid: 'uid' },
       platformFee: '1.25',
       destinationAccountId: 'acct_host',
@@ -556,8 +556,8 @@ describe('bachs checkout payment methods', () => {
     const { createConnectedAccountLink } = await import('@@/server/integrations/bachs')
     await createConnectedAccountLink({
       accountId: 'acct_host',
-      refreshUrl: 'https://staging.schedra.xyz/payments?payments=refresh',
-      returnUrl: 'https://staging.schedra.xyz/payments?payments=returned'
+      refreshUrl: 'https://staging.calendza.xyz/payments?payments=refresh',
+      returnUrl: 'https://staging.calendza.xyz/payments?payments=returned'
     })
 
     const [url, options] = fetchMock.mock.calls[0] as [URL, RequestInit]
@@ -566,8 +566,8 @@ describe('bachs checkout payment methods', () => {
     )
     expect(JSON.parse(String(options.body))).toEqual({
       type: 'onboarding',
-      refresh_url: 'https://staging.schedra.xyz/payments?payments=refresh',
-      return_url: 'https://staging.schedra.xyz/payments?payments=returned'
+      refresh_url: 'https://staging.calendza.xyz/payments?payments=refresh',
+      return_url: 'https://staging.calendza.xyz/payments?payments=returned'
     })
   })
 
@@ -584,8 +584,8 @@ describe('bachs checkout payment methods', () => {
     await createConnectedAccountLink({
       accountId: 'acct_host',
       type: 'update',
-      refreshUrl: 'https://staging.schedra.xyz/payments?payments=refresh',
-      returnUrl: 'https://staging.schedra.xyz/payments?payments=returned'
+      refreshUrl: 'https://staging.calendza.xyz/payments?payments=refresh',
+      returnUrl: 'https://staging.calendza.xyz/payments?payments=returned'
     })
 
     const options = fetchMock.mock.calls[0]?.[1] as RequestInit
@@ -602,10 +602,10 @@ describe('bachs checkout payment methods', () => {
     await expect(createSubscriptionCheckout({
       productId: 'prod_test',
       quantity: 1,
-      reference: 'schedra-test-error',
+      reference: 'calendza-test-error',
       customer: { email: 'owner@example.com', name: 'Example team' },
-      successUrl: 'https://staging.schedra.xyz/paid',
-      cancelUrl: 'https://staging.schedra.xyz/billing',
+      successUrl: 'https://staging.calendza.xyz/paid',
+      cancelUrl: 'https://staging.calendza.xyz/billing',
       metadata: { organizationId: 'org_test' }
     })).rejects.toMatchObject({
       statusCode: 503,

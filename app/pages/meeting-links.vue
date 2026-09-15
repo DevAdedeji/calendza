@@ -244,7 +244,7 @@ function statusColor(item: BookingLinkRecord) {
         name="i-lucide-shield-check"
         class="mt-0.5 size-4 shrink-0 text-primary"
       />
-      Private tokens cannot be recovered from Schedra's database. Copy a link when you create it; revoke it here if plans change.
+      Private tokens cannot be recovered from Calendza's database. Copy a link when you create it; revoke it here if plans change.
     </div>
 
     <BookingLinkModal

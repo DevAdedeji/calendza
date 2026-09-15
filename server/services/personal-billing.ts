@@ -31,7 +31,7 @@ function assertPublicReturnUrl(base: string) {
   if (['localhost', '127.0.0.1', '::1'].includes(host)) {
     throw createError({
       statusCode: 503,
-      statusMessage: 'Bachs will not redirect back to localhost. Point SCHEDRA_URL at a public tunnel or use staging to test checkout.'
+      statusMessage: 'Bachs will not redirect back to localhost. Point CALENDZA_URL at a public tunnel or use staging to test checkout.'
     })
   }
 }
@@ -44,7 +44,7 @@ export async function startPersonalCheckout(input: {
   customer: { email: string, name: string }
 }) {
   const env = useEnv()
-  assertPublicReturnUrl(env.schedraUrl)
+  assertPublicReturnUrl(env.siteUrl)
   const entitlement = await personalPlanEntitlement(input.userId)
   if (entitlement.isPro) {
     throw createError({
@@ -72,8 +72,8 @@ export async function startPersonalCheckout(input: {
   const method = collectionMethodFor(input.collectionCurrency)
   const start = new Date()
   const end = personalPeriodEnd(start, input.interval)
-  const successUrl = `${env.schedraUrl}/billing?paid=1`
-  const cancelUrl = `${env.schedraUrl}/billing`
+  const successUrl = `${env.siteUrl}/billing?paid=1`
+  const cancelUrl = `${env.siteUrl}/billing`
   const metadata = {
     userId: input.userId,
     interval: input.interval,

@@ -268,10 +268,10 @@ async function save() {
             class="rounded-lg border border-default bg-muted px-4 py-3 text-[13px] leading-relaxed text-muted"
           >
             {{ form.locationType === 'zoom'
-              ? 'Schedra creates and maintains one Zoom meeting through the assigned organizer’s connected account.'
+              ? 'Calendza creates and maintains one Zoom meeting through the assigned organizer’s connected account.'
               : form.locationType === 'microsoft_teams'
-                ? 'Schedra creates one Teams meeting through the organizer’s Microsoft calendar and shares that link with every host.'
-                : 'Schedra creates the meeting through each assigned host’s writable Google Calendar.' }}
+                ? 'Calendza creates one Teams meeting through the organizer’s Microsoft calendar and shares that link with every host.'
+                : 'Calendza creates the meeting through each assigned host’s writable Google Calendar.' }}
           </div>
 
           <div
@@ -506,7 +506,7 @@ async function save() {
             <label class="flex cursor-pointer items-start justify-between gap-4 px-4 py-4">
               <span>
                 <span class="block text-[14px] font-medium text-highlighted">Require payment</span>
-                <span class="mt-0.5 block text-[13px] leading-relaxed text-muted">The reservation is confirmed only after Schedra verifies checkout.</span>
+                <span class="mt-0.5 block text-[13px] leading-relaxed text-muted">The reservation is confirmed only after Calendza verifies checkout.</span>
               </span>
               <USwitch
                 v-model="paidBookingEnabled"
@@ -522,7 +522,7 @@ async function save() {
                 {{ paymentAccount?.status === 'pending_review'
                   ? 'Bachs is reviewing the team account or bank destination. Paid bookings stay disabled until both are approved.'
                   : paymentAccount?.status === 'unavailable'
-                    ? 'Schedra could not verify this team payout account with Bachs. Paid bookings stay disabled for safety.'
+                    ? 'Calendza could not verify this team payout account with Bachs. Paid bookings stay disabled for safety.'
                     : 'A team owner must complete payout setup and add an approved bank destination in Bachs first.' }}
               </p>
               <UButton
@@ -544,7 +544,7 @@ async function save() {
                 name="i-lucide-shield-alert"
                 class="size-4 shrink-0"
               />
-              Paid bookings are paused until Schedra verifies both the Bachs account and a usable payout destination.
+              Paid bookings are paused until Calendza verifies both the Bachs account and a usable payout destination.
             </div>
             <div
               v-if="form.paymentEnabled"

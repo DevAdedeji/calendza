@@ -7,7 +7,7 @@ if (!databaseUrl) throw new Error('TEST_DATABASE_URL is required for Playwright 
 
 const sql = postgres(databaseUrl, { max: 2, onnotice: () => {} })
 const password = 'a-production-grade-passphrase'
-const email = 'two-factor-owner@schedra.test'
+const email = 'two-factor-owner@calendza.test'
 
 function authenticatorCode(secret: string) {
   const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
@@ -132,7 +132,7 @@ test('enables authenticator security and accepts both authenticator and backup c
 })
 
 test('skips password confirmation when the signed-in account has no password', async ({ page }) => {
-  const googleEmail = 'google-only-two-factor@schedra.test'
+  const googleEmail = 'google-only-two-factor@calendza.test'
   await signUpAndSignIn(page, googleEmail, 'google-only-two-factor')
   await sql`
     update accounts

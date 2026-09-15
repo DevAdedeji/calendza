@@ -13,7 +13,7 @@ export const personalBrandingSchema = z.object({
   brandColor: hexColorSchema,
   brandDarkColor: hexColorSchema,
   bookingPageTheme: z.enum(bookingPageThemes),
-  hideSchedraBranding: z.boolean()
+  hideCalendzaBranding: z.boolean()
 })
 
 export type PersonalBrandingInput = z.infer<typeof personalBrandingSchema>
@@ -27,7 +27,7 @@ export interface PublicPersonalBranding {
   brandColor: string
   brandDarkColor: string
   bookingPageTheme: BookingPageTheme
-  hideSchedraBranding: boolean
+  hideCalendzaBranding: boolean
 }
 
 export const DEFAULT_PERSONAL_BRANDING: PublicPersonalBranding = {
@@ -36,7 +36,7 @@ export const DEFAULT_PERSONAL_BRANDING: PublicPersonalBranding = {
   brandColor: '#FF3D00',
   brandDarkColor: '#FF6F42',
   bookingPageTheme: 'system',
-  hideSchedraBranding: false
+  hideCalendzaBranding: false
 }
 
 function srgbChannel(value: number) {

@@ -126,7 +126,7 @@ onMounted(() => {
                   <div class="w-full max-w-2xl overflow-hidden rounded-2xl border border-default bg-default shadow-2xl">
                     <div class="flex items-center justify-between gap-6 border-b border-default px-5 py-3">
                       <p class="text-[11px] font-medium uppercase tracking-[0.13em] text-primary">
-                        Scheduling by Schedra
+                        Scheduling by Calendza
                       </p>
                       <button
                         type="button"

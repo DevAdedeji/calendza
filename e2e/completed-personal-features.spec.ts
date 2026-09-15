@@ -96,12 +96,12 @@ async function publicAvailability(
 test('manages time off on mobile, blocks its date and rejects overlaps and anonymous access', async ({ page, request }) => {
   expect((await request.get('/api/away-periods')).status()).toBe(401)
   await signUpAndSignIn(page, {
-    name: 'Away Host', username: 'away-host', email: 'away-host@schedra.test'
+    name: 'Away Host', username: 'away-host', email: 'away-host@calendza.test'
   })
 
   const [eventType] = await sql<{ slug: string }[]>`
     select slug from event_types
-    where user_id = (select id from users where email = 'away-host@schedra.test')
+    where user_id = (select id from users where email = 'away-host@calendza.test')
     order by created_at limit 1
   `
   const initial = await publicAvailability(page.request, 'away-host', eventType!.slug)
@@ -152,7 +152,7 @@ test('manages time off on mobile, blocks its date and rejects overlaps and anony
 test('edits guest questions on mobile and preserves saved answers after cancelling a draft', async ({ page }) => {
   test.setTimeout(60_000)
   await signUpAndSignIn(page, {
-    name: 'Questions Host', username: 'questions-host', email: 'questions-host@schedra.test'
+    name: 'Questions Host', username: 'questions-host', email: 'questions-host@calendza.test'
   })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('/event-types')
@@ -201,7 +201,7 @@ test('edits guest questions on mobile and preserves saved answers after cancelli
 
 test('enforces weekly and monthly booking limits configured in the event editor', async ({ page, request }) => {
   await signUpAndSignIn(page, {
-    name: 'Limit Host', username: 'limit-host', email: 'limit-host@schedra.test'
+    name: 'Limit Host', username: 'limit-host', email: 'limit-host@calendza.test'
   })
   await page.goto('/event-types')
   await page.waitForLoadState('networkidle')
@@ -225,7 +225,7 @@ test('enforces weekly and monthly booking limits configured in the event editor'
   const booking = await request.post('/api/bookings', {
     data: {
       username: 'limit-host', slug: eventType!.slug, start: selected.start,
-      durationMinutes: 30, name: 'Weekly Guest', email: 'weekly-guest@schedra.test',
+      durationMinutes: 30, name: 'Weekly Guest', email: 'weekly-guest@calendza.test',
       timeZone: 'UTC'
     }
   })
@@ -253,7 +253,7 @@ test('enforces weekly and monthly booking limits configured in the event editor'
 
 test('books a monthly series at a guest-selected duration and enforces the configured series maximum', async ({ page, request }) => {
   await signUpAndSignIn(page, {
-    name: 'Series Host', username: 'series-host', email: 'series-host@schedra.test'
+    name: 'Series Host', username: 'series-host', email: 'series-host@calendza.test'
   })
   await page.goto('/event-types')
   await page.waitForLoadState('networkidle')
@@ -288,7 +288,7 @@ test('books a monthly series at a guest-selected duration and enforces the confi
   }
   await expect(unavailable).toHaveCount(0)
   await page.getByLabel('Your name').fill('Series Guest')
-  await page.getByLabel('Email').fill('series-guest@schedra.test')
+  await page.getByLabel('Email').fill('series-guest@calendza.test')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('2 meetings booked')
 
@@ -314,7 +314,7 @@ test('books a monthly series at a guest-selected duration and enforces the confi
       username: 'series-host', slug: 'flexible-series', start: available.slots[0]!.start,
       durationMinutes: 60, requestId: crypto.randomUUID(),
       recurrence: { frequency: 'monthly', occurrences: 3 },
-      name: 'Too Many Meetings', email: 'series-boundary@schedra.test', timeZone: 'UTC'
+      name: 'Too Many Meetings', email: 'series-boundary@calendza.test', timeZone: 'UTC'
     }
   })
   expect(excessive.status()).toBe(400)
@@ -322,7 +322,7 @@ test('books a monthly series at a guest-selected duration and enforces the confi
 })
 
 test('gates personal branding, then applies the paid account brand to public pages on mobile', async ({ page }) => {
-  const email = 'brand-host@schedra.test'
+  const email = 'brand-host@calendza.test'
   await signUpAndSignIn(page, {
     name: 'Brand Host', username: 'brand-host', email
   })
@@ -332,7 +332,7 @@ test('gates personal branding, then applies the paid account brand to public pag
   const denied = await page.request.patch('/api/personal-branding', {
     data: {
       brandName: 'Denied Brand', brandColor: '#123456', brandDarkColor: '#abcdef',
-      bookingPageTheme: 'system', hideSchedraBranding: false
+      bookingPageTheme: 'system', hideCalendzaBranding: false
     }
   })
   expect(denied.status()).toBe(402)
@@ -347,19 +347,19 @@ test('gates personal branding, then applies the paid account brand to public pag
   await page.getByLabel('Dark-theme colour').last().fill('#abcdef')
   await page.getByLabel('Booking-page theme').click()
   await page.getByRole('option', { name: 'Always light' }).click()
-  await page.getByRole('switch', { name: 'Remove Schedra branding' }).click()
+  await page.getByRole('switch', { name: 'Remove Calendza branding' }).click()
   await page.getByRole('button', { name: 'Save branding' }).click()
   await expect(page.getByText('Branding saved', { exact: true })).toBeVisible()
 
   await page.goto('/brand-host')
   await expect(page.getByText('Bright Studio', { exact: true })).toBeVisible()
-  await expect(page.getByText('Scheduling by Schedra')).toHaveCount(0)
+  await expect(page.getByText('Scheduling by Calendza')).toHaveCount(0)
   await expect(page.locator('.personal-booking-brand')).toHaveCSS('--booking-brand-light', '#123456')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
 })
 
 test('keeps analytics CSV private to Personal Pro and exports the signed-in host data', async ({ page }) => {
-  const email = 'analytics-host@schedra.test'
+  const email = 'analytics-host@calendza.test'
   await signUpAndSignIn(page, {
     name: 'Analytics Host', username: 'analytics-host', email
   })
@@ -375,7 +375,7 @@ test('keeps analytics CSV private to Personal Pro and exports the signed-in host
     )
     select event_types.id, users.id, ${crypto.randomUUID()}, 'confirmed',
       now() + interval '1 day', now() + interval '1 day 30 minutes',
-      'Guest, "Quoted"', 'quoted-guest@schedra.test', 'UTC', 'hosted'
+      'Guest, "Quoted"', 'quoted-guest@calendza.test', 'UTC', 'hosted'
     from users
     inner join event_types on event_types.user_id = users.id
     where users.email = ${email}
@@ -390,11 +390,11 @@ test('keeps analytics CSV private to Personal Pro and exports the signed-in host
   const exported = await page.request.get('/api/analytics/export?days=30')
   expect(exported.ok()).toBe(true)
   expect(exported.headers()['content-type']).toContain('text/csv')
-  expect(exported.headers()['content-disposition']).toContain('schedra-bookings-')
+  expect(exported.headers()['content-disposition']).toContain('calendza-bookings-')
   expect(exported.headers()['cache-control']).toBe('private, no-store')
   const csv = await exported.text()
   expect(csv.charCodeAt(0)).toBe(0xFEFF)
   expect(csv).toContain('attendanceStatus')
   expect(csv).toContain('"Guest, ""Quoted"""')
-  expect(csv).toContain('quoted-guest@schedra.test')
+  expect(csv).toContain('quoted-guest@calendza.test')
 })

@@ -3,7 +3,7 @@ import { isPlatformAdminEmail } from '@@/server/services/session'
 
 describe('platform administrator allow-list', () => {
   it('matches normalized email addresses only', () => {
-    expect(isPlatformAdminEmail(' Admin@Schedra.xyz ', ['admin@schedra.xyz'])).toBe(true)
-    expect(isPlatformAdminEmail('member@schedra.xyz', ['admin@schedra.xyz'])).toBe(false)
+    expect(isPlatformAdminEmail(' Admin@Calendza.xyz ', ['admin@calendza.xyz'])).toBe(true)
+    expect(isPlatformAdminEmail('member@calendza.xyz', ['admin@calendza.xyz'])).toBe(false)
   })
 })
