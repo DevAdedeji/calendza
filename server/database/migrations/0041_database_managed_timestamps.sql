@@ -1,7 +1,7 @@
 -- Audit timestamps belong to the database clock. Besides keeping several app
 -- instances consistent, this also protects writes made outside Drizzle from
 -- silently leaving updated_at stale.
-CREATE OR REPLACE FUNCTION public.schedra_set_updated_at()
+CREATE OR REPLACE FUNCTION public.calendza_set_updated_at()
 RETURNS trigger
 LANGUAGE plpgsql
 AS $$
@@ -22,12 +22,12 @@ BEGIN
       AND table_schema = current_schema()
   LOOP
     EXECUTE format(
-      'DROP TRIGGER IF EXISTS schedra_set_updated_at ON %I.%I',
+      'DROP TRIGGER IF EXISTS calendza_set_updated_at ON %I.%I',
       target.table_schema,
       target.table_name
     );
     EXECUTE format(
-      'CREATE TRIGGER schedra_set_updated_at BEFORE UPDATE ON %I.%I FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at()',
+      'CREATE TRIGGER calendza_set_updated_at BEFORE UPDATE ON %I.%I FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at()',
       target.table_schema,
       target.table_name
     );

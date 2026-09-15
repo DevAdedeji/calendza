@@ -11,14 +11,14 @@ import {
 const request = {
   pathname: '/api/profile',
   method: 'PATCH',
-  expectedOrigin: 'https://schedra.example'
+  expectedOrigin: 'https://calendza.example'
 }
 
 describe('API request protection', () => {
   it('accepts same-origin browser mutations', () => {
     expect(requestProtectionFailure({
       ...request,
-      origin: 'https://schedra.example',
+      origin: 'https://calendza.example',
       fetchSite: 'same-origin',
       contentLength: '1024'
     })).toBeUndefined()

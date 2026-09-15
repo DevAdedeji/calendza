@@ -2,8 +2,9 @@
 import withNuxt from './.nuxt/eslint.config.mjs'
 
 export default withNuxt(
+  { ignores: ['.cache/**'] },
   {
-    name: 'schedra/pure-layers',
+    name: 'calendza/pure-layers',
     files: [
       'server/utils/**/*.ts',
       'server/domain/**/*.ts',

@@ -117,7 +117,7 @@ describe.skipIf(!url)('subscription seat reconciliation', () => {
           items: [{
             id: 'prod_monthly_2',
             name: 'Two seats',
-            metadata: { schedra_plan: 'team_monthly_seats_2', schedra_seats: '2' }
+            metadata: { calendza_plan: 'team_monthly_seats_2', calendza_seats: '2' }
           }],
           pagination: { has_more: false, next_cursor: null }
         })

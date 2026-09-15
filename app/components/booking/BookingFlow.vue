@@ -289,7 +289,7 @@ async function confirm() {
         })
     if (result.checkoutUrl) {
       // Hosted checkout must own the top-level window so bank/card security
-      // challenges also work when Schedra is embedded on another website.
+      // challenges also work when Calendza is embedded on another website.
       window.open(result.checkoutUrl, '_top')
       return
     }
@@ -338,7 +338,7 @@ const canonicalUrl = computed(() => isTeam.value
 const seoDescription = computed(() => page.value?.description
   || (page.value
     ? `${page.value.durationMinutes}-minute meeting with ${page.value.hostName}. Choose an available time online.`
-    : 'Choose an available time and book a meeting online with Schedra.'))
+    : 'Choose an available time and book a meeting online with Calendza.'))
 
 useSeoMeta({
   title: () => page.value ? `${page.value.title} with ${page.value.hostName}` : 'Book a time',
@@ -349,11 +349,11 @@ useSeoMeta({
     ? 'index, follow'
     : 'noindex, nofollow',
   ogType: 'website',
-  ogTitle: () => page.value ? `${page.value.title} with ${page.value.hostName}` : 'Book a time with Schedra',
+  ogTitle: () => page.value ? `${page.value.title} with ${page.value.hostName}` : 'Book a time with Calendza',
   ogDescription: () => seoDescription.value,
   ogUrl: () => canonicalUrl.value,
   twitterCard: 'summary_large_image',
-  twitterTitle: () => page.value ? `${page.value.title} with ${page.value.hostName}` : 'Book a time with Schedra',
+  twitterTitle: () => page.value ? `${page.value.title} with ${page.value.hostName}` : 'Book a time with Calendza',
   twitterDescription: () => seoDescription.value
 })
 useHead({
@@ -483,7 +483,7 @@ useHead({
                   No calendar event yet
                 </p>
                 <p class="mt-0.5 text-[13px] leading-relaxed text-muted">
-                  Schedra will send the final meeting details after the host approves your request.
+                  Calendza will send the final meeting details after the host approves your request.
                 </p>
               </div>
             </template>
@@ -973,7 +973,7 @@ useHead({
     </div>
 
     <footer
-      v-if="!branding?.hideSchedraBranding"
+      v-if="!branding?.hideCalendzaBranding"
       class="px-5 text-center text-xs text-muted"
       :class="embedded ? 'pb-4 pt-3' : 'pb-10 pt-6'"
     >
@@ -981,7 +981,7 @@ useHead({
       <NuxtLink
         to="/"
         class="underline underline-offset-4 transition-colors hover:text-highlighted"
-      >Schedra</NuxtLink>
+      >Calendza</NuxtLink>
     </footer>
   </div>
 </template>

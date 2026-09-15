@@ -144,7 +144,7 @@ async function retryRefund(item: PaymentActivityRecord) {
     feedback.success({
       title: result.providerState === 'paid' ? 'Refund confirmed' : 'Refund submitted again',
       description: result.providerState === 'unknown'
-        ? 'Bachs may have accepted it. Schedra will keep reconciling the refund safely.'
+        ? 'Bachs may have accepted it. Calendza will keep reconciling the refund safely.'
         : 'The payment ledger will update when Bachs confirms the final state.'
     })
     await refresh()

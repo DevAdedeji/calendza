@@ -47,11 +47,11 @@ const scriptUrl = computed(() => {
 })
 
 const attributes = computed(() => [
-  `data-schedra-embed="${htmlAttribute(props.bookingUrl)}"`,
-  `data-schedra-theme="${theme.value}"`,
-  `data-schedra-accent="${accent.value}"`,
-  prefillName.value.trim() ? `data-schedra-name="${htmlAttribute(prefillName.value.trim())}"` : '',
-  prefillEmail.value.trim() ? `data-schedra-email="${htmlAttribute(prefillEmail.value.trim())}"` : ''
+  `data-calendza-embed="${htmlAttribute(props.bookingUrl)}"`,
+  `data-calendza-theme="${theme.value}"`,
+  `data-calendza-accent="${accent.value}"`,
+  prefillName.value.trim() ? `data-calendza-name="${htmlAttribute(prefillName.value.trim())}"` : '',
+  prefillEmail.value.trim() ? `data-calendza-email="${htmlAttribute(prefillEmail.value.trim())}"` : ''
 ].filter(Boolean).join('\n  '))
 
 const snippet = computed(() => {
@@ -60,10 +60,10 @@ const snippet = computed(() => {
   if (installType.value === 'floating') {
     return `<script async
   src="${htmlAttribute(scriptUrl.value)}"
-  data-schedra-floating="${htmlAttribute(props.bookingUrl)}"
-  data-schedra-label="${htmlAttribute(buttonLabel.value)}"
-  data-schedra-theme="${theme.value}"
-  data-schedra-accent="${accent.value}"
+  data-calendza-floating="${htmlAttribute(props.bookingUrl)}"
+  data-calendza-label="${htmlAttribute(buttonLabel.value)}"
+  data-calendza-theme="${theme.value}"
+  data-calendza-accent="${accent.value}"
 >${scriptClose}`
   }
 
@@ -186,7 +186,7 @@ async function copySnippet() {
                 />
               </UFormField>
               <p class="text-[12px] leading-relaxed text-muted">
-                Use prefilling only on pages where you already know the visitor. The values are sent directly to Schedra when the overlay opens.
+                Use prefilling only on pages where you already know the visitor. The values are sent directly to Calendza when the overlay opens.
               </p>
             </div>
           </details>

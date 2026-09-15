@@ -30,9 +30,9 @@ function toggleColorMode() {
       <div class="flex h-16 items-center justify-between gap-8">
         <NuxtLink
           to="/"
-          aria-label="Schedra home"
+          aria-label="Calendza home"
         >
-          <SchedraMark />
+          <CalendzaMark />
         </NuxtLink>
 
         <nav class="hidden items-center gap-8 md:flex">

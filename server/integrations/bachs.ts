@@ -279,9 +279,9 @@ export function createConnectedAccount(input: {
   return bachsFetch<BachsConnectedAccount>('/accounts', {
     method: 'POST',
     // Email addresses are not unique across personal and team recipients.
-    // The immutable Schedra owner reference makes retries safe without ever
+    // The immutable Calendza owner reference makes retries safe without ever
     // merging two payout accounts that happen to share an inbox.
-    idempotencyKey: `schedra-recipient-${input.reference}`,
+    idempotencyKey: `calendza-recipient-${input.reference}`,
     body: {
       contact_email: input.email,
       display_name: input.name,
@@ -338,7 +338,7 @@ export interface BachsAccountBalance {
 
 /**
  * Financial reads must run in the connected account's context. Without this
- * header Bachs returns Schedra's platform balance, which must never be shown to
+ * header Bachs returns Calendza's platform balance, which must never be shown to
  * an individual host or team.
  */
 export function getConnectedAccountBalance(accountId: string) {
@@ -494,7 +494,7 @@ export function estimateConnectedAccountPayout(input: {
 }
 
 /**
- * A withdrawal is irreversible once Bachs accepts it. The stable Schedra
+ * A withdrawal is irreversible once Bachs accepts it. The stable Calendza
  * reference is therefore both the provider reference and Idempotency-Key, and
  * transient retries are only enabled because that key makes them safe.
  */
@@ -678,7 +678,7 @@ async function findProductByPlan(key: string) {
     const page = await bachsFetch<BachsProductPage>('/products', {
       query: { limit: 100, cursor }
     })
-    const match = (page.items ?? []).find(item => item.metadata?.schedra_plan === key)
+    const match = (page.items ?? []).find(item => item.metadata?.calendza_plan === key)
     if (match) return match
     cursor = page.pagination?.has_more ? page.pagination.next_cursor ?? undefined : undefined
   } while (cursor)
@@ -706,17 +706,17 @@ export async function ensureTeamProduct(interval: BillingInterval, seats: number
 
   const created = await bachsFetch<BachsProduct>('/products', {
     method: 'POST',
-    idempotencyKey: `schedra-${key}`,
+    idempotencyKey: `calendza-${key}`,
     body: {
-      name: `Schedra Team — ${billable} ${billable === 1 ? 'seat' : 'seats'} (${interval})`,
-      description: `Team scheduling on Schedra for ${billable} occupied ${billable === 1 ? 'seat' : 'seats'}.`,
+      name: `Calendza Team — ${billable} ${billable === 1 ? 'seat' : 'seats'} (${interval})`,
+      description: `Team scheduling on Calendza for ${billable} occupied ${billable === 1 ? 'seat' : 'seats'}.`,
       price: {
         currency: TEAM_PLAN.currency,
         price_type: 'fixed',
         amount: toDecimalString(seatPriceCents(interval) * billable)
       },
       billing_cycle: { interval: interval === 'yearly' ? 'year' : 'month', frequency: 1 },
-      metadata: { schedra_plan: key, schedra_seats: String(billable) }
+      metadata: { calendza_plan: key, calendza_seats: String(billable) }
     }
   })
 
@@ -737,9 +737,9 @@ export async function ensurePersonalProProduct(interval: BillingInterval): Promi
 
   const created = await bachsFetch<BachsProduct>('/products', {
     method: 'POST',
-    idempotencyKey: `schedra-${key}`,
+    idempotencyKey: `calendza-${key}`,
     body: {
-      name: `Schedra Personal Pro (${interval})`,
+      name: `Calendza Personal Pro (${interval})`,
       description: 'Advanced solo scheduling, custom branding and lower paid-booking fees.',
       price: {
         currency: PERSONAL_PRO_PLAN.currency,
@@ -747,7 +747,7 @@ export async function ensurePersonalProProduct(interval: BillingInterval): Promi
         amount: toDecimalString(personalProPriceCents(interval))
       },
       billing_cycle: { interval: interval === 'yearly' ? 'year' : 'month', frequency: 1 },
-      metadata: { schedra_plan: key }
+      metadata: { calendza_plan: key }
     }
   })
 

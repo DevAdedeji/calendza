@@ -60,7 +60,7 @@ ALTER TABLE "users" ADD COLUMN "brand_logo_url" text;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "brand_color" text;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "brand_dark_color" text;--> statement-breakpoint
 ALTER TABLE "users" ADD COLUMN "booking_page_theme" text DEFAULT 'system' NOT NULL;--> statement-breakpoint
-ALTER TABLE "users" ADD COLUMN "hide_schedra_branding" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "hide_calendza_branding" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "personal_invoices" ADD CONSTRAINT "personal_invoices_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "personal_subscriptions" ADD CONSTRAINT "personal_subscriptions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_brand_logos" ADD CONSTRAINT "user_brand_logos_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -69,6 +69,6 @@ CREATE INDEX "personal_invoices_user_created_idx" ON "personal_invoices" USING b
 CREATE INDEX "personal_invoices_checkout_idx" ON "personal_invoices" USING btree ("bachs_checkout_id");--> statement-breakpoint
 CREATE INDEX "personal_subscriptions_status_idx" ON "personal_subscriptions" USING btree ("status");--> statement-breakpoint
 CREATE UNIQUE INDEX "personal_subscriptions_bachs_subscription_key" ON "personal_subscriptions" USING btree ("bachs_subscription_id") WHERE "personal_subscriptions"."bachs_subscription_id" is not null;--> statement-breakpoint
-CREATE TRIGGER schedra_set_updated_at BEFORE UPDATE ON "personal_invoices" FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at();--> statement-breakpoint
-CREATE TRIGGER schedra_set_updated_at BEFORE UPDATE ON "personal_subscriptions" FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at();--> statement-breakpoint
-CREATE TRIGGER schedra_set_updated_at BEFORE UPDATE ON "user_brand_logos" FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at();
+CREATE TRIGGER calendza_set_updated_at BEFORE UPDATE ON "personal_invoices" FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at();--> statement-breakpoint
+CREATE TRIGGER calendza_set_updated_at BEFORE UPDATE ON "personal_subscriptions" FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at();--> statement-breakpoint
+CREATE TRIGGER calendza_set_updated_at BEFORE UPDATE ON "user_brand_logos" FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at();

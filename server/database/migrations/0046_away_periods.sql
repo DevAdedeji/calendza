@@ -18,4 +18,4 @@ ALTER TABLE "away_periods"
 		"user_id" WITH =,
 		daterange("start_date", "end_date", '[]') WITH &&
 	);--> statement-breakpoint
-CREATE TRIGGER schedra_set_updated_at BEFORE UPDATE ON "away_periods" FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at();
+CREATE TRIGGER calendza_set_updated_at BEFORE UPDATE ON "away_periods" FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at();

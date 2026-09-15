@@ -168,7 +168,7 @@ export function fromDecimalString(amount: string | number | null | undefined) {
 
 export const RESERVED_ORGANIZATION_SLUGS = new Set([
   'about', 'admin', 'api', 'app', 'billing', 'checkout', 'docs', 'help', 'invite',
-  'login', 'new', 'pricing', 'privacy', 'schedra', 'settings', 'signup', 'support',
+  'login', 'new', 'pricing', 'privacy', 'calendza', 'calendza', 'settings', 'signup', 'support',
   't', 'team', 'teams', 'terms', 'w', 'workspaces', 'www'
 ])
 

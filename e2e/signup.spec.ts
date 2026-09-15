@@ -19,7 +19,7 @@ test('retries the booking-link check instead of trapping the user behind a disab
 
   await page.getByLabel('Your name').fill('Zoom Reviewer')
   await page.getByLabel('Your booking link').fill('zoom-reviewer')
-  await page.getByLabel('Email').fill('zoom-reviewer@schedra.test')
+  await page.getByLabel('Email').fill('zoom-reviewer@calendza.test')
   await page.locator('input[name="password"]').fill('a-production-grade-passphrase')
 
   const submit = page.getByRole('button', { name: 'Create my link' })

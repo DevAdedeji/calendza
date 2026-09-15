@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   if (!booking) throw createError({ statusCode: 404, statusMessage: 'No such booking' })
 
   setHeader(event, 'content-type', 'text/calendar; charset=utf-8')
-  setHeader(event, 'content-disposition', `attachment; filename="schedra-${uid}.ics"`)
+  setHeader(event, 'content-disposition', `attachment; filename="calendza-${uid}.ics"`)
   setHeader(event, 'cache-control', 'private, no-store')
-  return bookingCalendarFile(booking, useEnv().schedraUrl)
+  return bookingCalendarFile(booking, useEnv().siteUrl)
 })

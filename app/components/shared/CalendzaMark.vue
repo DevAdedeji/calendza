@@ -11,7 +11,7 @@ withDefaults(defineProps<{
 </script>
 
 <template>
-  <span class="inline-flex items-center gap-2.5">
+  <span class="inline-flex shrink-0 items-center gap-2.5">
     <svg
       viewBox="0 0 48 48"
       class="size-4.5 shrink-0"
@@ -60,6 +60,6 @@ withDefaults(defineProps<{
       v-if="wordmark"
       class="text-[16px] font-semibold tracking-[-0.03em]"
       :class="inverted ? 'text-white' : 'text-highlighted'"
-    >schedra</span>
+    >calendza</span>
   </span>
 </template>

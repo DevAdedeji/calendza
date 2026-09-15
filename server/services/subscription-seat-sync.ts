@@ -125,7 +125,7 @@ export async function syncSubscriptionSeats(organizationId: string) {
   }
 
   const remoteSeats = metadataSeatCount(remote.metadata?.seats)
-    ?? metadataSeatCount(remote.product?.metadata?.schedra_seats)
+    ?? metadataSeatCount(remote.product?.metadata?.calendza_seats)
   if (remoteSeats !== desiredSeats) {
     await updateSubscriptionMetadata(subscription.bachsSubscriptionId, {
       seats: String(desiredSeats)

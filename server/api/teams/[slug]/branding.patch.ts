@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
     brandColor: parsed.data.brandColor,
     brandDarkColor: parsed.data.brandDarkColor,
     bookingPageTheme: parsed.data.bookingPageTheme,
-    hideSchedraBranding: parsed.data.hideSchedraBranding,
+    hideCalendzaBranding: parsed.data.hideCalendzaBranding,
     updatedAt: sql`now()`
   }).where(eq(organizations.id, context.organization.id))
 

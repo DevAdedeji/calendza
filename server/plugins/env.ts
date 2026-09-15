@@ -6,6 +6,6 @@ export default defineNitroPlugin((nitro) => {
   const env = useEnv()
 
   nitro.hooks.hook('request', (event) => {
-    event.context.siteUrl = env.schedraUrl
+    event.context.siteUrl = env.siteUrl
   })
 })

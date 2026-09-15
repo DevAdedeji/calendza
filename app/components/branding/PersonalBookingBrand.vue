@@ -22,5 +22,5 @@ defineProps<{
       class="text-[16px] font-semibold tracking-[-0.02em] text-highlighted"
     >{{ branding.brandName }}</span>
   </span>
-  <SchedraMark v-else />
+  <CalendzaMark v-else />
 </template>

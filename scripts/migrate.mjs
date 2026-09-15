@@ -1,5 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { readMigrationFiles } from 'drizzle-orm/migrator'
 import postgres from 'postgres'
 import { existsSync } from 'node:fs'
 
@@ -32,6 +33,14 @@ if (testMode) {
 const client = postgres(url, { max: 1, onnotice: () => {} })
 
 try {
+  const [history] = await client`select to_regclass('drizzle.__drizzle_migrations') as table_name`
+  if (history?.table_name) {
+    const applied = await client`select hash from drizzle.__drizzle_migrations`
+    const expected = new Set(readMigrationFiles({ migrationsFolder: 'server/database/migrations' }).map(file => file.hash))
+    if (applied.some(row => !expected.has(row.hash))) {
+      throw new Error('Migration history does not match this Calendza setup. Use a fresh database; existing data has not been changed.')
+    }
+  }
   await migrate(drizzle(client), { migrationsFolder: 'server/database/migrations' })
   console.log('migrations applied')
 } catch (error) {

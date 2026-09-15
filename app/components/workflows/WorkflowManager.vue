@@ -180,7 +180,7 @@ watch(modalOpen, async (open) => {
       v-model:open="modalOpen"
       :dismissible="false"
       :title="editing ? 'Edit workflow' : 'New workflow'"
-      description="Choose one clear trigger and one action. Schedra handles delivery and retries."
+      description="Choose one clear trigger and one action. Calendza handles delivery and retries."
       :ui="{ content: 'w-full max-w-2xl', footer: 'border-t border-default px-5 py-4 sm:px-6' }"
     >
       <template #body>
@@ -250,7 +250,7 @@ watch(modalOpen, async (open) => {
           <section class="space-y-4 rounded-xl border border-default bg-muted/40 p-4 sm:p-5">
             <div>
               <h3 class="text-[14px] font-semibold text-highlighted">
-                What should Schedra do?
+                What should Calendza do?
               </h3>
               <p class="mt-1 text-[13px] text-muted">
                 Email is best for people. Webhooks securely notify another application.
@@ -337,12 +337,12 @@ watch(modalOpen, async (open) => {
               <UFormField
                 label="Webhook URL"
                 required
-                help="Schedra requires HTTPS, signs every request and retries temporary failures."
+                help="Calendza requires HTTPS, signs every request and retries temporary failures."
               >
                 <UInput
                   v-model="form.action.url"
                   type="url"
-                  placeholder="https://example.com/webhooks/schedra"
+                  placeholder="https://example.com/webhooks/calendza"
                   size="lg"
                   class="w-full"
                 />
@@ -387,7 +387,7 @@ watch(modalOpen, async (open) => {
     <ConfirmDialog
       v-model:open="secretOpen"
       title="Save your signing secret"
-      description="This secret proves webhook requests came from Schedra. It is shown only once."
+      description="This secret proves webhook requests came from Calendza. It is shown only once."
     >
       <template #body>
         <div class="flex items-center gap-2 rounded-lg border border-default bg-muted p-2">

@@ -120,7 +120,7 @@ function when(iso: string) {
           </span>
           <div class="min-w-0 flex-1">
             <p class="text-[14px] text-highlighted">
-              <span class="font-medium">{{ entry.actorName ?? entry.actorEmail ?? 'Schedra' }}</span>
+              <span class="font-medium">{{ entry.actorName ?? entry.actorEmail ?? 'Calendza' }}</span>
               {{ phrase(entry.action) }}
             </p>
             <p class="mt-0.5 text-[12px] text-muted">

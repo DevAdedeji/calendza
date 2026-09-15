@@ -15,7 +15,7 @@ export interface EmailBranding {
   name: string
   logoUrl?: string
   accentColor: string
-  hideSchedraBranding: boolean
+  hideCalendzaBranding: boolean
 }
 
 export interface Email {
@@ -85,7 +85,7 @@ function contrastColor(hex: string) {
 }
 
 function emailBrand(email: Email) {
-  const name = email.branding?.name.trim() || 'schedra'
+  const name = email.branding?.name.trim() || 'calendza'
   const accentColor = safeAccentColor(email.branding?.accentColor)
   const logoUrl = email.branding?.logoUrl ? safeHttpUrl(email.branding.logoUrl) : undefined
   const mark = logoUrl
@@ -124,10 +124,10 @@ export function renderEmailHtml(email: Email) {
   if (!actionUrl) throw new Error('Email action URL must use HTTP or HTTPS.')
   const brand = emailBrand(email)
   const poweredBy = !email.branding
-    ? 'Sent by Schedra · Scheduling that works around you'
-    : email.branding.hideSchedraBranding
+    ? 'Sent by Calendza · Scheduling that works around you'
+    : email.branding.hideCalendzaBranding
       ? `Sent by ${escapeHtml(brand.name)}`
-      : `Sent by ${escapeHtml(brand.name)} · Powered by Schedra`
+      : `Sent by ${escapeHtml(brand.name)} · Powered by Calendza`
 
   return `<!doctype html>
 <html lang="en">
@@ -187,12 +187,12 @@ export function renderEmailText(email: Email) {
     : ''
   const footer = email.footer ? `\n\n${email.footer}` : ''
 
-  const brandName = email.branding?.name.trim() || 'Schedra'
+  const brandName = email.branding?.name.trim() || 'Calendza'
   const signature = !email.branding
-    ? 'Schedra'
-    : email.branding.hideSchedraBranding
+    ? 'Calendza'
+    : email.branding.hideCalendzaBranding
       ? brandName
-      : `${brandName} · Powered by Schedra`
+      : `${brandName} · Powered by Calendza`
   return `${email.heading}\n\n${email.body}${details}\n\n${email.action.label}: ${email.action.url}${footer}\n\n— ${signature}`
 }
 
@@ -218,7 +218,7 @@ export async function sendEmail(email: Email, idempotencyKey?: string) {
         subject: email.subject,
         html,
         text,
-        headers: idempotencyKey ? { 'X-Schedra-Idempotency-Key': idempotencyKey } : undefined
+        headers: idempotencyKey ? { 'X-Calendza-Idempotency-Key': idempotencyKey } : undefined
       })
     } catch (error) {
       if (isPermanentEmailDeliveryError(error)) {

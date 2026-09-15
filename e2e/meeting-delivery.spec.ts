@@ -53,17 +53,17 @@ test('creates an event and completes the guest booking lifecycle', async ({ page
   await expect(page.getByTestId('signup-form')).toHaveAttribute('data-ready', 'true')
   await page.getByLabel('Your name').fill('E2E Host')
   await page.getByLabel('Your booking link').fill('e2e-host')
-  await page.getByLabel('Email').fill('e2e-host@schedra.test')
+  await page.getByLabel('Email').fill('e2e-host@calendza.test')
   await page.locator('input[name="password"]').fill('a-production-grade-passphrase')
   await expect(page.getByText('Available', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Create my link' }).click()
   await expect(page).toHaveURL(/\/verify-email/)
 
-  await sql`update users set email_verified = true where email = 'e2e-host@schedra.test'`
+  await sql`update users set email_verified = true where email = 'e2e-host@calendza.test'`
 
   await page.goto('/login')
   await page.waitForLoadState('networkidle')
-  await page.getByLabel('Email').fill('e2e-host@schedra.test')
+  await page.getByLabel('Email').fill('e2e-host@calendza.test')
   await page.locator('input[name="password"]').fill('a-production-grade-passphrase')
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
@@ -86,7 +86,7 @@ test('creates an event and completes the guest booking lifecycle', async ({ page
   await page.waitForLoadState('networkidle')
   await page.getByTestId('booking-slot').first().click()
   await page.getByLabel('Your name').fill('E2E Guest')
-  await page.getByLabel('Email').fill('e2e-guest@schedra.test')
+  await page.getByLabel('Email').fill('e2e-guest@calendza.test')
   await page.getByLabel('What should we prepare?').fill('The onboarding metrics')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('You\'re booked')
@@ -107,7 +107,7 @@ test('creates an event and completes the guest booking lifecycle', async ({ page
   await expect(page.getByText('Choose a new time. Your name and email are already filled in.')).toBeVisible()
   await page.getByTestId('booking-slot').first().click()
   await expect(page.getByLabel('Your name')).toHaveValue('E2E Guest')
-  await expect(page.getByLabel('Email')).toHaveValue('e2e-guest@schedra.test')
+  await expect(page.getByLabel('Email')).toHaveValue('e2e-guest@calendza.test')
   await expect(page.getByLabel('What should we prepare?')).toHaveValue('The onboarding metrics')
   await page.getByRole('button', { name: 'Confirm new time' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('You\'re booked')
@@ -136,11 +136,11 @@ test('lets a guest reschedule a team booking from its private management link', 
   await signUpAndSignIn(page, {
     name: 'Team Host',
     username: 'team-host',
-    email: 'team-host@schedra.test'
+    email: 'team-host@calendza.test'
   })
 
   const [host] = await sql<{ id: string }[]>`
-    select id from users where email = 'team-host@schedra.test'
+    select id from users where email = 'team-host@calendza.test'
   `
   const [schedule] = await sql<{ id: string }[]>`
     select id from schedules where user_id = ${host!.id} and is_default = true
@@ -175,7 +175,7 @@ test('lets a guest reschedule a team booking from its private management link', 
   await page.waitForLoadState('networkidle')
   await page.getByTestId('booking-slot').first().click()
   await page.getByLabel('Your name').fill('Team Guest')
-  await page.getByLabel('Email').fill('team-guest@schedra.test')
+  await page.getByLabel('Email').fill('team-guest@calendza.test')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('You\'re booked')
 
@@ -187,7 +187,7 @@ test('lets a guest reschedule a team booking from its private management link', 
   await expect(page).toHaveURL(new RegExp(`/team/e2e-team/team-consultation\\?reschedule=${originalUid}$`))
   await page.getByTestId('booking-slot').first().click()
   await expect(page.getByLabel('Your name')).toHaveValue('Team Guest')
-  await expect(page.getByLabel('Email')).toHaveValue('team-guest@schedra.test')
+  await expect(page.getByLabel('Email')).toHaveValue('team-guest@calendza.test')
   await expect(page.getByLabel('Email')).toBeDisabled()
   await page.getByRole('button', { name: 'Confirm new time' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('You\'re booked')
@@ -199,7 +199,7 @@ test('lets a guest reschedule a team booking from its private management link', 
     rescheduled_from_id: string | null
   }[]>`
     select uid, status, organization_id, rescheduled_from_id
-    from bookings where attendee_email = 'team-guest@schedra.test'
+    from bookings where attendee_email = 'team-guest@calendza.test'
     order by created_at
   `
   expect(moved).toHaveLength(2)
@@ -212,11 +212,11 @@ test('records and reverses a past meeting outcome without duplicating no-show wo
   await signUpAndSignIn(page, {
     name: 'Attendance Host',
     username: 'attendance-host',
-    email: 'attendance-host@schedra.test'
+    email: 'attendance-host@calendza.test'
   })
 
   const [host] = await sql<{ id: string }[]>`
-    select id from users where email = 'attendance-host@schedra.test'
+    select id from users where email = 'attendance-host@calendza.test'
   `
   const [eventType] = await sql<{ id: string }[]>`
     select id from event_types where user_id = ${host!.id} order by created_at limit 1
@@ -228,7 +228,7 @@ test('records and reverses a past meeting outcome without duplicating no-show wo
     ) values (
       ${eventType!.id}, ${host!.id}, 'attendance-booking', 'confirmed',
       now() - interval '2 hours', now() - interval '90 minutes',
-      'Missed Guest', 'missed-guest@schedra.test', 'UTC'
+      'Missed Guest', 'missed-guest@calendza.test', 'UTC'
     ) returning id, uid
   `
   const concurrent = await Promise.all([
@@ -269,7 +269,7 @@ test('holds approval requests, invites additional guests and duplicates the even
   await signUpAndSignIn(page, {
     name: 'Approval Host',
     username: 'approval-host',
-    email: 'approval-host@schedra.test'
+    email: 'approval-host@calendza.test'
   })
 
   await page.goto('/event-types')
@@ -287,9 +287,9 @@ test('holds approval requests, invites additional guests and duplicates the even
   await page.waitForLoadState('networkidle')
   await page.getByTestId('booking-slot').first().click()
   await page.getByLabel('Your name').fill('Primary Guest')
-  await page.getByLabel('Email').fill('primary-guest@schedra.test')
+  await page.getByLabel('Email').fill('primary-guest@calendza.test')
   await page.getByRole('button', { name: 'Add guest' }).click()
-  await page.getByLabel('Additional guest 1 email').fill('teammate@schedra.test')
+  await page.getByLabel('Additional guest 1 email').fill('teammate@calendza.test')
   await page.getByLabel('Notes').fill('Please review the project brief.')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('Request sent')
@@ -302,11 +302,11 @@ test('holds approval requests, invites additional guests and duplicates the even
   }[]>`
     select uid, status, additional_guest_emails as "additionalGuestEmails"
     from bookings
-    where attendee_email = 'primary-guest@schedra.test'
+    where attendee_email = 'primary-guest@calendza.test'
   `
   expect(pending).toMatchObject({
     status: 'pending',
-    additionalGuestEmails: ['teammate@schedra.test']
+    additionalGuestEmails: ['teammate@calendza.test']
   })
 
   const requestMessages = await sql<{ count: number }[]>`
@@ -347,7 +347,7 @@ test('holds approval requests, invites additional guests and duplicates the even
   await page.waitForLoadState('networkidle')
   await page.getByTestId('booking-slot').first().click()
   await page.getByLabel('Your name').fill('Declined Guest')
-  await page.getByLabel('Email').fill('declined-guest@schedra.test')
+  await page.getByLabel('Email').fill('declined-guest@calendza.test')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toContainText('Request sent')
 
@@ -360,7 +360,7 @@ test('holds approval requests, invites additional guests and duplicates the even
 
   const [declined] = await sql<{ id: string, uid: string, status: string }[]>`
     select id, uid, status from bookings
-    where attendee_email = 'declined-guest@schedra.test'
+    where attendee_email = 'declined-guest@calendza.test'
   `
   expect(declined?.status).toBe('rejected')
   const declinedJobs = await sql<{ count: number }[]>`
@@ -402,7 +402,7 @@ test('holds approval requests, invites additional guests and duplicates the even
 })
 
 test('exports portable account data and permanently removes the account', async ({ page }) => {
-  const email = 'account-owner@schedra.test'
+  const email = 'account-owner@calendza.test'
   await signUpAndSignIn(page, {
     name: 'Account Owner',
     username: 'account-owner',
@@ -412,7 +412,7 @@ test('exports portable account data and permanently removes the account', async 
   const accountRequest = page.context().request
   const exportedResponse = await accountRequest.get('/api/account/export')
   expect(exportedResponse.ok()).toBe(true)
-  expect(exportedResponse.headers()['content-disposition']).toContain('schedra-export-')
+  expect(exportedResponse.headers()['content-disposition']).toContain('calendza-export-')
 
   const exported = await exportedResponse.json()
   expect(exported.profile).toMatchObject({ email, username: 'account-owner' })

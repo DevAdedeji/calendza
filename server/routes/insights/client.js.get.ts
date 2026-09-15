@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
     const response = await fetchWithTimeout(UMAMI_SCRIPT_URL, {
       headers: {
         'Accept': 'application/javascript',
-        'User-Agent': 'Schedra-Analytics-Proxy/1.0'
+        'User-Agent': 'Calendza-Analytics-Proxy/1.0'
       }
     }, UMAMI_PROXY_TIMEOUT_MS)
 

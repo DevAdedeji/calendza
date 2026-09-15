@@ -16,7 +16,7 @@ const selection = {
   brandColor: organizations.brandColor,
   brandDarkColor: organizations.brandDarkColor,
   bookingPageTheme: organizations.bookingPageTheme,
-  hideSchedraBranding: organizations.hideSchedraBranding,
+  hideCalendzaBranding: organizations.hideCalendzaBranding,
   archivedAt: organizations.archivedAt
 }
 

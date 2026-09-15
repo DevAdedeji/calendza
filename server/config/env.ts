@@ -6,7 +6,7 @@ export interface Env {
   databaseStatementTimeoutMs: number
   databaseLockTimeoutMs: number
   databaseIdleTransactionTimeoutMs: number
-  schedraUrl: string
+  siteUrl: string
   environment: 'development' | 'staging' | 'production'
   authSecret: string
   integrationEncryptionKey?: string
@@ -82,8 +82,10 @@ function integer(name: string, fallback: number, minimum: number, maximum: numbe
 export function useEnv(): Env {
   if (cached) return cached
 
-  const missing = (['DATABASE_URL', 'SCHEDRA_URL', 'AUTH_SECRET'] as const)
+  const siteOrigin = optional('CALENDZA_URL')
+  const missing: string[] = (['DATABASE_URL', 'AUTH_SECRET'] as const)
     .filter(key => !process.env[key])
+  if (!siteOrigin) missing.push('CALENDZA_URL')
   if (missing.length) {
     throw new Error(
       `Missing environment variables: ${missing.join(', ')}. Copy .env.example to .env.`
@@ -105,12 +107,12 @@ export function useEnv(): Env {
   const integrationEncryptionKey = optional('INTEGRATION_ENCRYPTION_KEY')
   const bachsSecretKey = optional('BACHS_SECRET_KEY')
   const bachsWebhookSecret = optional('BACHS_WEBHOOK_SECRET')
-  const configuredBillingMode = optional('SCHEDRA_BILLING_MODE')
+  const configuredBillingMode = optional('CALENDZA_BILLING_MODE')
   if (configuredBillingMode && !['sandbox', 'live'].includes(configuredBillingMode)) {
-    throw new Error('SCHEDRA_BILLING_MODE must be sandbox or live.')
+    throw new Error('CALENDZA_BILLING_MODE must be sandbox or live.')
   }
   if (configuredBillingMode && !bachsSecretKey?.startsWith(`sk_${configuredBillingMode}_`)) {
-    throw new Error('SCHEDRA_BILLING_MODE must match the Bachs secret-key environment.')
+    throw new Error('CALENDZA_BILLING_MODE must match the Bachs secret-key environment.')
   }
   const billingMode = bachsSecretKey?.startsWith('sk_sandbox_')
     ? 'sandbox'
@@ -121,10 +123,10 @@ export function useEnv(): Env {
   const emailFrom = optional('EMAIL_FROM')
   const platformAdminEmails = emailList('PLATFORM_ADMIN_EMAILS')
   const operationsAlertEmails = emailList('OPERATIONS_ALERT_EMAILS')
-  const processRole = optional('SCHEDRA_PROCESS_ROLE') ?? 'all'
+  const processRole = optional('CALENDZA_PROCESS_ROLE') ?? 'all'
 
   if (!['web', 'worker', 'all'].includes(processRole)) {
-    throw new Error('SCHEDRA_PROCESS_ROLE must be web, worker or all.')
+    throw new Error('CALENDZA_PROCESS_ROLE must be web, worker or all.')
   }
 
   if (Boolean(googleClientId) !== Boolean(googleClientSecret)) {
@@ -151,18 +153,21 @@ export function useEnv(): Env {
     throw new Error('PAID_BOOKING_PLATFORM_FEE_BPS must be an integer between 1 and 5000.')
   }
 
-  const schedraUrl = parseUrl('SCHEDRA_URL', process.env.SCHEDRA_URL!, ['http:', 'https:'])
-  const publicUrl = new URL(schedraUrl)
+  const siteUrl = new URL(parseUrl('CALENDZA_URL', siteOrigin!, ['http:', 'https:']))
+  if (siteUrl.pathname !== '/' || siteUrl.search || siteUrl.hash || siteUrl.username || siteUrl.password) {
+    throw new Error('CALENDZA_URL must be an origin without credentials, a path, query, or fragment.')
+  }
+  const publicUrl = siteUrl
   const local = ['localhost', '127.0.0.1', '::1'].includes(publicUrl.hostname)
-  const configuredEnvironment = optional('SCHEDRA_ENVIRONMENT')
+  const configuredEnvironment = optional('CALENDZA_ENVIRONMENT')
   const environment = configuredEnvironment
     ?? (local ? 'development' : /(^|\.)staging\./i.test(publicUrl.hostname) ? 'staging' : 'production')
   if (!['development', 'staging', 'production'].includes(environment)) {
-    throw new Error('SCHEDRA_ENVIRONMENT must be development, staging or production.')
+    throw new Error('CALENDZA_ENVIRONMENT must be development, staging or production.')
   }
   if (environment === 'production') {
     if (publicUrl.protocol !== 'https:') {
-      throw new Error('Production SCHEDRA_URL must use HTTPS.')
+      throw new Error('Production CALENDZA_URL must use HTTPS.')
     }
     if (!integrationEncryptionKey) {
       throw new Error('INTEGRATION_ENCRYPTION_KEY is required in production and must be separate from AUTH_SECRET.')
@@ -197,7 +202,7 @@ export function useEnv(): Env {
     databaseStatementTimeoutMs: integer('DATABASE_STATEMENT_TIMEOUT_MS', 15_000, 1000, 120_000),
     databaseLockTimeoutMs: integer('DATABASE_LOCK_TIMEOUT_MS', 5_000, 100, 30_000),
     databaseIdleTransactionTimeoutMs: integer('DATABASE_IDLE_TRANSACTION_TIMEOUT_MS', 15_000, 1000, 120_000),
-    schedraUrl,
+    siteUrl: siteUrl.origin,
     environment: environment as Env['environment'],
     authSecret,
     integrationEncryptionKey,
@@ -215,7 +220,7 @@ export function useEnv(): Env {
     resendApiKey,
     smtpUrl,
     emailDeliveryMode: smtpUrl ? 'smtp' : resendApiKey ? 'resend' : 'log',
-    emailFrom: emailFrom ?? 'Schedra <onboarding@resend.dev>',
+    emailFrom: emailFrom ?? 'Calendza <onboarding@resend.dev>',
     platformAdminEmails,
     operationsAlertEmails: operationsAlertEmails.length ? operationsAlertEmails : platformAdminEmails,
     processRole: processRole as Env['processRole']

@@ -310,7 +310,7 @@ describe.skipIf(!url)('teams', () => {
     const { markInvoicePaid } = await import('@@/server/services/billing')
     const { organizationEntitlement } = await import('@@/server/services/entitlement')
 
-    const reference = 'schedra-team-test-reference'
+    const reference = 'calendza-team-test-reference'
     await sql`
       insert into organization_invoices
         (organization_id, reference, status, interval, seats, amount_cents, period_start, period_end)

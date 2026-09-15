@@ -3,7 +3,7 @@ definePageMeta({ layout: 'default' })
 
 useSeoMeta({
   title: 'Support',
-  description: 'Get help with Schedra accounts, bookings, billing and integrations.'
+  description: 'Get help with Calendza accounts, bookings, billing and integrations.'
 })
 </script>
 
@@ -16,8 +16,8 @@ useSeoMeta({
     <section>
       <h2>Contact support</h2>
       <p>
-        Email <a href="mailto:support@schedra.xyz">support@schedra.xyz</a> from the address on
-        your Schedra account. For account-specific or billing requests, this helps us verify ownership.
+        Email <a href="mailto:support@calendza.xyz">support@calendza.xyz</a> from the address on
+        your Calendza account. For account-specific or billing requests, this helps us verify ownership.
       </p>
       <div class="callout">
         <p><strong>Useful details to include</strong></p>
@@ -37,8 +37,8 @@ useSeoMeta({
         connection, permissions, meeting creation, disconnection and data-removal steps.
       </p>
       <p>
-        If Zoom says authorization has expired, open Schedra’s Integrations page, disconnect Zoom
-        if it is still listed, and connect it again. Existing booking records remain in Schedra, but
+        If Zoom says authorization has expired, open Calendza’s Integrations page, disconnect Zoom
+        if it is still listed, and connect it again. Existing booking records remain in Calendza, but
         future Zoom synchronization requires an active connection.
       </p>
     </section>
@@ -50,7 +50,7 @@ useSeoMeta({
         permanently delete your account. Connected calendars and Zoom can be revoked from Integrations.
       </p>
       <p>
-        For a privacy request, email <a href="mailto:support@schedra.xyz">support@schedra.xyz</a>
+        For a privacy request, email <a href="mailto:support@calendza.xyz">support@calendza.xyz</a>
         with “Privacy request” in the subject. We may ask you to verify control of the account first.
       </p>
     </section>
@@ -60,7 +60,7 @@ useSeoMeta({
       <p>
         If you believe you found a security issue, do not access other users’ data or disrupt the
         service. Send the affected URL, reproduction steps and potential impact privately to
-        <a href="mailto:support@schedra.xyz?subject=Security%20report">support@schedra.xyz</a>.
+        <a href="mailto:support@calendza.xyz?subject=Security%20report">support@calendza.xyz</a>.
       </p>
     </section>
   </PublicDocument>

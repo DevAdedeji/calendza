@@ -53,7 +53,7 @@ export function googleAuthorizationUrl(state: string, email: string, codeChallen
   const url = new URL('https://accounts.google.com/o/oauth2/v2/auth')
   url.search = new URLSearchParams({
     client_id: env.googleClientId,
-    redirect_uri: `${env.schedraUrl}/api/integrations/google-calendar/callback`,
+    redirect_uri: `${env.siteUrl}/api/integrations/google-calendar/callback`,
     response_type: 'code',
     scope: GOOGLE_CALENDAR_SCOPES.join(' '),
     access_type: 'offline',
@@ -80,7 +80,7 @@ export async function exchangeGoogleCode(code: string, codeVerifier?: string): P
       code,
       client_id: env.googleClientId!,
       client_secret: env.googleClientSecret!,
-      redirect_uri: `${env.schedraUrl}/api/integrations/google-calendar/callback`,
+      redirect_uri: `${env.siteUrl}/api/integrations/google-calendar/callback`,
       grant_type: 'authorization_code',
       ...(codeVerifier ? { code_verifier: codeVerifier } : {})
     })
@@ -403,7 +403,7 @@ export async function updateGoogleCalendarSelection(
   if (conflictCalendarIds.some(id => !byId.has(id))) throw new CalendarSelectionError('Choose calendars from your connected Google account.')
   const write = byId.get(writeCalendarId)
   if (!write || !['writer', 'owner'].includes(write.accessRole)) {
-    throw new CalendarSelectionError('Choose a calendar where Schedra may create events.')
+    throw new CalendarSelectionError('Choose a calendar where Calendza may create events.')
   }
 
   const checkFrom = new Date()
@@ -437,7 +437,7 @@ export async function updateGoogleCalendarSelection(
 }
 
 function eventBody(input: CalendarEventInput) {
-  const manageUrl = `${useEnv().schedraUrl}/booking/${input.uid}`
+  const manageUrl = `${useEnv().siteUrl}/booking/${input.uid}`
   const generatedMeeting = ['google_meet', 'microsoft_teams', 'zoom'].includes(input.locationType)
   const location = input.locationType === 'google_meet'
     ? 'Google Meet'
@@ -468,13 +468,13 @@ function eventBody(input: CalendarEventInput) {
       ? {
           conferenceData: {
             createRequest: {
-              requestId: `schedra-${createHash('sha256').update(input.calendarEventKey ?? input.uid).digest('hex').slice(0, 32)}`,
+              requestId: `calendza-${createHash('sha256').update(input.calendarEventKey ?? input.uid).digest('hex').slice(0, 32)}`,
               conferenceSolutionKey: { type: 'hangoutsMeet' }
             }
           }
         }
       : {},
-    extendedProperties: { private: { schedraBookingUid: input.uid } }
+    extendedProperties: { private: { calendzaBookingUid: input.uid } }
   }
 }
 
@@ -485,7 +485,8 @@ function meetingUrl(event: GoogleEventResponse) {
 }
 
 export function googleEventId(uid: string) {
-  return `schedra${createHash('sha256').update(uid).digest('hex')}`
+  // Google accepts only base32hex characters, so keep the brand inside the hash.
+  return createHash('sha256').update(`calendza:${uid}`).digest('hex')
 }
 
 export async function upsertGoogleCalendarEvent(

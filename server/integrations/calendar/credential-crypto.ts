@@ -5,7 +5,7 @@ const VERSION = 'v1'
 
 function key() {
   const env = useEnv()
-  return createHash('sha256').update(`schedra:integrations:${env.integrationEncryptionKey ?? env.authSecret}`).digest()
+  return createHash('sha256').update(`calendza:integrations:${env.integrationEncryptionKey ?? env.authSecret}`).digest()
 }
 
 export function encryptCredential(value: string) {

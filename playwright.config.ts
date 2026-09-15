@@ -34,9 +34,9 @@ export default defineConfig({
         DATABASE_URL: databaseUrl,
         DIRECT_URL: databaseUrl,
         TEST_DATABASE_URL: databaseUrl,
-        SCHEDRA_URL: baseURL,
-        SCHEDRA_ENVIRONMENT: 'development',
-        SCHEDRA_BILLING_MODE: '',
+        CALENDZA_URL: baseURL,
+        CALENDZA_ENVIRONMENT: 'development',
+        CALENDZA_BILLING_MODE: '',
         BACHS_SECRET_KEY: '',
         BACHS_WEBHOOK_SECRET: '',
         RESEND_API_KEY: '',
@@ -49,11 +49,10 @@ export default defineConfig({
         ZOOM_CLIENT_SECRET: '',
         ZOOM_WEBHOOK_SECRET: '',
         AUTH_SECRET: 'playwright-only-secret-with-at-least-thirty-two-characters',
-        PLATFORM_ADMIN_EMAILS: 'ada-ops@schedra.test',
-        SCHEDRA_PROCESS_ROLE: 'web',
-        // Playwright uses an isolated port and test database, so it is safe to
-        // run alongside the developer's normal Nuxt process for this workspace.
-        NUXT_IGNORE_LOCK: '1',
+        PLATFORM_ADMIN_EMAILS: 'ada-ops@calendza.test',
+        CALENDZA_PROCESS_ROLE: 'web',
+        // Isolate generated files as well as the port and test database.
+        CALENDZA_E2E: '1',
         // DevTools deliberately inspect window.parent and produce false
         // cross-origin errors when the booking page is exercised in an iframe.
         NUXT_DISABLE_DEVTOOLS: '1'
@@ -64,7 +63,7 @@ export default defineConfig({
       url: 'http://127.0.0.1:3103/health',
       reuseExistingServer: false,
       timeout: 30_000,
-      env: { SCHEDRA_ORIGIN: baseURL }
+      env: { CALENDZA_ORIGIN: baseURL }
     }
   ]
 })

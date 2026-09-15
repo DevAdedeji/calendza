@@ -34,6 +34,6 @@ CREATE UNIQUE INDEX "payment_withdrawals_reference_key" ON "payment_withdrawals"
 CREATE UNIQUE INDEX "payment_withdrawals_bachs_payout_key" ON "payment_withdrawals" USING btree ("bachs_payout_id") WHERE "payment_withdrawals"."bachs_payout_id" is not null;--> statement-breakpoint
 CREATE INDEX "payment_withdrawals_recipient_created_idx" ON "payment_withdrawals" USING btree ("recipient_id","created_at");--> statement-breakpoint
 CREATE INDEX "payment_withdrawals_status_checked_idx" ON "payment_withdrawals" USING btree ("status","last_checked_at");--> statement-breakpoint
-CREATE TRIGGER schedra_set_updated_at
+CREATE TRIGGER calendza_set_updated_at
 BEFORE UPDATE ON "payment_withdrawals"
-FOR EACH ROW EXECUTE FUNCTION public.schedra_set_updated_at();
+FOR EACH ROW EXECUTE FUNCTION public.calendza_set_updated_at();

@@ -110,7 +110,7 @@ export function useCalendarIntegration(options: {
       else {
         feedback.warning({
           title: `${toValue(options.name)} preferences saved`,
-          description: 'Existing bookings could not be queued for sync yet. Schedra will keep the saved preferences.'
+          description: 'Existing bookings could not be queued for sync yet. Calendza will keep the saved preferences.'
         })
       }
     } catch (failure) {

@@ -85,7 +85,7 @@ export function zoomAuthorizationUrl(state: string, codeChallenge?: string) {
   url.search = new URLSearchParams({
     response_type: 'code',
     client_id: env.zoomClientId!,
-    redirect_uri: `${env.schedraUrl}/api/integrations/zoom/callback`,
+    redirect_uri: `${env.siteUrl}/api/integrations/zoom/callback`,
     state,
     ...(codeChallenge
       ? {
@@ -103,7 +103,7 @@ export async function exchangeZoomCode(code: string, codeVerifier?: string): Pro
   url.search = new URLSearchParams({
     grant_type: 'authorization_code',
     code,
-    redirect_uri: `${env.schedraUrl}/api/integrations/zoom/callback`,
+    redirect_uri: `${env.siteUrl}/api/integrations/zoom/callback`,
     ...(codeVerifier ? { code_verifier: codeVerifier } : {})
   }).toString()
   const response = await fetchWithTimeout(url, {
@@ -324,14 +324,14 @@ export async function checkZoomConnection(userId: string) {
 }
 
 function marker(uid: string) {
-  return `[Schedra:${uid}]`
+  return `[Calendza:${uid}]`
 }
 
 function meetingBody(input: ZoomMeetingInput) {
   const agenda = [
     marker(input.uid),
     input.description,
-    `Manage this booking: ${useEnv().schedraUrl}/booking/${input.uid}`
+    `Manage this booking: ${useEnv().siteUrl}/booking/${input.uid}`
   ].filter(Boolean).join('\n\n').slice(0, 2000)
 
   return {
@@ -374,7 +374,7 @@ export async function upsertZoomMeeting(userId: string, meetingId: string | null
     if (response.ok) return { id: meetingId, joinUrl: null as string | null }
   }
 
-  // If a worker stopped after Zoom accepted the request but before Schedra
+  // If a worker stopped after Zoom accepted the request but before Calendza
   // saved its mapping, recover the remote meeting instead of duplicating it.
   const existing = await findZoomMeeting(userId, input.uid)
   if (existing) return { id: String(existing.id), joinUrl: existing.join_url }

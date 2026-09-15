@@ -3,7 +3,7 @@ definePageMeta({ layout: 'default' })
 
 useSeoMeta({
   title: 'Terms of service',
-  description: 'The terms that apply when you use Schedra scheduling and team services.'
+  description: 'The terms that apply when you use Calendza scheduling and team services.'
 })
 </script>
 
@@ -11,14 +11,14 @@ useSeoMeta({
   <PublicDocument
     eyebrow="Legal"
     title="Terms built for clear expectations."
-    summary="These terms describe the rules for using Schedra, paid team plans and connected services."
+    summary="These terms describe the rules for using Calendza, paid team plans and connected services."
     updated="26 August 2026"
   >
     <section>
       <h2>1. Agreement</h2>
       <p>
-        By creating an account, joining a team or using Schedra, you agree to these Terms and our
-        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>. If you use Schedra for an organization,
+        By creating an account, joining a team or using Calendza, you agree to these Terms and our
+        <NuxtLink to="/privacy">Privacy Policy</NuxtLink>. If you use Calendza for an organization,
         you confirm that you can accept these Terms for that organization. You must be at least 16
         and legally able to enter into this agreement.
       </p>
@@ -45,7 +45,7 @@ useSeoMeta({
         reason to collect any information you request from guests.
       </p>
       <p>
-        Guests are responsible for the accuracy of information supplied in a booking. Schedra provides
+        Guests are responsible for the accuracy of information supplied in a booking. Calendza provides
         scheduling tools but is not a party to meetings, services, sales or other arrangements between
         hosts and guests.
       </p>
@@ -55,8 +55,8 @@ useSeoMeta({
       <h2>4. Connected services</h2>
       <p>
         Google, Zoom, payment providers and other integrations are separate services governed by their
-        own terms. You authorize Schedra to exchange the information and take the actions needed to
-        operate an integration you connect. You can revoke that access from Schedra or the provider.
+        own terms. You authorize Calendza to exchange the information and take the actions needed to
+        operate an integration you connect. You can revoke that access from Calendza or the provider.
       </p>
       <p>
         We are not responsible for an external provider’s availability, changes, suspension or handling
@@ -81,7 +81,7 @@ useSeoMeta({
 
     <section>
       <h2>6. Acceptable use</h2>
-      <p>You may not use Schedra to:</p>
+      <p>You may not use Calendza to:</p>
       <ul>
         <li>Break the law, violate another person’s rights or facilitate fraud or abuse.</li>
         <li>Send spam, harassment, malware or deceptive booking invitations.</li>
@@ -90,30 +90,30 @@ useSeoMeta({
         <li>Scrape, overload, reverse engineer or resell the service except where law expressly permits it.</li>
       </ul>
       <p>
-        We may restrict or suspend use that creates risk to Schedra, its providers or other users.
+        We may restrict or suspend use that creates risk to Calendza, its providers or other users.
       </p>
     </section>
 
     <section>
       <h2>7. Ownership</h2>
       <p>
-        You keep ownership of content you submit. You give Schedra a limited permission to host,
+        You keep ownership of content you submit. You give Calendza a limited permission to host,
         process, reproduce and transmit that content only as needed to provide, secure and improve the
-        service. Schedra and its licensors retain rights in the software, design, trademarks and service.
+        service. Calendza and its licensors retain rights in the software, design, trademarks and service.
       </p>
     </section>
 
     <section>
       <h2>8. Availability, warranties and liability</h2>
       <p>
-        We work to keep Schedra reliable, but scheduling, email, internet, calendar, video and payment
+        We work to keep Calendza reliable, but scheduling, email, internet, calendar, video and payment
         services can fail or be delayed. The service is provided “as is” and “as available” to the extent
         the law permits, without warranties that it will always be uninterrupted or error-free.
       </p>
       <p>
-        To the maximum extent permitted by law, Schedra is not liable for indirect, special, incidental,
-        consequential or punitive loss, or lost profits, revenue, data or goodwill. Schedra’s total
-        liability for a claim will not exceed the amount you paid Schedra for the service during the
+        To the maximum extent permitted by law, Calendza is not liable for indirect, special, incidental,
+        consequential or punitive loss, or lost profits, revenue, data or goodwill. Calendza’s total
+        liability for a claim will not exceed the amount you paid Calendza for the service during the
         twelve months before the event giving rise to the claim. Nothing in these Terms excludes liability
         that cannot legally be excluded.
       </p>
@@ -140,7 +140,7 @@ useSeoMeta({
         takes effect means you accept the updated Terms.
       </p>
       <p>
-        Questions can be sent to <a href="mailto:support@schedra.xyz">support@schedra.xyz</a>.
+        Questions can be sent to <a href="mailto:support@calendza.xyz">support@calendza.xyz</a>.
         Applicable mandatory consumer protections and conflict-of-law rules remain unaffected.
       </p>
     </section>

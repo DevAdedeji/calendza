@@ -8,8 +8,8 @@ import {
 
 describe('Zoom webhook verification', () => {
   beforeEach(() => {
-    process.env.DATABASE_URL = 'postgres://schedra:schedra@localhost:5442/schedra'
-    process.env.SCHEDRA_URL = 'http://localhost:3002'
+    process.env.DATABASE_URL = 'postgres://calendza:calendza@localhost:5442/calendza'
+    process.env.CALENDZA_URL = 'http://localhost:3002'
     process.env.AUTH_SECRET = 'x'.repeat(32)
     process.env.ZOOM_WEBHOOK_SECRET = 'zoom-webhook-secret'
     resetEnv()

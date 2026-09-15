@@ -26,7 +26,7 @@ function xml(value: string) {
 }
 
 export default defineEventHandler(async (event) => {
-  const { schedraUrl } = useEnv()
+  const { siteUrl } = useEnv()
   const db = useDatabase()
   const [publicEventTypes, publicTeamEventTypes] = await Promise.all([
     db.select({
@@ -143,7 +143,7 @@ export default defineEventHandler(async (event) => {
   setResponseHeader(event, 'cache-control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400')
 
   const urls = pages.slice(0, 49_999).map(page => `  <url>
-    <loc>${xml(`${schedraUrl}${page.path}`)}</loc>
+    <loc>${xml(`${siteUrl}${page.path}`)}</loc>
 ${page.lastmod ? `    <lastmod>${page.lastmod.toISOString()}</lastmod>\n` : ''}    <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`).join('\n')

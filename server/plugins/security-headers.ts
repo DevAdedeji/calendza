@@ -4,7 +4,7 @@ import { useEnv } from '@@/server/config/env'
 export default defineNitroPlugin((nitro) => {
   if (import.meta.prerender) return
 
-  const secureOrigin = new URL(useEnv().schedraUrl).protocol === 'https:'
+  const secureOrigin = new URL(useEnv().siteUrl).protocol === 'https:'
 
   nitro.hooks.hook('request', (event) => {
     const pathname = event.path.split('?')[0] ?? ''

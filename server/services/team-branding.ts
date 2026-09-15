@@ -14,7 +14,7 @@ export async function storedTeamBranding(organizationId: string): Promise<Public
     brandColor: organizations.brandColor,
     brandDarkColor: organizations.brandDarkColor,
     bookingPageTheme: organizations.bookingPageTheme,
-    hideSchedraBranding: organizations.hideSchedraBranding
+    hideCalendzaBranding: organizations.hideCalendzaBranding
   }).from(organizations).where(eq(organizations.id, organizationId)).limit(1)
 
   if (!row) throw createError({ statusCode: 404, statusMessage: 'Team not found.' })
@@ -24,6 +24,6 @@ export async function storedTeamBranding(organizationId: string): Promise<Public
     brandColor: row.brandColor ?? DEFAULT_PERSONAL_BRANDING.brandColor,
     brandDarkColor: row.brandDarkColor ?? DEFAULT_PERSONAL_BRANDING.brandDarkColor,
     bookingPageTheme: row.bookingPageTheme as BookingPageTheme,
-    hideSchedraBranding: row.hideSchedraBranding
+    hideCalendzaBranding: row.hideCalendzaBranding
   }
 }

@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     brandColor: parsed.data.brandColor,
     brandDarkColor: parsed.data.brandDarkColor,
     bookingPageTheme: parsed.data.bookingPageTheme,
-    hideSchedraBranding: parsed.data.hideSchedraBranding,
+    hideCalendzaBranding: parsed.data.hideCalendzaBranding,
     updatedAt: sql`now()`
   }).where(eq(users.id, session.user.id)).returning({
     brandName: users.brandName,
@@ -29,7 +29,7 @@ export default defineEventHandler(async (event) => {
     brandColor: users.brandColor,
     brandDarkColor: users.brandDarkColor,
     bookingPageTheme: users.bookingPageTheme,
-    hideSchedraBranding: users.hideSchedraBranding
+    hideCalendzaBranding: users.hideCalendzaBranding
   })
   if (!updated) throw createError({ statusCode: 404, statusMessage: 'Your profile could not be found.' })
   return { branding: updated }

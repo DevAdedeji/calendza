@@ -21,9 +21,10 @@ function createAuth() {
   const env = useEnv()
 
   return betterAuth({
-    baseURL: env.schedraUrl,
+    appName: 'Calendza',
+    baseURL: env.siteUrl,
     secret: env.authSecret,
-    trustedOrigins: [env.schedraUrl],
+    trustedOrigins: [env.siteUrl],
 
     rateLimit: {
       enabled: true,
@@ -53,10 +54,10 @@ function createAuth() {
           dedupeKey: emailDedupeKey('password-reset', url),
           email: {
             to: user.email,
-            subject: 'Reset your Schedra password',
-            preheader: 'Use this secure link to choose a new Schedra password.',
+            subject: 'Reset your Calendza password',
+            preheader: 'Use this secure link to choose a new Calendza password.',
             heading: 'Reset your password',
-            body: 'We received a request to reset your Schedra password. Use the secure button below to choose a new one.\n\nThis link works once and expires in one hour.',
+            body: 'We received a request to reset your Calendza password. Use the secure button below to choose a new one.\n\nThis link works once and expires in one hour.',
             action: { label: 'Choose a new password', url },
             footer: 'If you did not request this, you can safely ignore this email. Your password has not changed.'
           }
@@ -92,7 +93,7 @@ function createAuth() {
 
     plugins: [
       twoFactor({
-        issuer: 'Schedra',
+        issuer: 'Calendza',
         allowPasswordless: true,
         accountLockout: {
           enabled: true,
@@ -124,15 +125,15 @@ function createAuth() {
         disableOrganizationDeletion: true,
 
         sendInvitationEmail: async (data) => {
-          const url = `${env.schedraUrl}/invite/${data.id}`
+          const url = `${env.siteUrl}/invite/${data.id}`
           await enqueueEmails([{
             dedupeKey: emailDedupeKey('organization-invitation', data.id),
             email: {
               to: data.email,
-              subject: `${data.inviter.user.name} invited you to ${data.organization.name} on Schedra`,
+              subject: `${data.inviter.user.name} invited you to ${data.organization.name} on Calendza`,
               preheader: `Join ${data.organization.name} to share team booking links.`,
               heading: `Join ${data.organization.name}`,
-              body: `${data.inviter.user.name} (${data.inviter.user.email}) invited you to join ${data.organization.name} on Schedra as ${data.role === 'admin' ? 'an admin' : 'a member'}.\n\nYour personal booking page, availability and calendar stay yours — joining a team never moves or shares them.`,
+              body: `${data.inviter.user.name} (${data.inviter.user.email}) invited you to join ${data.organization.name} on Calendza as ${data.role === 'admin' ? 'an admin' : 'a member'}.\n\nYour personal booking page, availability and calendar stay yours — joining a team never moves or shares them.`,
               action: { label: 'Review the invitation', url },
               footer: `This invitation expires in ${TEAM_PLAN.invitationExpiryDays} days and can only be accepted by ${data.email}. If you were not expecting it, you can safely ignore this email.`
             }

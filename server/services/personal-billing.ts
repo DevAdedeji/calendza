@@ -31,7 +31,7 @@ function assertPublicReturnUrl(base: string) {
   if (['localhost', '127.0.0.1', '::1'].includes(host)) {
     throw createError({
       statusCode: 503,
-      statusMessage: 'Bachs will not redirect back to localhost. Point SCHEDRA_URL at a public tunnel or use staging to test checkout.'
+      statusMessage: 'Bachs will not redirect back to localhost. Point CALENDZA_URL at a public tunnel or use staging to test checkout.'
     })
   }
 }
@@ -44,7 +44,7 @@ export async function startPersonalCheckout(input: {
   customer: { email: string, name: string }
 }) {
   const env = useEnv()
-  assertPublicReturnUrl(env.schedraUrl)
+  assertPublicReturnUrl(env.siteUrl)
   const entitlement = await personalPlanEntitlement(input.userId)
   if (entitlement.isPro) {
     throw createError({
@@ -58,7 +58,7 @@ export async function startPersonalCheckout(input: {
   }
 
   const db = useDatabase()
-  const reference = `schedra-personal-${input.userId}-${input.requestId}`
+  const reference = `calendza-personal-${input.userId}-${input.requestId}`
   const [existing] = await db.select().from(personalInvoices)
     .where(eq(personalInvoices.reference, reference)).limit(1)
   if (existing?.checkoutUrl && existing.status === 'pending') {
@@ -72,12 +72,12 @@ export async function startPersonalCheckout(input: {
   const method = collectionMethodFor(input.collectionCurrency)
   const start = new Date()
   const end = personalPeriodEnd(start, input.interval)
-  const successUrl = `${env.schedraUrl}/billing?paid=1`
-  const cancelUrl = `${env.schedraUrl}/billing`
+  const successUrl = `${env.siteUrl}/billing?paid=1`
+  const cancelUrl = `${env.siteUrl}/billing`
   const metadata = {
     userId: input.userId,
     interval: input.interval,
-    schedraPlan: 'personal_pro'
+    calendzaPlan: 'personal_pro'
   }
 
   const [invoice] = await db.insert(personalInvoices).values({
@@ -232,11 +232,11 @@ export async function markPersonalInvoiceFailed(reference: string, reason: strin
 
 export async function applyPersonalSubscriptionState(subscription: BachsSubscription) {
   const userId = subscription.metadata?.userId
-  if (!userId || subscription.metadata?.schedraPlan !== 'personal_pro') {
+  if (!userId || subscription.metadata?.calendzaPlan !== 'personal_pro') {
     return { applied: false, reason: 'not-personal-pro' as const }
   }
 
-  const key = subscription.product?.metadata?.schedra_plan ?? ''
+  const key = subscription.product?.metadata?.calendza_plan ?? ''
   const interval: BillingInterval = key.endsWith('_monthly')
     || subscription.metadata?.interval === 'monthly'
     ? 'monthly'

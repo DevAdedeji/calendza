@@ -145,7 +145,7 @@ async function confirmWithdrawal() {
     toast.add({
       title: uncertain ? 'Withdrawal is being verified' : 'Withdrawal submitted',
       description: uncertain
-        ? 'Do not submit it again. Schedra is checking the same request with Bachs.'
+        ? 'Do not submit it again. Calendza is checking the same request with Bachs.'
         : `${withdrawalAmount} withdrawal + ${fee} = ${total} deducted. ${delivered} is being sent to the bank.`,
       color: uncertain ? 'warning' : 'success'
     })
@@ -459,7 +459,7 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
           <UFormField
             label="Payout destination"
             required
-            help="Bank and identity details remain in Bachs. Schedra stores only the destination reference and name."
+            help="Bank and identity details remain in Bachs. Calendza stores only the destination reference and name."
           >
             <USelectMenu
               v-model="destinationId"

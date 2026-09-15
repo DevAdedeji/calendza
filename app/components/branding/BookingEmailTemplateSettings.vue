@@ -101,7 +101,7 @@ async function save() {
   <AsyncErrorState
     v-if="error && !data"
     title="Could not load email templates"
-    description="Guests will continue receiving Schedra’s reliable default emails."
+    description="Guests will continue receiving Calendza’s reliable default emails."
     :retrying="status === 'pending'"
     @retry="refresh"
   />
@@ -114,7 +114,7 @@ async function save() {
   <PersonalProGate
     v-else-if="!canCustomize"
     title="Make guest emails sound like you"
-    description="Personal Pro lets you customize booking emails and apply your logo and colours. Free accounts keep Schedra’s default emails."
+    description="Personal Pro lets you customize booking emails and apply your logo and colours. Free accounts keep Calendza’s default emails."
   />
 
   <section
@@ -183,7 +183,7 @@ async function save() {
               Custom wording
             </p>
             <p class="mt-0.5 text-[12px] leading-relaxed text-muted">
-              Turn this off anytime to restore the default Schedra message.
+              Turn this off anytime to restore the default Calendza message.
             </p>
           </div>
           <USwitch
@@ -239,7 +239,7 @@ async function save() {
         <UFormField
           label="Email footer"
           hint="Optional"
-          help="Used across all guest booking emails. Leave blank to keep Schedra’s helpful default footer."
+          help="Used across all guest booking emails. Leave blank to keep Calendza’s helpful default footer."
         >
           <UTextarea
             :model-value="form.footer ?? ''"
@@ -314,11 +314,11 @@ async function save() {
             </p>
           </div>
           <p class="mt-3 text-center text-[11px] text-stone-500">
-            <template v-if="branding.hideSchedraBranding">
+            <template v-if="branding.hideCalendzaBranding">
               Sent by {{ brandName }}
             </template>
             <template v-else>
-              Sent by {{ brandName }} · Powered by Schedra
+              Sent by {{ brandName }} · Powered by Calendza
             </template>
           </p>
         </div>

@@ -5855,8 +5855,8 @@
           "notNull": true,
           "default": "'system'"
         },
-        "hide_schedra_branding": {
-          "name": "hide_schedra_branding",
+        "hide_calendza_branding": {
+          "name": "hide_calendza_branding",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -8498,8 +8498,8 @@
           "notNull": true,
           "default": "'system'"
         },
-        "hide_schedra_branding": {
-          "name": "hide_schedra_branding",
+        "hide_calendza_branding": {
+          "name": "hide_calendza_branding",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,

@@ -43,7 +43,7 @@ async function save() {
       brandColor: form.brandColor,
       brandDarkColor: form.brandDarkColor,
       bookingPageTheme: form.bookingPageTheme,
-      hideSchedraBranding: form.hideSchedraBranding
+      hideCalendzaBranding: form.hideCalendzaBranding
     })
     Object.assign(form, result.branding)
     dirty.value = false
@@ -103,7 +103,7 @@ async function removeLogo() {
   <PersonalProGate
     v-else-if="!canBrand"
     title="Make the booking page yours"
-    description="Add your business logo and colours, choose the page theme, and remove Schedra branding with Personal Pro."
+    description="Add your business logo and colours, choose the page theme, and remove Calendza branding with Personal Pro."
   />
 
   <section
@@ -243,15 +243,15 @@ async function removeLogo() {
         <div class="flex items-start justify-between gap-5 rounded-xl border border-default bg-muted px-4 py-3.5">
           <div>
             <p class="text-[14px] font-medium text-highlighted">
-              Remove Schedra branding
+              Remove Calendza branding
             </p>
             <p class="mt-0.5 text-[12px] leading-relaxed text-muted">
-              Hide “Scheduling by Schedra” from your public and embedded booking pages.
+              Hide “Scheduling by Calendza” from your public and embedded booking pages.
             </p>
           </div>
           <USwitch
-            v-model="form.hideSchedraBranding"
-            aria-label="Remove Schedra branding"
+            v-model="form.hideCalendzaBranding"
+            aria-label="Remove Calendza branding"
           />
         </div>
 
@@ -284,7 +284,7 @@ async function removeLogo() {
                 v-if="form.brandName"
                 class="truncate text-[14px] font-semibold text-highlighted"
               >{{ form.brandName }}</span>
-              <SchedraMark v-if="!form.logoUrl && !form.brandName" />
+              <CalendzaMark v-if="!form.logoUrl && !form.brandName" />
             </div>
             <p class="mt-7 font-editorial text-2xl text-highlighted">
               Choose a time
@@ -301,10 +301,10 @@ async function removeLogo() {
             </button>
           </div>
           <p
-            v-if="!form.hideSchedraBranding"
+            v-if="!form.hideCalendzaBranding"
             class="mt-3 text-center text-[11px] text-dimmed"
           >
-            Scheduling by Schedra
+            Scheduling by Calendza
           </p>
         </div>
       </aside>

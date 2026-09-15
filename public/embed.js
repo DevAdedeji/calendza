@@ -1,15 +1,23 @@
 (function () {
   'use strict'
 
-  if (window.SchedraEmbed && window.SchedraEmbed.version) return
+  var existing = window.CalendzaEmbed
+  if (existing && existing.version) {
+    window.Calendza = window.Calendza || existing
+    return
+  }
 
   var currentScript = document.currentScript
   var scriptOrigin = currentScript && currentScript.src
     ? new URL(currentScript.src, window.location.href).origin
-    : 'https://schedra.xyz'
+    : 'https://calendza.xyz'
   var active = null
   var previousOverflow = ''
   var previousPaddingRight = ''
+
+  function attribute(element, name) {
+    return element.getAttribute('data-calendza-' + name)
+  }
 
   function validAccent(value) {
     var normalized = typeof value === 'string' ? value.trim().toUpperCase() : ''
@@ -24,7 +32,7 @@
   function embedPath(value) {
     var bookingUrl = new URL(value, scriptOrigin)
     if (bookingUrl.origin !== scriptOrigin) {
-      throw new Error('The booking link must use the same Schedra origin as embed.js.')
+      throw new Error('The booking link must use the same Calendza origin as embed.js.')
     }
 
     var parts = bookingUrl.pathname.split('/').filter(Boolean).map(decodeURIComponent)
@@ -38,7 +46,7 @@
   }
 
   function dispatch(type, detail) {
-    window.dispatchEvent(new CustomEvent('schedra:' + type, { detail: detail || {} }))
+    window.dispatchEvent(new CustomEvent('calendza:' + type, { detail: detail || {} }))
   }
 
   function lockPage() {
@@ -72,7 +80,7 @@
   function open(options) {
     options = options || {}
     var bookingUrl = options.bookingUrl || options.url
-    if (!bookingUrl) throw new Error('SchedraEmbed.open requires a bookingUrl.')
+    if (!bookingUrl) throw new Error('CalendzaEmbed.open requires a bookingUrl.')
     close('replaced')
 
     var path = embedPath(bookingUrl)
@@ -94,7 +102,7 @@
     if (options.email) query.set('email', String(options.email).slice(0, 320))
 
     var host = document.createElement('div')
-    host.setAttribute('data-schedra-overlay', '')
+    host.setAttribute('data-calendza-overlay', '')
     var shadow = host.attachShadow({ mode: 'open' })
     var style = document.createElement('style')
     style.textContent = [
@@ -143,7 +151,7 @@
     loading.append(loadingRow, retryButton)
 
     var frame = document.createElement('iframe')
-    frame.title = options.title || 'Schedra booking'
+    frame.title = options.title || 'Calendza booking'
     frame.src = scriptOrigin + path + '?' + query.toString()
     frame.referrerPolicy = 'no-referrer'
     frame.setAttribute('allow', 'clipboard-write')
@@ -182,7 +190,7 @@
     function onMessage(event) {
       if (event.origin !== scriptOrigin || event.source !== frame.contentWindow) return
       var message = event.data
-      if (!message || message.source !== 'schedra-embed' || message.version !== 1) return
+      if (!message || message.source !== 'calendza-embed' || message.version !== 1) return
       if (message.type === 'ready') {
         window.clearTimeout(active && active.readyTimer)
         loading.removeAttribute('data-error')
@@ -245,17 +253,17 @@
 
   function optionsFrom(element) {
     return {
-      bookingUrl: element.getAttribute('data-schedra-embed'),
-      theme: element.getAttribute('data-schedra-theme') || 'auto',
-      accent: element.getAttribute('data-schedra-accent') || '',
-      name: element.getAttribute('data-schedra-name') || '',
-      email: element.getAttribute('data-schedra-email') || '',
-      title: element.getAttribute('data-schedra-title') || 'Book a meeting'
+      bookingUrl: attribute(element, 'embed'),
+      theme: attribute(element, 'theme') || 'auto',
+      accent: attribute(element, 'accent') || '',
+      name: attribute(element, 'name') || '',
+      email: attribute(element, 'email') || '',
+      title: attribute(element, 'title') || 'Book a meeting'
     }
   }
 
   document.addEventListener('click', function (event) {
-    var trigger = event.target && event.target.closest ? event.target.closest('[data-schedra-embed]') : null
+    var trigger = event.target && event.target.closest ? event.target.closest('[data-calendza-embed]') : null
     if (!trigger || trigger.disabled || trigger.getAttribute('aria-disabled') === 'true') return
     event.preventDefault()
     try {
@@ -266,20 +274,20 @@
   })
 
   function addFloatingButton(script) {
-    var url = script && script.getAttribute('data-schedra-floating')
+    var url = script && attribute(script, 'floating')
     if (!url) return
     var button = document.createElement('button')
     button.type = 'button'
-    button.textContent = script.getAttribute('data-schedra-label') || 'Book a meeting'
-    button.setAttribute('data-schedra-embed', url)
-    button.setAttribute('data-schedra-theme', script.getAttribute('data-schedra-theme') || 'auto')
-    button.setAttribute('data-schedra-accent', script.getAttribute('data-schedra-accent') || '#FF3D00')
-    button.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:2147482000;border:0;border-radius:999px;padding:13px 20px;background:' + (validAccent(script.getAttribute('data-schedra-accent')) || '#FF3D00') + ';color:white;font:600 14px/1 system-ui,-apple-system,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.22);cursor:pointer'
+    button.textContent = attribute(script, 'label') || 'Book a meeting'
+    button.setAttribute('data-calendza-embed', url)
+    button.setAttribute('data-calendza-theme', attribute(script, 'theme') || 'auto')
+    button.setAttribute('data-calendza-accent', attribute(script, 'accent') || '#FF3D00')
+    button.style.cssText = 'position:fixed;right:24px;bottom:24px;z-index:2147482000;border:0;border-radius:999px;padding:13px 20px;background:' + (validAccent(attribute(script, 'accent')) || '#FF3D00') + ';color:white;font:600 14px/1 system-ui,-apple-system,sans-serif;box-shadow:0 12px 32px rgba(0,0,0,.22);cursor:pointer'
     document.body.append(button)
   }
 
-  window.SchedraEmbed = { version: '1.0.0', open: open, close: close }
-  window.Schedra = window.Schedra || window.SchedraEmbed
+  window.CalendzaEmbed = { version: '1.1.0', open: open, close: close }
+  window.Calendza = window.Calendza || window.CalendzaEmbed
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () { addFloatingButton(currentScript) }, { once: true })

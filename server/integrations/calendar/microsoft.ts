@@ -113,7 +113,7 @@ function credentials() {
 }
 
 function callbackUrl() {
-  return `${useEnv().schedraUrl}/api/integrations/microsoft-calendar/callback`
+  return `${useEnv().siteUrl}/api/integrations/microsoft-calendar/callback`
 }
 
 export function microsoftAuthorizationUrl(state: string, email: string, codeChallenge?: string) {
@@ -543,7 +543,7 @@ export async function updateMicrosoftCalendarSelection(
   if (writeCalendarId) {
     const write = byId.get(writeCalendarId)
     if (!write || !['writer', 'owner'].includes(write.accessRole)) {
-      throw new MicrosoftCalendarSelectionError('Choose a Microsoft calendar where Schedra may create events.')
+      throw new MicrosoftCalendarSelectionError('Choose a Microsoft calendar where Calendza may create events.')
     }
   }
 
@@ -590,7 +590,7 @@ function eventDescription(input: CalendarEventInput) {
     `Where: ${location}`,
     input.meetingUrl ? `Join: ${input.meetingUrl}` : null,
     input.notes ? `Guest notes:\n${input.notes}` : null,
-    `Manage this booking: ${useEnv().schedraUrl}/booking/${input.uid}`
+    `Manage this booking: ${useEnv().siteUrl}/booking/${input.uid}`
   ].filter(Boolean).join('\n\n').slice(0, 10000)
 }
 
@@ -628,13 +628,13 @@ function eventBody(input: CalendarEventInput, includeTransactionId: boolean) {
       ? { isOnlineMeeting: true, onlineMeetingProvider: 'teamsForBusiness' }
       : {},
     ...includeTransactionId
-      ? { transactionId: transactionId(`schedra:${input.calendarEventKey ?? input.uid}`) }
+      ? { transactionId: transactionId(`calendza:${input.calendarEventKey ?? input.uid}`) }
       : {}
   }
 }
 
 export function microsoftEventId(uid: string) {
-  return transactionId(`schedra:${uid}`)
+  return transactionId(`calendza:${uid}`)
 }
 
 export async function upsertMicrosoftCalendarEvent(

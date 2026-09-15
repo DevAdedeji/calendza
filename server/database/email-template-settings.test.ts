@@ -106,7 +106,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       update users set
         brand_name = 'North Studio',
         brand_color = '#123456',
-        hide_schedra_branding = true,
+        hide_calendza_branding = true,
         booking_email_templates = ${sql.json(settings('Welcome: {{event_name}}'))}
       where id = ${host.id}
     `
@@ -124,7 +124,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       body: string
       preheader: string
       footer: string
-      branding: { name: string, accentColor: string, hideSchedraBranding: boolean }
+      branding: { name: string, accentColor: string, hideCalendzaBranding: boolean }
     }[]>`
       select subject, body, preheader, footer, branding from email_outbox
       where recipient = 'guest-pro-host@example.com'
@@ -134,7 +134,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       body: expect.stringContaining('Maya Guest'),
       preheader: expect.stringContaining('Maya Guest'),
       footer: 'A custom footer.',
-      branding: { name: 'North Studio', accentColor: '#123456', hideSchedraBranding: true }
+      branding: { name: 'North Studio', accentColor: '#123456', hideCalendzaBranding: true }
     })
   })
 
@@ -142,7 +142,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
     const host = await userFixture('team-host')
     const [organization] = await sql<{ id: string }[]>`
       insert into organizations (
-        name, slug, brand_color, hide_schedra_branding, booking_email_templates
+        name, slug, brand_color, hide_calendza_branding, booking_email_templates
       ) values (
         'Acme Team', 'acme-team', '#ABCDEF', false,
         ${sql.json(settings('Acme confirmed: {{event_name}}'))}

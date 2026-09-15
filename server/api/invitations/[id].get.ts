@@ -16,7 +16,7 @@ export type InvitationState
     | 'team_full'
 
 /**
- * Unauthenticated on purpose: someone with no Schedra account has to see which
+ * Unauthenticated on purpose: someone with no Calendza account has to see which
  * team invited them before deciding to sign up. The invitation id is
  * opaque and only reaches the invited mailbox.
  */

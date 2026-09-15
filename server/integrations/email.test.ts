@@ -17,7 +17,7 @@ const message: Email = {
   ],
   action: {
     label: 'View booking',
-    url: 'https://schedra.example/booking/secret-token'
+    url: 'https://calendza.example/booking/secret-token'
   },
   footer: 'Only use the link if you made this booking.'
 }
@@ -45,11 +45,11 @@ Everything you need is below.
 When: Friday, 7 September, 09:00–09:30 WAT
 Where: Open video call
 
-View booking: https://schedra.example/booking/secret-token
+View booking: https://calendza.example/booking/secret-token
 
 Only use the link if you made this booking.
 
-— Schedra`)
+— Calendza`)
   })
 
   it('rejects non-web action URLs', () => {
@@ -66,20 +66,20 @@ Only use the link if you made this booking.
         name: 'Alex <Studio>',
         logoUrl: 'javascript:alert(1)',
         accentColor: 'red',
-        hideSchedraBranding: false
+        hideCalendzaBranding: false
       }
     })
 
     expect(html).toContain('Alex &lt;Studio&gt;')
     expect(html).toContain('background:#FF5A2F')
     expect(html).not.toContain('javascript:alert(1)')
-    expect(html).toContain('Powered by Schedra')
+    expect(html).toContain('Powered by Calendza')
     expect(renderEmailText({
       ...message,
       branding: {
         name: 'Alex Studio',
         accentColor: '#123456',
-        hideSchedraBranding: true
+        hideCalendzaBranding: true
       }
     })).toContain('— Alex Studio')
   })

@@ -151,7 +151,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       update users set
         brand_name = 'Host Studio',
         brand_color = '#123456',
-        hide_schedra_branding = true,
+        hide_calendza_branding = true,
         booking_email_templates = ${sql.json({
           templates: {
             confirmation: {
@@ -194,7 +194,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       subject: string
       body: string
       footer: string
-      branding: { name: string, accentColor: string, hideSchedraBranding: boolean } | null
+      branding: { name: string, accentColor: string, hideCalendzaBranding: boolean } | null
     }[]>`
       select recipient, subject, body, footer, branding
       from email_outbox order by recipient
@@ -203,7 +203,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       subject: 'Welcome Guest Person to Intro call',
       body: expect.stringContaining('Host Person'),
       footer: 'Questions? Reply to your host.',
-      branding: { name: 'Host Studio', accentColor: '#123456', hideSchedraBranding: true }
+      branding: { name: 'Host Studio', accentColor: '#123456', hideCalendzaBranding: true }
     })
     expect(messages.find(message => message.recipient === 'host@example.com')).toMatchObject({
       subject: 'New booking: Intro call',
@@ -216,7 +216,7 @@ describe.skipIf(!url)('meeting delivery', () => {
     const { findBookingByUid } = await import('@@/server/repositories/booking')
     const { bookingCalendarFile } = await import('@@/server/services/icalendar')
     const booking = await findBookingByUid('meeting-delivery-booking')
-    const calendar = bookingCalendarFile(booking!, 'https://schedra.example')
+    const calendar = bookingCalendarFile(booking!, 'https://calendza.example')
 
     expect(calendar).toContain('BEGIN:VCALENDAR\r\n')
     expect(calendar).toContain('DTSTART:20300907T080000Z')
@@ -264,8 +264,8 @@ describe.skipIf(!url)('meeting delivery', () => {
     const notice = {
       uid: 'rescheduled-booking',
       eventTitle: 'Coaching session',
-      hostName: 'Schedra Team',
-      hostUsername: 'schedra-team',
+      hostName: 'Calendza Team',
+      hostUsername: 'calendza-team',
       hostEmail: 'organizer@example.com',
       hostTimeZone: 'Africa/Lagos',
       attendeeName: 'Guest Person',
@@ -281,7 +281,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       hostRecipients: [
         { name: 'New Host', email: 'new-host@example.com', timeZone: 'Africa/Lagos', isOrganizer: true }
       ],
-      publicBookingPath: '/team/schedra-team/coaching-session'
+      publicBookingPath: '/team/calendza-team/coaching-session'
     }
     const details = {
       previousStartsAt: '2030-09-07T08:00:00Z',
@@ -307,7 +307,7 @@ describe.skipIf(!url)('meeting delivery', () => {
     `
     expect(messages).toHaveLength(4)
     expect(messages.find(message => message.recipient === 'guest@example.com')).toMatchObject({
-      subject: 'Rescheduled: Coaching session with Schedra Team',
+      subject: 'Rescheduled: Coaching session with Calendza Team',
       heading: 'Your meeting has been rescheduled'
     })
     expect(messages.find(message => message.recipient === 'guest@example.com')?.details).toEqual(expect.arrayContaining([
@@ -421,7 +421,7 @@ describe.skipIf(!url)('meeting delivery', () => {
     expect(messages.filter(message => message.recipient === 'host@example.com')).toEqual([
       {
         recipient: 'host@example.com',
-        subject: 'Confirm your email for Schedra',
+        subject: 'Confirm your email for Calendza',
         category: 'transactional'
       }
     ])

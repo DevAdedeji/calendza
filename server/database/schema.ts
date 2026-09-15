@@ -50,7 +50,7 @@ export const organizations = pgTable('organizations', {
   brandColor: text('brand_color'),
   brandDarkColor: text('brand_dark_color'),
   bookingPageTheme: text('booking_page_theme').notNull().default('system'),
-  hideSchedraBranding: boolean('hide_schedra_branding').notNull().default(false),
+  hideCalendzaBranding: boolean('hide_calendza_branding').notNull().default(false),
   bookingEmailTemplates: jsonb('booking_email_templates').$type<BookingEmailTemplateSettings>(),
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   // Organizations are archived rather than deleted so booking history, exports
@@ -91,7 +91,7 @@ export const users = pgTable('users', {
   brandColor: text('brand_color'),
   brandDarkColor: text('brand_dark_color'),
   bookingPageTheme: text('booking_page_theme').notNull().default('system'),
-  hideSchedraBranding: boolean('hide_schedra_branding').notNull().default(false),
+  hideCalendzaBranding: boolean('hide_calendza_branding').notNull().default(false),
   bookingEmailTemplates: jsonb('booking_email_templates').$type<BookingEmailTemplateSettings>(),
   timeZone: text('time_zone').notNull().default('UTC'),
   twoFactorEnabled: boolean('two_factor_enabled').notNull().default(false),
@@ -376,7 +376,7 @@ export const personalInvoices = pgTable('personal_invoices', {
 export const organizationAuditLogs = pgTable('organization_audit_logs', {
   id: uuid('id').primaryKey().defaultRandom(),
   organizationId: uuid('organization_id').notNull().references(() => organizations.id, { onDelete: 'cascade' }),
-  // Null when Schedra itself acted — an expiry sweep, a webhook, a trial end.
+  // Null when Calendza itself acted — an expiry sweep, a webhook, a trial end.
   actorUserId: uuid('actor_user_id').references(() => users.id, { onDelete: 'set null' }),
   actorEmail: text('actor_email'),
   action: text('action').notNull(),
@@ -891,8 +891,8 @@ export const bookingSeries = pgTable('booking_series', {
 
 /**
  * The person or team that receives paid-booking proceeds. Bachs Connect keeps
- * seller funds separate from Schedra's own balance and hosts the compliance
- * flow, so Schedra never stores identity documents or bank details.
+ * seller funds separate from Calendza's own balance and hosts the compliance
+ * flow, so Calendza never stores identity documents or bank details.
  */
 export const paymentRecipients = pgTable('payment_recipients', {
   id: uuid('id').primaryKey().defaultRandom(),
