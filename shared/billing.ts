@@ -29,12 +29,11 @@ export const PERSONAL_PRO_PLAN = {
 /**
  * Bachs cannot silently re-charge a bank transfer, and NGN collection is
  * primarily bank transfer, so every renewal is invoice → pay → extend rather
- * than a card charged on file. Annual is the default for that reason: one
- * payment a year instead of twelve, and one processing fee instead of twelve.
+ * than a card charged on file.
  */
 export const billingIntervals = ['yearly', 'monthly'] as const
 export type BillingInterval = typeof billingIntervals[number]
-export const DEFAULT_BILLING_INTERVAL: BillingInterval = 'yearly'
+export const DEFAULT_BILLING_INTERVAL: BillingInterval = 'monthly'
 
 /**
  * Mirrors Bachs' subscription lifecycle so a webhook can be mapped straight
@@ -79,7 +78,7 @@ export interface PersonalPlanEntitlement {
   teamCoverage: PersonalTeamCoverage | null
 }
 
-/** Currencies a customer may pay in. Prices are always quoted in USD. */
+/** Currencies a customer may pay in, each with its own fixed plan prices. */
 export const collectionCurrencies = ['USD', 'NGN'] as const
 export type CollectionCurrency = typeof collectionCurrencies[number]
 

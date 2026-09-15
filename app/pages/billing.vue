@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import {
-  PERSONAL_PRO_PLAN,
+  DEFAULT_BILLING_INTERVAL,
   TEAM_PLAN,
-  formatUsd,
-  seatPriceCents,
-  type BillingInterval,
-  type CollectionCurrency
+  type BillingInterval
 } from '#shared/billing'
+import { formatInvoiceAmount } from '#shared/regional-pricing'
+import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 import { personalBillingApi } from '@/services/api/billing'
 
@@ -14,8 +13,8 @@ definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Plan & billing', robots: 'noindex, nofollow' })
 
 const feedback = useFeedback()
-const interval = ref<BillingInterval>('yearly')
-const currency = ref<CollectionCurrency>('USD')
+const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
+const { currency, ready: pricingReady, price } = useSubscriptionPricing()
 const checkingOut = ref(false)
 const cancelling = ref(false)
 const cancelOpen = ref(false)
@@ -23,11 +22,7 @@ const { data, status, error, refresh } = await useLazyFetch(personalBillingApi.s
 const { data: teamList } = await useTeams()
 
 const entitlement = computed(() => data.value?.entitlement)
-const priceCents = computed(() => interval.value === 'yearly'
-  ? PERSONAL_PRO_PLAN.yearlyCents
-  : PERSONAL_PRO_PLAN.monthlyCents)
 const periodLabel = computed(() => interval.value === 'yearly' ? 'year' : 'month')
-const teamPriceCents = computed(() => seatPriceCents(interval.value))
 const coveredTeam = computed(() => teamList.value.items.find(team =>
   team.id === entitlement.value?.teamCoverage?.organizationId
 ))
@@ -45,6 +40,7 @@ const teamActionLabel = computed(() => {
 })
 
 async function checkout() {
+  if (checkingOut.value || !pricingReady.value) return
   checkingOut.value = true
   try {
     const result = await personalBillingApi.checkout({
@@ -100,13 +96,14 @@ function formatDate(value: string | null | undefined) {
       label="Loading plan and billing"
     />
     <template v-else>
+      <BillingRegionControl />
       <div class="flex justify-start sm:justify-end">
         <div
           class="inline-flex rounded-full border border-default bg-muted p-1"
           aria-label="Billing period"
         >
           <button
-            v-for="option in (['yearly', 'monthly'] as const)"
+            v-for="option in (['monthly', 'yearly'] as const)"
             :key="option"
             type="button"
             class="rounded-full px-3 py-1.5 text-sm font-medium"
@@ -133,7 +130,7 @@ function formatDate(value: string | null | undefined) {
             </UBadge>
           </div>
           <h2 class="mt-4 font-editorial text-4xl text-highlighted">
-            $0
+            Free
             <span class="font-sans text-sm text-muted">forever</span>
           </h2>
           <p class="mt-3 text-sm text-muted">
@@ -176,7 +173,7 @@ function formatDate(value: string | null | undefined) {
             </UBadge>
           </div>
           <h2 class="mt-4 font-editorial text-4xl text-highlighted">
-            {{ formatUsd(priceCents) }}
+            {{ price('personal', interval) }}
             <span class="font-sans text-sm text-muted">/ {{ periodLabel }}</span>
           </h2>
           <p class="mt-3 text-sm text-muted">
@@ -196,22 +193,11 @@ function formatDate(value: string | null | undefined) {
             </li>
           </ul>
           <template v-if="!entitlement?.isPro">
-            <UFormField
-              label="Pay with"
-              class="mt-7"
-            >
-              <USelect
-                v-model="currency"
-                :items="[{ label: 'Card in USD', value: 'USD' }, { label: 'Bank transfer in NGN', value: 'NGN' }]"
-                value-key="value"
-                class="w-full"
-              />
-            </UFormField>
             <UButton
-              class="mt-3 justify-center"
+              class="mt-7 justify-center"
               size="lg"
               :loading="checkingOut"
-              :disabled="!data?.configured"
+              :disabled="!data?.configured || !pricingReady"
               @click="checkout"
             >
               Upgrade to Personal Pro
@@ -246,7 +232,7 @@ function formatDate(value: string | null | undefined) {
             </UBadge>
           </div>
           <h2 class="mt-4 font-editorial text-4xl text-highlighted">
-            {{ formatUsd(teamPriceCents) }}
+            {{ price('team', interval) }}
             <span class="font-sans text-sm text-muted">/ member / {{ periodLabel }}</span>
           </h2>
           <p class="mt-3 text-sm text-muted">
@@ -288,6 +274,13 @@ function formatDate(value: string | null | undefined) {
                   Plan
                 </dt><dd class="mt-1 font-medium text-highlighted">
                   {{ entitlement?.teamCoverage ? `Personal Pro via ${entitlement.teamCoverage.name}` : entitlement?.isPro ? 'Personal Pro' : 'Personal Free' }}
+                </dd>
+              </div>
+              <div v-if="entitlement?.isPro">
+                <dt class="text-muted">
+                  Existing subscription currency
+                </dt><dd class="mt-1 font-medium text-highlighted">
+                  {{ entitlement.teamCoverage ? 'Managed by your Team owner' : data?.payment.collectionCurrency }}
                 </dd>
               </div>
               <div v-if="entitlement?.isPro">
@@ -359,7 +352,7 @@ function formatDate(value: string | null | undefined) {
                   {{ invoice.interval }}
                 </td>
                 <td class="px-6 py-4 text-highlighted">
-                  {{ formatUsd(invoice.amountCents) }} USD
+                  {{ formatInvoiceAmount(invoice) }}
                 </td>
                 <td class="px-6 py-4">
                   <UBadge
