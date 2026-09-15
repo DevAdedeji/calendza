@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Cross-site analytics requests are not allowed.' })
   }
 
-  const expectedOrigin = new URL(useEnv().schedraUrl).origin
+  const expectedOrigin = new URL(useEnv().siteUrl).origin
   const requestOrigin = getHeader(event, 'origin')
   if (requestOrigin && requestOrigin !== expectedOrigin) {
     throw createError({ statusCode: 403, statusMessage: 'Analytics request origin is not allowed.' })

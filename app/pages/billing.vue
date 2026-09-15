@@ -184,7 +184,7 @@ function formatDate(value: string | null | undefined) {
           </p>
           <ul class="mt-6 flex-1 space-y-3 text-sm text-highlighted">
             <li
-              v-for="feature in ['Custom logo, colours and page theme', 'Custom branded guest emails', 'Remove Schedra branding', 'Revenue analytics and CSV exports', 'Lower paid-booking fee']"
+              v-for="feature in ['Custom logo, colours and page theme', 'Custom branded guest emails', 'Remove Calendza branding', 'Revenue analytics and CSV exports', 'Lower paid-booking fee']"
               :key="feature"
               class="flex gap-2"
             >

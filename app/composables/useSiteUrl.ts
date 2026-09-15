@@ -1,4 +1,4 @@
-const PRODUCTION_HOST = 'schedra.xyz'
+const PRODUCTION_HOST = 'calendza.xyz'
 
 export function useSiteUrl() {
   const configured = useRuntimeConfig().public.siteUrl

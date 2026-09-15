@@ -1,25 +1,25 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-if (!process.env.SCHEDRA_URL && existsSync('.env')) {
+if (!process.env.CALENDZA_URL && existsSync('.env')) {
   process.loadEnvFile('.env')
 }
 
-const rawSiteUrl = process.env.SCHEDRA_URL?.trim()
+const rawSiteUrl = process.env.CALENDZA_URL?.trim()
 if (!rawSiteUrl) {
-  throw new Error('SCHEDRA_URL is required to verify prerendered SEO metadata.')
+  throw new Error('CALENDZA_URL is required to verify prerendered SEO metadata.')
 }
 
 const parsedSiteUrl = new URL(rawSiteUrl)
 if (!['http:', 'https:'].includes(parsedSiteUrl.protocol)) {
-  throw new Error('SCHEDRA_URL must use http or https.')
+  throw new Error('CALENDZA_URL must use http or https.')
 }
 if (parsedSiteUrl.pathname !== '/' || parsedSiteUrl.search || parsedSiteUrl.hash) {
-  throw new Error('SCHEDRA_URL must be an origin without a path, query, or fragment.')
+  throw new Error('CALENDZA_URL must be an origin without a path, query, or fragment.')
 }
 
 const siteUrl = parsedSiteUrl.origin
-const indexable = parsedSiteUrl.hostname === 'schedra.xyz'
+const indexable = parsedSiteUrl.hostname === 'calendza.xyz'
 const publicDirectory = resolve('.output/public')
 const routes = [
   '/',
@@ -69,6 +69,9 @@ for (const route of routes) {
   }
 
   const html = readFileSync(file, 'utf8')
+  if (!/<title>[^<]*Calendza/.test(html)) {
+    throw new Error(`${route} is missing Calendza branding.`)
+  }
   const canonical = expectedCanonical(route)
   const robots = indexable ? 'index, follow' : 'noindex, nofollow'
   const canonicalUrls = attributeValues(html, /<link\b(?=[^>]*\brel="canonical")[^>]*>/gi, 'href')

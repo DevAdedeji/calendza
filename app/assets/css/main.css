@@ -33,11 +33,11 @@ body {
 
 :root {
   --ui-radius: 0.5rem;
-  --schedra-secondary-surface: #f5f5f4;
+  --calendza-secondary-surface: #f5f5f4;
 }
 
 .dark {
-  --schedra-secondary-surface: #211e1c;
+  --calendza-secondary-surface: #211e1c;
 }
 
 .personal-booking-brand {
@@ -81,7 +81,7 @@ body {
 
 @layer utilities {
   .surface-secondary {
-    background-color: var(--schedra-secondary-surface);
+    background-color: var(--calendza-secondary-surface);
   }
 
   /* Keep page-level actions consistent across the dashboard. They remain

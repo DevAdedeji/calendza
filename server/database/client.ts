@@ -22,7 +22,7 @@ export function createDatabase(url: string, options: postgres.Options<Record<str
     max_lifetime: 30 * 60,
     ...options,
     connection: {
-      application_name: 'schedra',
+      application_name: 'calendza',
       statement_timeout: 15_000,
       lock_timeout: 5_000,
       idle_in_transaction_session_timeout: 15_000,

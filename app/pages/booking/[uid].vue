@@ -228,7 +228,7 @@ useSeoMeta({
             v-if="!signedIn"
             to="/"
           >
-            <SchedraMark />
+            <CalendzaMark />
           </NuxtLink>
           <NuxtLink
             v-else
@@ -729,7 +729,7 @@ useSeoMeta({
       <NuxtLink
         to="/"
         class="underline underline-offset-4 transition-colors hover:text-muted"
-      >Schedra</NuxtLink>
+      >Calendza</NuxtLink>
     </footer>
   </div>
 </template>

@@ -124,7 +124,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       body: string
       preheader: string
       footer: string
-      branding: { name: string, accentColor: string, hideSchedraBranding: boolean }
+      branding: { name: string, accentColor: string, hideCalendzaBranding: boolean }
     }[]>`
       select subject, body, preheader, footer, branding from email_outbox
       where recipient = 'guest-pro-host@example.com'
@@ -134,7 +134,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       body: expect.stringContaining('Maya Guest'),
       preheader: expect.stringContaining('Maya Guest'),
       footer: 'A custom footer.',
-      branding: { name: 'North Studio', accentColor: '#123456', hideSchedraBranding: true }
+      branding: { name: 'North Studio', accentColor: '#123456', hideCalendzaBranding: true }
     })
   })
 

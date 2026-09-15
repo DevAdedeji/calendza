@@ -5,6 +5,7 @@ const VERSION = 'v1'
 
 function key() {
   const env = useEnv()
+  // This namespace is part of the encryption format already stored in the database.
   return createHash('sha256').update(`schedra:integrations:${env.integrationEncryptionKey ?? env.authSecret}`).digest()
 }
 

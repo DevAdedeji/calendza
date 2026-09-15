@@ -20,6 +20,6 @@ export function getTestDatabaseUrl() {
 
 export function configureAppTestEnvironment(databaseUrl: string) {
   process.env.DATABASE_URL = databaseUrl
-  process.env.SCHEDRA_URL ||= 'http://localhost:3002'
+  process.env.CALENDZA_URL ||= 'http://localhost:3002'
   process.env.AUTH_SECRET ||= 'x'.repeat(32)
 }

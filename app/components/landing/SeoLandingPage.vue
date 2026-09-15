@@ -34,7 +34,7 @@ useHead({
           'isPartOf': {
             '@type': 'WebSite',
             '@id': `${origin.replace(/\/$/, '')}/#website`,
-            'name': 'Schedra',
+            'name': 'Calendza',
             'url': origin
           }
         },
@@ -141,7 +141,7 @@ useHead({
       <div class="mx-auto max-w-312 px-6 py-20 lg:px-10 lg:py-24">
         <div class="max-w-3xl">
           <p class="eyebrow text-primary">
-            Why Schedra
+            Why Calendza
           </p>
           <h2 class="mt-5 font-editorial text-[clamp(2.35rem,5vw,4rem)] leading-[1.02] tracking-[-0.02em] text-highlighted">
             {{ page.problemTitle }}

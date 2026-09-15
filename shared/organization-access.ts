@@ -3,7 +3,7 @@ import { defaultStatements } from 'better-auth/plugins/organization/access'
 
 /**
  * Better Auth's defaults cover organization/member/invitation; the rest are
- * Schedra's own. Every organization endpoint checks these on the server — the
+ * Calendza's own. Every organization endpoint checks these on the server — the
  * UI hiding a button is never the control.
  */
 export const organizationStatements = {

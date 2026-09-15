@@ -30,7 +30,7 @@ export function useBookingGuestForm(options: {
     booking.name = toValue(options.prefillName)?.trim() ?? ''
     booking.email = toValue(options.prefillEmail)?.trim().toLowerCase() ?? ''
     if (import.meta.client && !booking.name && !booking.email) {
-      const key = `schedra:routing-prefill:${route.path}`
+      const key = `calendza:routing-prefill:${route.path}`
       const stored = sessionStorage.getItem(key)
       sessionStorage.removeItem(key)
       if (stored) {

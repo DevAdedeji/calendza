@@ -13,10 +13,10 @@ const callbackQuery = z.object({
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
   const parsed = await getValidatedQuery(event, callbackQuery.safeParse)
-  const expected = getCookie(event, 'schedra_zoom_state')
-  const codeVerifier = getCookie(event, 'schedra_zoom_pkce')
-  deleteCookie(event, 'schedra_zoom_state', { path: '/api/integrations/zoom' })
-  deleteCookie(event, 'schedra_zoom_pkce', { path: '/api/integrations/zoom' })
+  const expected = getCookie(event, 'calendza_zoom_state')
+  const codeVerifier = getCookie(event, 'calendza_zoom_pkce')
+  deleteCookie(event, 'calendza_zoom_state', { path: '/api/integrations/zoom' })
+  deleteCookie(event, 'calendza_zoom_pkce', { path: '/api/integrations/zoom' })
 
   if (!parsed.success || !codeVerifier || !matchesOAuthState(parsed.data.state, expected)) {
     return sendRedirect(event, '/integrations?zoom=invalid-request')

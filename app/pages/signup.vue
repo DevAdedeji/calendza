@@ -6,7 +6,7 @@ import { usernameApi, type UsernameAvailability } from '@/services/api/profiles'
 import { localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'auth', middleware: 'guest' })
-useSeoMeta({ title: 'Create your Schedra link', robots: 'noindex, nofollow' })
+useSeoMeta({ title: 'Create your Calendza link', robots: 'noindex, nofollow' })
 
 const { signUp } = useAuthClient()
 const { data: methods } = useCurrentUser()
@@ -188,7 +188,7 @@ async function onSubmit(event: FormSubmitEvent<SignUpFormInput>) {
     </h1>
     <p class="mt-3 text-[16px] leading-relaxed text-muted">
       <template v-if="invitation">
-        Create your Schedra account to accept the invitation. You get your own booking page too.
+        Create your Calendza account to accept the invitation. You get your own booking page too.
       </template>
       <template v-else>
         Free, and about two minutes. You can change any of this later.

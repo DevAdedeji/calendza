@@ -46,7 +46,7 @@ export function logEvent(level: LogLevel, name: string, fields: LogFields = {}, 
     timestamp: new Date().toISOString(),
     level,
     event: name,
-    service: 'schedra',
+    service: 'calendza',
     environment: process.env.NODE_ENV ?? 'development',
     ...(event?.context.requestId ? { requestId: event.context.requestId } : {}),
     ...sanitizeLogFields(fields)

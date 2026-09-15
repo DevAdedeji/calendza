@@ -36,7 +36,7 @@ export function bookingCalendarFile(booking: ManagedBooking, origin: string) {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Schedra//Booking//EN',
+    'PRODID:-//Calendza//Booking//EN',
     'CALSCALE:GREGORIAN',
     `METHOD:${booking.status === 'cancelled' ? 'CANCEL' : 'PUBLISH'}`,
     'BEGIN:VEVENT',

@@ -44,7 +44,7 @@ async function save() {
       brandColor: form.brandColor,
       brandDarkColor: form.brandDarkColor,
       bookingPageTheme: form.bookingPageTheme,
-      hideSchedraBranding: form.hideSchedraBranding
+      hideCalendzaBranding: form.hideCalendzaBranding
     })
     Object.assign(form, result.branding)
     dirty.value = false
@@ -215,15 +215,15 @@ async function removeLogo() {
         <div class="flex items-start justify-between gap-5 rounded-xl border border-default bg-muted px-4 py-3.5">
           <div>
             <p class="text-[14px] font-medium text-highlighted">
-              Remove Schedra branding
+              Remove Calendza branding
             </p>
             <p class="mt-0.5 text-[12px] leading-relaxed text-muted">
-              Hide “Scheduling by Schedra” on team booking pages.
+              Hide “Scheduling by Calendza” on team booking pages.
             </p>
           </div>
           <USwitch
-            v-model="form.hideSchedraBranding"
-            aria-label="Remove Schedra branding from team pages"
+            v-model="form.hideCalendzaBranding"
+            aria-label="Remove Calendza branding from team pages"
           />
         </div>
 
@@ -260,10 +260,10 @@ async function removeLogo() {
             </button>
           </div>
           <p
-            v-if="!form.hideSchedraBranding"
+            v-if="!form.hideCalendzaBranding"
             class="mt-3 text-center text-[11px] text-dimmed"
           >
-            Scheduling by Schedra
+            Scheduling by Calendza
           </p>
         </div>
       </aside>

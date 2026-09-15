@@ -17,10 +17,10 @@ const callbackQuery = z.object({
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
   const parsed = await getValidatedQuery(event, callbackQuery.safeParse)
-  const expected = getCookie(event, 'schedra_google_calendar_state')
-  const codeVerifier = getCookie(event, 'schedra_google_calendar_pkce')
-  deleteCookie(event, 'schedra_google_calendar_state', { path: '/api/integrations/google-calendar' })
-  deleteCookie(event, 'schedra_google_calendar_pkce', { path: '/api/integrations/google-calendar' })
+  const expected = getCookie(event, 'calendza_google_calendar_state')
+  const codeVerifier = getCookie(event, 'calendza_google_calendar_pkce')
+  deleteCookie(event, 'calendza_google_calendar_state', { path: '/api/integrations/google-calendar' })
+  deleteCookie(event, 'calendza_google_calendar_pkce', { path: '/api/integrations/google-calendar' })
 
   if (!parsed.success || !codeVerifier || !matchesOAuthState(parsed.data.state, expected)) {
     return sendRedirect(event, '/integrations?calendar=invalid-request')

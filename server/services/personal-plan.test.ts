@@ -20,7 +20,7 @@ describe('personal branding', () => {
       brandColor: '#1d4ed8',
       brandDarkColor: '#60a5fa',
       bookingPageTheme: 'system',
-      hideSchedraBranding: true
+      hideCalendzaBranding: true
     })).toMatchObject({ brandName: 'Acme', brandColor: '#1D4ED8', brandDarkColor: '#60A5FA' })
 
     expect(() => personalBrandingSchema.parse({
@@ -28,7 +28,7 @@ describe('personal branding', () => {
       brandColor: 'url(https://example.com)',
       brandDarkColor: '#60A5FA',
       bookingPageTheme: 'dark',
-      hideSchedraBranding: false
+      hideCalendzaBranding: false
     })).toThrow()
   })
 

@@ -334,7 +334,7 @@ const defaultDescription = computed(() => (alreadyDefault.value
               v-if="!writableCalendars.length || writeCalendarMissing"
               class="mt-2 text-[13px] text-error"
             >
-              {{ writeCalendarMissing ? 'The previous destination is unavailable. Choose another.' : `This ${name} account has no calendar Schedra can edit.` }}
+              {{ writeCalendarMissing ? 'The previous destination is unavailable. Choose another.' : `This ${name} account has no calendar Calendza can edit.` }}
             </p>
           </section>
           <div
@@ -375,7 +375,7 @@ const defaultDescription = computed(() => (alreadyDefault.value
       v-if="credentialConnection"
       v-model:open="credentialOpen"
       title="Connect Apple Calendar"
-      description="Use a separate app-specific password so Schedra never receives your main Apple Account password."
+      description="Use a separate app-specific password so Calendza never receives your main Apple Account password."
       :ui="{ content: 'w-[calc(100%-1.5rem)] max-w-lg' }"
     >
       <template #body>
@@ -457,7 +457,7 @@ const defaultDescription = computed(() => (alreadyDefault.value
     <UModal
       v-model:open="disconnectOpen"
       :title="`Disconnect ${name}?`"
-      description="Schedra will stop checking this provider and syncing booking changes to it."
+      description="Calendza will stop checking this provider and syncing booking changes to it."
     >
       <template #body>
         <p class="text-[14px] leading-relaxed text-muted">

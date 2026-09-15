@@ -47,7 +47,7 @@ function assertPublicReturnUrl(base: string) {
   if (['localhost', '127.0.0.1', '::1'].includes(host)) {
     throw createError({
       statusCode: 503,
-      statusMessage: 'Bachs will not redirect back to localhost. Point SCHEDRA_URL at a public tunnel or use staging to test checkout.'
+      statusMessage: 'Bachs will not redirect back to localhost. Point CALENDZA_URL at a public tunnel or use staging to test checkout.'
     })
   }
 }
@@ -62,7 +62,7 @@ export async function startCheckout(input: {
   actorUserId: string
 }) {
   const env = useEnv()
-  assertPublicReturnUrl(env.schedraUrl)
+  assertPublicReturnUrl(env.siteUrl)
 
   const db = useDatabase()
   const entitlement = await organizationEntitlement(input.organizationId)
@@ -98,8 +98,8 @@ export async function startCheckout(input: {
   const end = periodEnd(start, input.interval)
   const reference = invoiceReference(input.organizationId, start)
 
-  const successUrl = `${env.schedraUrl}/t/${input.organizationSlug}/billing?paid=1`
-  const cancelUrl = `${env.schedraUrl}/t/${input.organizationSlug}/billing`
+  const successUrl = `${env.siteUrl}/t/${input.organizationSlug}/billing?paid=1`
+  const cancelUrl = `${env.siteUrl}/t/${input.organizationSlug}/billing`
   const metadata = {
     organizationId: input.organizationId,
     interval: input.interval,

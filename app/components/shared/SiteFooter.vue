@@ -55,7 +55,7 @@ const year = new Date().getFullYear()
     <div class="mx-auto max-w-312 px-6 lg:px-10">
       <div class="grid gap-12 py-16 sm:grid-cols-2 lg:grid-cols-[1.35fr_repeat(4,1fr)]">
         <div>
-          <SchedraMark />
+          <CalendzaMark />
           <p class="mt-5 max-w-[28ch] text-[16px] leading-relaxed text-muted">
             Share a link, get booked. Focused scheduling with clear timezone
             handling and no advertising trackers.
@@ -84,7 +84,7 @@ const year = new Date().getFullYear()
       </div>
 
       <div class="flex flex-col gap-2 border-t border-default py-6 text-[14px] text-dimmed sm:flex-row sm:items-center sm:justify-between">
-        <span>© {{ year }} Schedra</span>
+        <span>© {{ year }} Calendza</span>
         <span>No ads. No data resale. Free for your own booking page.</span>
       </div>
     </div>

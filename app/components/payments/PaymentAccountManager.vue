@@ -39,7 +39,7 @@ const statusCopy = computed(() => ({
   active: ['Paid bookings enabled', 'Bachs has enabled transfers and approved a usable payout destination. Funds still remain in Bachs until a separate withdrawal is created.'],
   restricted: ['Action required', 'Bachs needs updated information. Paid bookings remain disabled until the restriction is resolved.'],
   disabled: ['Payments unavailable', 'This payout account is disabled. Contact support if this was unexpected.'],
-  unavailable: ['Status unavailable', 'Schedra could not verify this account with Bachs, so paid bookings are disabled for safety. Try checking again.']
+  unavailable: ['Status unavailable', 'Calendza could not verify this account with Bachs, so paid bookings are disabled for safety. Try checking again.']
 } as const)[data.value?.status ?? 'not_started'])
 
 const actionLabel = computed(() => data.value?.ready
@@ -93,7 +93,7 @@ async function checkStatus(notify = true) {
       restricted: ['Bachs needs more information', 'Open Bachs to review and resolve the account restriction.'],
       disabled: ['Payments are unavailable', 'Contact support if Bachs disabled this account unexpectedly.'],
       not_started: ['Payout setup has not started', 'Open Bachs to submit your payout details.'],
-      unavailable: ['Could not verify payout status', 'Paid bookings remain disabled until Schedra can check Bachs again.']
+      unavailable: ['Could not verify payout status', 'Paid bookings remain disabled until Calendza can check Bachs again.']
     } as const)[data.value?.status ?? 'not_started']
     toast.add({ title: copy[0], description: copy[1], color: data.value?.ready ? 'success' : 'neutral' })
   } finally {
@@ -182,7 +182,7 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
           class="mt-0.5 size-4 shrink-0 text-warning"
         />
         <p>
-          Schedra checks the account directly with Bachs and will not create a checkout until account setup, transfers and payouts are all approved.
+          Calendza checks the account directly with Bachs and will not create a checkout until account setup, transfers and payouts are all approved.
         </p>
       </div>
       <div class="surface-secondary grid gap-px border-t border-default sm:grid-cols-2 lg:grid-cols-4">
@@ -196,7 +196,7 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
         </div>
         <div class="p-5">
           <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
-            Schedra fee
+            Calendza fee
           </p>
           <p class="mt-2 text-sm text-toned">
             {{ ((data?.platformFeeBps ?? 500) / 100).toFixed(2).replace(/\.00$/, '') }}% per paid booking.

@@ -27,7 +27,7 @@ export interface OrganizationContext {
     brandColor: string | null
     brandDarkColor: string | null
     bookingPageTheme: string
-    hideSchedraBranding: boolean
+    hideCalendzaBranding: boolean
     archivedAt: Date | null
   }
   role: OrganizationRole

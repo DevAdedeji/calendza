@@ -192,7 +192,7 @@ export async function updateAppleCalendarSelection(
   }
   const write = byId.get(writeCalendarId)
   if (!write || !['writer', 'owner'].includes(write.accessRole)) {
-    throw new AppleCalendarSelectionError('Choose an Apple calendar where Schedra may create events.')
+    throw new AppleCalendarSelectionError('Choose an Apple calendar where Calendza may create events.')
   }
 
   const connection = await activeConnection(userId)

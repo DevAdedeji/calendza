@@ -11,16 +11,16 @@ export default defineEventHandler(async (event) => {
 
   const cookieOptions = {
     httpOnly: true,
-    secure: new URL(useEnv().schedraUrl).protocol === 'https:',
+    secure: new URL(useEnv().siteUrl).protocol === 'https:',
     sameSite: 'lax' as const,
     path: '/api/integrations/google-calendar',
     maxAge: 10 * 60
   }
 
-  setCookie(event, 'schedra_google_calendar_state', state, {
+  setCookie(event, 'calendza_google_calendar_state', state, {
     ...cookieOptions
   })
-  setCookie(event, 'schedra_google_calendar_pkce', pkce.verifier, cookieOptions)
+  setCookie(event, 'calendza_google_calendar_pkce', pkce.verifier, cookieOptions)
 
   return sendRedirect(event, googleAuthorizationUrl(state, session.user.email, pkce.challenge))
 })

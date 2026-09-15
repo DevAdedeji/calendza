@@ -71,7 +71,7 @@ test('keeps operations private and retries a failed delivery job', async ({ page
   expect(unauthenticated.status()).toBe(401)
   expect(unauthenticated.headers()['x-request-id']).toBeTruthy()
 
-  await signUpAndSignIn(page, 'ada-ops@schedra.test', 'ada-ops')
+  await signUpAndSignIn(page, 'ada-ops@calendza.test', 'ada-ops')
   await sql`
     insert into email_outbox (
       dedupe_key, recipient, subject, heading, body, action_label,
@@ -114,7 +114,7 @@ test('keeps operations private and retries a failed delivery job', async ({ page
 })
 
 test('does not expose the operations page to a normal signed-in user', async ({ page }) => {
-  await signUpAndSignIn(page, 'member@schedra.test', 'member-ops-check')
+  await signUpAndSignIn(page, 'member@calendza.test', 'member-ops-check')
   await page.goto('/operations')
   await expect(page).toHaveURL(/\/dashboard$/)
   await expect(page.getByRole('link', { name: 'Operations' })).toHaveCount(0)

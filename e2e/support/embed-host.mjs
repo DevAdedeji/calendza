@@ -1,23 +1,24 @@
 import { createServer } from 'node:http'
 
-const schedraOrigin = process.env.SCHEDRA_ORIGIN || 'http://127.0.0.1:3102'
+const calendzaOrigin = process.env.CALENDZA_ORIGIN || 'http://127.0.0.1:3102'
 
 function page(kind) {
+  const brand = 'calendza'
   const floating = kind === 'floating'
   const team = kind === 'team'
   const bookingUrl = team
-    ? `${schedraOrigin}/team/embed-team/team-demo`
-    : `${schedraOrigin}/embed-host/website-demo`
+    ? `${calendzaOrigin}/team/embed-team/team-demo`
+    : `${calendzaOrigin}/embed-host/website-demo`
   const trigger = floating
     ? ''
     : `<button id="book-demo" type="button"
-        data-schedra-embed="${bookingUrl}"
-        data-schedra-theme="light"
-        data-schedra-accent="#2563EB"
-        data-schedra-name="Website Visitor"
-        data-schedra-email="visitor@example.com">Book a demo</button>`
+        data-${brand}-embed="${bookingUrl}"
+        data-${brand}-theme="light"
+        data-${brand}-accent="#2563EB"
+        data-${brand}-name="Website Visitor"
+        data-${brand}-email="visitor@example.com">Book a demo</button>`
   const loaderAttributes = floating
-    ? `data-schedra-floating="${bookingUrl}" data-schedra-label="Book now" data-schedra-theme="light" data-schedra-accent="#2563EB"`
+    ? `data-${brand}-floating="${bookingUrl}" data-${brand}-label="Book now" data-${brand}-theme="light" data-${brand}-accent="#2563EB"`
     : ''
 
   return `<!doctype html>
@@ -37,10 +38,10 @@ function page(kind) {
       <script>
         window.embedEvents = [];
         ['open','ready','booking-completed','close','error'].forEach(function(type){
-          window.addEventListener('schedra:' + type, function(event){ window.embedEvents.push({ type:type, detail:event.detail }); });
+          window.addEventListener('${brand}:' + type, function(event){ window.embedEvents.push({ type:type, detail:event.detail }); });
         });
       </script>
-      <script async src="${schedraOrigin}/embed.js" ${loaderAttributes}></script>
+      <script async src="${calendzaOrigin}/embed.js" ${loaderAttributes}></script>
     </body>
   </html>`
 }
@@ -52,11 +53,12 @@ const server = createServer((request, response) => {
     return
   }
 
-  const kind = request.url === '/floating' ? 'floating' : request.url === '/team' ? 'team' : 'personal'
+  const url = new URL(request.url, 'http://127.0.0.1:3103')
+  const kind = url.pathname === '/floating' ? 'floating' : url.pathname === '/team' ? 'team' : 'personal'
   response.writeHead(200, {
     'Content-Type': 'text/html; charset=utf-8',
     'Cache-Control': 'no-store',
-    'Content-Security-Policy': `default-src 'self'; script-src 'self' 'unsafe-inline' ${schedraOrigin}; frame-src ${schedraOrigin}; style-src 'unsafe-inline'`
+    'Content-Security-Policy': `default-src 'self'; script-src 'self' 'unsafe-inline' ${calendzaOrigin}; frame-src ${calendzaOrigin}; style-src 'unsafe-inline'`
   })
   response.end(page(kind))
 })

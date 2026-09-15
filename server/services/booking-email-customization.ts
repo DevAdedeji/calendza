@@ -34,7 +34,7 @@ export interface BookingEmailCustomization {
 function absoluteLogoUrl(value: string | null) {
   if (!value) return undefined
   try {
-    return new URL(value, useEnv().schedraUrl).toString()
+    return new URL(value, useEnv().siteUrl).toString()
   } catch {
     return undefined
   }
@@ -64,7 +64,7 @@ export async function resolveBookingEmailCustomization(
         name: organizations.name,
         logoUrl: organizations.logo,
         accentColor: organizations.brandColor,
-        hideSchedraBranding: organizations.hideSchedraBranding,
+        hideCalendzaBranding: organizations.hideCalendzaBranding,
         settings: organizations.bookingEmailTemplates
       }).from(organizations).where(eq(organizations.id, owner.organizationId)).limit(1)
     ])
@@ -75,7 +75,7 @@ export async function resolveBookingEmailCustomization(
         name: stored.name,
         logoUrl: absoluteLogoUrl(stored.logoUrl),
         accentColor: stored.accentColor ?? DEFAULT_PERSONAL_BRANDING.brandColor,
-        hideSchedraBranding: stored.hideSchedraBranding
+        hideCalendzaBranding: stored.hideCalendzaBranding
       }
     }
   }
@@ -88,7 +88,7 @@ export async function resolveBookingEmailCustomization(
       brandName: users.brandName,
       logoUrl: users.brandLogoUrl,
       accentColor: users.brandColor,
-      hideSchedraBranding: users.hideSchedraBranding,
+      hideCalendzaBranding: users.hideCalendzaBranding,
       settings: users.bookingEmailTemplates
     }).from(users).where(eq(users.id, owner.hostUserId)).limit(1)
   ])
@@ -99,7 +99,7 @@ export async function resolveBookingEmailCustomization(
       name: stored.brandName || stored.name || owner.hostName,
       logoUrl: absoluteLogoUrl(stored.logoUrl),
       accentColor: stored.accentColor ?? DEFAULT_PERSONAL_BRANDING.brandColor,
-      hideSchedraBranding: stored.hideSchedraBranding
+      hideCalendzaBranding: stored.hideCalendzaBranding
     }
   }
 }

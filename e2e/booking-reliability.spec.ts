@@ -11,7 +11,7 @@ let eventTypeId: string
 
 test.beforeAll(async () => {
   const [host] = await sql`insert into users (email, name, username, email_verified, time_zone)
-    values (${`${username}@schedra.test`}, 'Calendar test host', ${username}, true, 'UTC') returning id`
+    values (${`${username}@calendza.test`}, 'Calendar test host', ${username}, true, 'UTC') returning id`
   hostId = host!.id
   const [schedule] = await sql`insert into schedules (user_id, name, time_zone, is_default)
     values (${hostId}, 'Browser test', 'UTC', true) returning id`
@@ -41,7 +41,7 @@ test('books beyond the old eight-week limit on mobile using bounded availability
   await page.locator('[data-testid="booking-day"]:not([disabled])').first().click()
   await page.getByTestId('booking-slot').first().click()
   await page.getByLabel('Your name').fill('Portfolio test guest')
-  await page.getByLabel('Email', { exact: true }).fill('calendar-guest@schedra.test')
+  await page.getByLabel('Email', { exact: true }).fill('calendar-guest@calendza.test')
   await page.getByRole('button', { name: 'Confirm booking' }).click()
   await expect(page.getByTestId('booking-confirmation')).toBeVisible()
   const [saved] = await sql`select starts_at from bookings where event_type_id = ${eventTypeId} and status = 'confirmed'`
@@ -59,17 +59,17 @@ test('reschedules on a full day without losing the existing allowance', async ({
   const date = Temporal.Now.plainDateISO('UTC').add({ days: 2 }).toString()
   const uid = crypto.randomUUID()
   await sql`insert into bookings (event_type_id, host_id, uid, starts_at, ends_at, attendee_name, attendee_email, attendee_time_zone)
-    values (${eventTypeId}, ${hostId}, ${uid}, ${`${date}T09:00Z`}, ${`${date}T09:30Z`}, 'Moving guest', 'moving@schedra.test', 'UTC')`
+    values (${eventTypeId}, ${hostId}, ${uid}, ${`${date}T09:00Z`}, ${`${date}T09:30Z`}, 'Moving guest', 'moving@calendza.test', 'UTC')`
   await page.goto(`/${username}/intro?reschedule=${uid}`)
   await expect(page.getByText('Choose a new time. Your name and email are already filled in.')).toBeVisible()
   const dateLabel = new Date(`${date}T12:00Z`).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' })
   await page.getByRole('button', { name: new RegExp(dateLabel) }).click()
   await page.getByTestId('booking-slot').nth(3).click()
-  await expect(page.getByLabel('Email', { exact: true })).toHaveValue('moving@schedra.test')
+  await expect(page.getByLabel('Email', { exact: true })).toHaveValue('moving@calendza.test')
   await page.getByRole('button', { name: /Reschedule|Move booking|Confirm new time/ }).click()
   await expect(page.getByTestId('booking-confirmation')).toBeVisible()
   expect((await sql`select status from bookings where uid = ${uid}`)[0]!.status).toBe('cancelled')
-  const [moved] = await sql`select starts_at from bookings where event_type_id = ${eventTypeId} and attendee_email = 'moving@schedra.test' and status = 'confirmed'`
+  const [moved] = await sql`select starts_at from bookings where event_type_id = ${eventTypeId} and attendee_email = 'moving@calendza.test' and status = 'confirmed'`
   expect(new Date(moved!.starts_at).toISOString().slice(0, 10)).toBe(date)
 })
 

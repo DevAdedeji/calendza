@@ -21,15 +21,15 @@ const disallowed = [
   '/verify-email'
 ]
 
-const PRODUCTION_HOST = 'schedra.xyz'
+const PRODUCTION_HOST = 'calendza.xyz'
 
 export default defineEventHandler((event) => {
-  const { schedraUrl } = useEnv()
+  const { siteUrl } = useEnv()
 
   setResponseHeader(event, 'content-type', 'text/plain; charset=utf-8')
   setResponseHeader(event, 'cache-control', 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400')
 
-  if (new URL(schedraUrl).host !== PRODUCTION_HOST) {
+  if (new URL(siteUrl).host !== PRODUCTION_HOST) {
     return 'User-agent: *\nDisallow: /\n'
   }
 
@@ -37,7 +37,7 @@ export default defineEventHandler((event) => {
     'User-agent: *',
     ...disallowed.map(path => `Disallow: ${path}`),
     '',
-    `Sitemap: ${schedraUrl}/sitemap.xml`,
+    `Sitemap: ${siteUrl}/sitemap.xml`,
     ''
   ].join('\n')
 })

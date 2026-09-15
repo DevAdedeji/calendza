@@ -1,20 +1,20 @@
 <script setup lang="ts">
 const route = useRoute()
-// SCHEDRA_URL is the authoritative public origin — the same value better-auth
+// CALENDZA_URL is the authoritative public origin — the same value better-auth
 // builds callbacks from. The request host cannot be trusted behind a proxy and
 // is absent entirely during prerender.
 const { url: siteUrl, indexable } = useSiteUrl()
 const origin = siteUrl.value
 
-const title = 'Schedra — online scheduling software for easier bookings'
-const description = 'Create booking pages, automate reminders, collect appointment payments and coordinate team availability with Schedra online scheduling software.'
+const title = 'Calendza — online scheduling software for easier bookings'
+const description = 'Create booking pages, automate reminders, collect appointment payments and coordinate team availability with Calendza online scheduling software.'
 const ogImage = `${origin}/og.png`
 
 const canonical = computed(() => `${origin}${route.path === '/' ? '' : route.path}`)
 
 useHead(() => ({
   htmlAttrs: { lang: 'en' },
-  titleTemplate: chunk => (chunk && chunk !== title ? `${chunk} — Schedra` : title),
+  titleTemplate: chunk => (chunk && chunk !== title ? `${chunk} — Calendza` : title),
   meta: [
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     { name: 'theme-color', content: '#FF3D00' }
@@ -33,7 +33,7 @@ useSeoMeta({
   title,
   description,
   ogType: 'website',
-  ogSiteName: 'Schedra',
+  ogSiteName: 'Calendza',
   ogLocale: 'en',
   ogTitle: title,
   ogDescription: description,
@@ -41,7 +41,7 @@ useSeoMeta({
   ogImage,
   ogImageWidth: 1200,
   ogImageHeight: 630,
-  ogImageAlt: 'Schedra online scheduling software',
+  ogImageAlt: 'Calendza online scheduling software',
   twitterCard: 'summary_large_image',
   twitterTitle: title,
   twitterDescription: description,

@@ -1,4 +1,4 @@
-const buildSiteUrl = process.env.SCHEDRA_URL?.trim().replace(/\/+$/, '') ?? ''
+const buildSiteUrl = (process.env.CALENDZA_URL?.trim() || '').replace(/\/+$/, '')
 const publicPage = () => ({
   prerender: true,
   headers: { 'cache-control': 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400' }
@@ -8,7 +8,7 @@ const publicPage = () => ({
 // Nuxt loads this config from its postinstall `prepare` hook. Require the URL
 // only for the actual project build, where prerendered metadata is generated.
 if (process.env.npm_lifecycle_event === 'build' && !buildSiteUrl) {
-  throw new Error('SCHEDRA_URL is required while building so prerendered pages use the public origin.')
+  throw new Error('CALENDZA_URL is required while building so prerendered pages use the public origin.')
 }
 
 export default defineNuxtConfig({
@@ -30,6 +30,8 @@ export default defineNuxtConfig({
       siteUrl: buildSiteUrl
     }
   },
+  // Browser tests run beside the local app and must not overwrite its generated files.
+  buildDir: process.env.CALENDZA_E2E === '1' ? '.cache/nuxt-e2e' : '.nuxt',
   routeRules: {
     '/': publicPage(),
     '/features': publicPage(),

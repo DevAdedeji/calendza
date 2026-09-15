@@ -79,7 +79,7 @@ const comparison: { group: string, rows: ComparisonRow[] }[] = [
       { label: 'Booking analytics', free: 'Core insights', pro: 'Revenue + CSV', team: true },
       { label: 'Custom booking-page branding', free: false, pro: true, team: true },
       { label: 'Custom branded guest emails', free: false, pro: true, team: true },
-      { label: 'Remove Schedra branding', free: false, pro: true, team: true },
+      { label: 'Remove Calendza branding', free: false, pro: true, team: true },
       { label: 'Paid bookings', free: true, pro: true, team: true },
       { label: 'Paid-booking platform fee', free: '5%', pro: '2.5%', team: '5%' },
       { label: 'Payment and settlement activity', free: true, pro: true, team: true }
@@ -162,7 +162,7 @@ const faqs = [
 useSeoMeta({
   title: 'Pricing',
   description: `Start scheduling free, upgrade to Personal Pro for ${formatUsd(PERSONAL_PRO_PLAN.monthlyCents)} a month, or run a team for ${formatUsd(TEAM_PLAN.monthlyCentsPerSeat)} per member.`,
-  ogTitle: 'Schedra pricing',
+  ogTitle: 'Calendza pricing',
   ogDescription: `Free personal scheduling, ${formatUsd(PERSONAL_PRO_PLAN.monthlyCents)} Personal Pro and fair per-member team pricing.`
 })
 
@@ -172,7 +172,7 @@ useHead({
     innerHTML: JSON.stringify({
       '@context': 'https://schema.org',
       '@type': 'Product',
-      'name': 'Schedra',
+      'name': 'Calendza',
       'url': `${origin}/pricing`,
       'description': 'Scheduling links with clear timezone handling, free for individuals and per member for teams.',
       'offers': [
@@ -301,7 +301,7 @@ useHead({
             </p>
             <p class="mt-6 max-w-[40ch] text-[16px] leading-relaxed text-muted">
               Build a professional booking experience with your logo, colours and
-              custom guest emails, remove Schedra branding, and unlock revenue reports.
+              custom guest emails, remove Calendza branding, and unlock revenue reports.
             </p>
             <p class="my-4 rounded-xl bg-muted px-4 py-3 text-[14px] leading-relaxed text-muted">
               Includes a lower 2.5% platform fee on paid bookings.

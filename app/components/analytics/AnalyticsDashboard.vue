@@ -56,7 +56,7 @@ async function exportTeamCsv() {
     const href = URL.createObjectURL(await response.blob())
     const link = document.createElement('a')
     link.href = href
-    link.download = `schedra-${props.teamSlug}-bookings-${new Date().toISOString().slice(0, 10)}.csv`
+    link.download = `calendza-${props.teamSlug}-bookings-${new Date().toISOString().slice(0, 10)}.csv`
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -342,7 +342,7 @@ async function exportTeamCsv() {
           </p>
           <div class="mt-6 space-y-5">
             <div
-              v-for="source in [{ label: 'Schedra pages', value: data.sources.hosted }, { label: 'Website embed', value: data.sources.embed }]"
+              v-for="source in [{ label: 'Calendza pages', value: data.sources.hosted }, { label: 'Website embed', value: data.sources.embed }]"
               :key="source.label"
             >
               <div class="flex justify-between text-[13px]">
@@ -382,7 +382,7 @@ async function exportTeamCsv() {
               —
             </p>
             <p class="mt-1 text-[12px] text-dimmed">
-              Paid bookings before Schedra, Bachs processing and withdrawal fees. Refunds are excluded.
+              Paid bookings before Calendza, Bachs processing and withdrawal fees. Refunds are excluded.
             </p>
           </div>
           <div

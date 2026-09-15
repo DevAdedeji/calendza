@@ -164,9 +164,9 @@ const mobileMenuUi = {
       <div class="px-5 py-6">
         <NuxtLink
           to="/dashboard"
-          aria-label="Schedra"
+          aria-label="Calendza"
         >
-          <SchedraMark />
+          <CalendzaMark />
         </NuxtLink>
       </div>
 
@@ -262,9 +262,9 @@ const mobileMenuUi = {
       <div class="flex h-16 items-center justify-between px-4 sm:px-5">
         <NuxtLink
           to="/dashboard"
-          aria-label="Schedra"
+          aria-label="Calendza"
         >
-          <SchedraMark />
+          <CalendzaMark />
         </NuxtLink>
         <UDropdownMenu
           v-model:open="mobileMenuOpen"

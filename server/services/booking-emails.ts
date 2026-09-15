@@ -149,8 +149,8 @@ export async function queueBookingEmails(
   executor?: BookingEmailExecutor,
   options: QueueBookingEmailOptions = {}
 ) {
-  const manage = `${useEnv().schedraUrl}/booking/${booking.uid}`
-  const hostPage = `${useEnv().schedraUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
+  const manage = `${useEnv().siteUrl}/booking/${booking.uid}`
+  const hostPage = `${useEnv().siteUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
   const recipients = [booking.attendeeEmail, ...booking.additionalGuestEmails]
   const hosts = booking.hostRecipients?.length ? booking.hostRecipients : [fallbackHost(booking)]
   const notifiedHosts = await optionalHostRecipients(hosts, 'newBookingEmails', executor ?? useDatabase())
@@ -258,7 +258,7 @@ export async function queueBookingEmails(
               }
             ],
             action: { label: 'View the booking', url: manage },
-            footer: 'Schedra will keep the booking and your connected calendar in sync.'
+            footer: 'Calendza will keep the booking and your connected calendar in sync.'
           }
         }))
       : []),
@@ -310,8 +310,8 @@ export async function queueBookingRescheduledEmails(
   reschedule: BookingRescheduleDetails,
   executor?: BookingEmailExecutor
 ) {
-  const manage = `${useEnv().schedraUrl}/booking/${booking.uid}`
-  const hostPage = `${useEnv().schedraUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
+  const manage = `${useEnv().siteUrl}/booking/${booking.uid}`
+  const hostPage = `${useEnv().siteUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
   const recipients = [booking.attendeeEmail, ...booking.additionalGuestEmails]
   const hosts = booking.hostRecipients?.length ? booking.hostRecipients : [fallbackHost(booking)]
   const currentHostEmails = new Set(hosts.map(host => host.email.toLowerCase()))
@@ -342,7 +342,7 @@ export async function queueBookingRescheduledEmails(
         preheader: `${booking.eventTitle} has moved to a new time.`,
         heading: 'Your meeting has been rescheduled',
         body: `Your meeting with ${booking.hostName} is confirmed at the new time below.`,
-        footer: 'Your previous time has been released. Schedra will keep the new booking and connected calendars in sync.'
+        footer: 'Your previous time has been released. Calendza will keep the new booking and connected calendars in sync.'
       }
 
   await enqueueEmails([
@@ -404,7 +404,7 @@ export async function queueBookingRescheduledEmails(
         action: { label: reschedule.requiresConfirmation ? 'Review requested time' : 'View updated booking', url: manage },
         footer: reschedule.requiresConfirmation
           ? 'Approving creates the calendar event; declining releases the requested time.'
-          : 'Schedra will keep the updated booking and connected calendars in sync.'
+          : 'Calendza will keep the updated booking and connected calendars in sync.'
       }
     })),
     ...notifiedPreviousOnlyHosts.map(host => ({
@@ -429,14 +429,14 @@ export async function queueBookingRescheduledEmails(
 }
 
 export async function queueBookingRequestEmails(booking: BookingNotice, executor?: BookingEmailExecutor) {
-  const manage = `${useEnv().schedraUrl}/booking/${booking.uid}`
+  const manage = `${useEnv().siteUrl}/booking/${booking.uid}`
   const recipients = [booking.attendeeEmail, ...booking.additionalGuestEmails]
   const hosts = booking.hostRecipients?.length ? booking.hostRecipients : [fallbackHost(booking)]
   const notifiedHosts = await optionalHostRecipients(hosts, 'approvalRequestEmails', executor ?? useDatabase())
   const customization = await resolveBookingEmailCustomization(booking, executor ?? useDatabase())
   const guestEmail = (email: Parameters<typeof customizeGuestBookingEmail>[1]) =>
     customizeGuestBookingEmail('request', email, booking, customization)
-  const hostPage = `${useEnv().schedraUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
+  const hostPage = `${useEnv().siteUrl}${booking.publicBookingPath ?? `/${booking.hostUsername}`}`
   const guestDetails = [
     { label: 'Meeting', value: booking.eventTitle },
     { label: 'Requested time', value: whenRange(booking.startsAt, booking.endsAt, booking.attendeeTimeZone) },
@@ -494,7 +494,7 @@ export async function queueBookingRejectedEmails(
   assignedHosts: AssignedBookingHost[] = []
 ) {
   const recipients = [booking.attendeeEmail, ...booking.additionalGuestEmails]
-  const chooseAgain = `${useEnv().schedraUrl}${publicBookingPath(booking)}`
+  const chooseAgain = `${useEnv().siteUrl}${publicBookingPath(booking)}`
   const hosts = assignedHosts.length
     ? assignedHosts
     : [fallbackHost({
@@ -551,7 +551,7 @@ export async function queueBookingRejectedEmails(
           { label: 'Guest', value: booking.attendeeName },
           ...(reason ? [{ label: 'Reason', value: reason }] : [])
         ],
-        action: { label: 'See team bookings', url: `${useEnv().schedraUrl}${booking.organizationSlug ? `/t/${booking.organizationSlug}/bookings` : '/bookings'}` },
+        action: { label: 'See team bookings', url: `${useEnv().siteUrl}${booking.organizationSlug ? `/t/${booking.organizationSlug}/bookings` : '/bookings'}` },
         footer: 'No connected-calendar event was created for this request.'
       }
     }))
@@ -574,7 +574,7 @@ export async function queueCancellationEmails(
       : `You cancelled ${booking.attendeeName}'s booking`
     : `${booking.attendeeName} cancelled`
 
-  const bookingPage = `${useEnv().schedraUrl}${publicBookingPath(booking)}`
+  const bookingPage = `${useEnv().siteUrl}${publicBookingPath(booking)}`
   const hosts = assignedHosts.length
     ? assignedHosts
     : [fallbackHost({
@@ -650,8 +650,8 @@ export async function queueCancellationEmails(
           { label: 'Guest email', value: booking.attendeeEmail },
           ...(reason ? [{ label: 'Reason', value: reason }] : [])
         ],
-        action: { label: 'See your bookings', url: `${useEnv().schedraUrl}${booking.organizationSlug ? `/t/${booking.organizationSlug}/bookings` : '/bookings'}` },
-        footer: 'Schedra has also queued the matching connected-calendar update.'
+        action: { label: 'See your bookings', url: `${useEnv().siteUrl}${booking.organizationSlug ? `/t/${booking.organizationSlug}/bookings` : '/bookings'}` },
+        footer: 'Calendza has also queued the matching connected-calendar update.'
       }
     }))
   ], executor)

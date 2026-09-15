@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
         brandColor: profileRow.brandColor,
         brandDarkColor: profileRow.brandDarkColor,
         bookingPageTheme: profileRow.bookingPageTheme,
-        hideSchedraBranding: profileRow.hideSchedraBranding,
+        hideCalendzaBranding: profileRow.hideCalendzaBranding,
         bookingEmailTemplates: profileRow.bookingEmailTemplates,
         timeZone: profileRow.timeZone,
         twoFactorEnabled: profileRow.twoFactorEnabled,
@@ -97,7 +97,7 @@ export default defineEventHandler(async (event) => {
 
   setResponseHeaders(event, {
     'content-type': 'application/json; charset=utf-8',
-    'content-disposition': `attachment; filename="schedra-export-${new Date().toISOString().slice(0, 10)}.json"`,
+    'content-disposition': `attachment; filename="calendza-export-${new Date().toISOString().slice(0, 10)}.json"`,
     'cache-control': 'private, no-store'
   })
   return JSON.stringify({

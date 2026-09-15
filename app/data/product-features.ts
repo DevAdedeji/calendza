@@ -27,7 +27,7 @@ export const productFeatureGroups: ProductFeatureGroup[] = [
   {
     eyebrow: 'Automation',
     title: 'Keep every meeting moving after it is booked',
-    description: 'Schedra handles the routine work and keeps a clear trail when another service needs attention.',
+    description: 'Calendza handles the routine work and keeps a clear trail when another service needs attention.',
     features: [
       { title: 'Workflows', summary: 'Send timely emails or secure webhooks when bookings are created, changed or approaching.', icon: 'i-lucide-workflow' },
       { title: 'Calendar sync', summary: 'Protect busy time and update Google, Microsoft or Apple calendars after changes.', icon: 'i-lucide-refresh-cw' },

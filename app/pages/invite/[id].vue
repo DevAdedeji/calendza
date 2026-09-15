@@ -132,7 +132,7 @@ async function resendVerification() {
         variant="outline"
         class="mt-6"
       >
-        Go to Schedra
+        Go to Calendza
       </UButton>
     </div>
 
@@ -288,7 +288,7 @@ async function resendVerification() {
           size="lg"
           class="mt-3"
         >
-          {{ stage === 'accepted' ? 'Open team' : 'Go to Schedra' }}
+          {{ stage === 'accepted' ? 'Open team' : 'Go to Calendza' }}
         </UButton>
       </div>
 

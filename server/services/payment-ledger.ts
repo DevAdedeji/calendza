@@ -5,14 +5,14 @@ import { paymentActivityRows, type PaymentActivityOwner } from '@@/server/reposi
 const kindCopy: Record<PaymentLedgerKind, { label: string, icon: string }> = {
   checkout: { label: 'Checkout', icon: 'i-lucide-credit-card' },
   customer_payment: { label: 'Customer payment', icon: 'i-lucide-arrow-down-left' },
-  platform_fee: { label: 'Schedra fee', icon: 'i-lucide-receipt-text' },
+  platform_fee: { label: 'Calendza fee', icon: 'i-lucide-receipt-text' },
   processing_fee: { label: 'Processing fee', icon: 'i-lucide-landmark' },
   settlement: { label: 'Settlement', icon: 'i-lucide-wallet-cards' },
   refund: { label: 'Refund', icon: 'i-lucide-undo-2' }
 }
 
 function parties(kind: PaymentLedgerKind, attendee: string, owner: string) {
-  if (kind === 'platform_fee') return { from: owner, to: 'Schedra' }
+  if (kind === 'platform_fee') return { from: owner, to: 'Calendza' }
   if (kind === 'processing_fee') return { from: owner, to: 'Bachs' }
   if (kind === 'settlement') return { from: 'Bachs', to: owner }
   if (kind === 'refund') return { from: owner, to: attendee }

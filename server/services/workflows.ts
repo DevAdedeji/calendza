@@ -343,7 +343,7 @@ function formatInTimeZone(value: Date, timeZone: string) {
 }
 
 function renderTemplate(value: string, booking: DeliveryContext) {
-  const bookingUrl = `${useEnv().schedraUrl}/booking/${booking.uid}`
+  const bookingUrl = `${useEnv().siteUrl}/booking/${booking.uid}`
   const variables: Record<string, string> = {
     guest_name: booking.attendeeName,
     guest_email: booking.attendeeEmail,
@@ -364,7 +364,7 @@ async function deliverEmail(runId: string, action: Extract<WorkflowAction, { typ
     : action.recipient === 'hosts'
       ? booking.hostEmails
       : [action.customRecipient!]
-  const actionUrl = `${useEnv().schedraUrl}/booking/${booking.uid}`
+  const actionUrl = `${useEnv().siteUrl}/booking/${booking.uid}`
   await enqueueEmails(recipients.map(recipient => ({
     dedupeKey: emailDedupeKey(`automation:${runId}`, recipient),
     category: 'automation',
@@ -376,7 +376,7 @@ async function deliverEmail(runId: string, action: Extract<WorkflowAction, { typ
       heading: renderTemplate(action.subject, booking),
       body: renderTemplate(action.body, booking),
       action: { label: 'View booking', url: actionUrl },
-      footer: 'This message was sent by an automation in Schedra.'
+      footer: 'This message was sent by an automation in Calendza.'
     }
   })))
 }
@@ -417,7 +417,7 @@ async function deliverWebhook(
     redirect: 'manual',
     headers: {
       'content-type': 'application/json',
-      'user-agent': 'Schedra-Webhooks/1.0',
+      'user-agent': 'Calendza-Webhooks/1.0',
       'x-schedra-event': trigger,
       'x-schedra-delivery': runId,
       'x-schedra-timestamp': timestamp,

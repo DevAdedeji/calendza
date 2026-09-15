@@ -20,16 +20,16 @@ async function signUpAndSignIn(page: Page) {
   await expect(page.getByTestId('signup-form')).toHaveAttribute('data-ready', 'true')
   await page.getByLabel('Your name').fill('Email Brand Owner')
   await page.getByLabel('Your booking link').fill('email-brand-owner')
-  await page.getByLabel('Email').fill('email-brand-owner@schedra.test')
+  await page.getByLabel('Email').fill('email-brand-owner@calendza.test')
   await page.locator('input[name="password"]').fill(password)
   await expect(page.getByText('Available', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Create my link' }).click()
   await expect(page).toHaveURL(/\/verify-email/)
 
-  await sql`update users set email_verified = true where email = 'email-brand-owner@schedra.test'`
-  await page.goto('/login?email=email-brand-owner%40schedra.test')
+  await sql`update users set email_verified = true where email = 'email-brand-owner@calendza.test'`
+  await page.goto('/login?email=email-brand-owner%40calendza.test')
   await page.waitForLoadState('networkidle')
-  await page.getByLabel('Email').fill('email-brand-owner@schedra.test')
+  await page.getByLabel('Email').fill('email-brand-owner@calendza.test')
   await page.locator('input[name="password"]').fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page).toHaveURL(/\/dashboard$/)
@@ -41,7 +41,7 @@ async function enablePersonalPro() {
       user_id, status, interval, collection_method, current_period_end
     )
     select id, 'active', 'monthly', 'charge_automatically', now() + interval '1 month'
-    from users where email = 'email-brand-owner@schedra.test'
+    from users where email = 'email-brand-owner@calendza.test'
   `
 }
 
@@ -86,7 +86,7 @@ test('customizes personal guest emails safely on mobile and persists the result'
     select
       booking_email_templates->'templates'->'confirmation'->>'subject' as subject,
       booking_email_templates->>'footer' as footer
-    from users where email = 'email-brand-owner@schedra.test'
+    from users where email = 'email-brand-owner@calendza.test'
   `
   expect(stored).toEqual({
     subject: 'Your {{event_name}} is confirmed',

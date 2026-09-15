@@ -31,7 +31,7 @@ useSeoMeta({
   title: () => team.value ? `Book time with ${team.value.name}` : 'Not found',
   description: () => `Choose a time to meet with ${team.value?.name ?? 'this team'}.`,
   robots: () => indexable.value && team.value ? 'index, follow' : 'noindex, nofollow',
-  ogTitle: () => team.value ? `Book time with ${team.value.name}` : 'Schedra team page',
+  ogTitle: () => team.value ? `Book time with ${team.value.name}` : 'Calendza team page',
   ogUrl: canonical
 })
 
@@ -171,13 +171,13 @@ useHead({ link: [{ key: 'canonical', rel: 'canonical', href: canonical }] })
       </div>
     </main>
     <footer
-      v-if="team && !team.branding.hideSchedraBranding"
+      v-if="team && !team.branding.hideCalendzaBranding"
       class="px-5 pb-10 pt-6 text-center text-xs text-muted"
     >
       Scheduling by <NuxtLink
         to="/"
         class="underline underline-offset-4 transition-colors hover:text-highlighted"
-      >Schedra</NuxtLink>
+      >Calendza</NuxtLink>
     </footer>
   </div>
 </template>

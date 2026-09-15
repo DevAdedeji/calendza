@@ -639,7 +639,7 @@ async function save() {
                       name="i-lucide-credit-card"
                       class="size-4 text-muted"
                     />Require payment</span>
-                    <span class="mt-1.5 block max-w-xl text-[13px] leading-relaxed text-muted">Guests pay during checkout. Their time is confirmed only after Schedra verifies payment.</span>
+                    <span class="mt-1.5 block max-w-xl text-[13px] leading-relaxed text-muted">Guests pay during checkout. Their time is confirmed only after Calendza verifies payment.</span>
                   </span>
                   <USwitch
                     v-model="paidBookingEnabled"
@@ -655,7 +655,7 @@ async function save() {
                     {{ paymentAccount?.status === 'pending_review'
                       ? 'Bachs is reviewing your account or bank destination. Paid bookings stay disabled until both are approved.'
                       : paymentAccount?.status === 'unavailable'
-                        ? 'Schedra could not verify your payout account with Bachs. Paid bookings stay disabled for safety.'
+                        ? 'Calendza could not verify your payout account with Bachs. Paid bookings stay disabled for safety.'
                         : 'Complete payout setup and add an approved bank destination in Bachs before charging for bookings.' }}
                   </p>
                   <UButton
@@ -677,7 +677,7 @@ async function save() {
                     name="i-lucide-shield-alert"
                     class="size-4 shrink-0"
                   />
-                  Paid bookings are paused until Schedra verifies both the Bachs account and a usable payout destination.
+                  Paid bookings are paused until Calendza verifies both the Bachs account and a usable payout destination.
                 </div>
                 <div
                   v-if="form.paymentEnabled"
