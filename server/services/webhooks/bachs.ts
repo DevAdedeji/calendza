@@ -110,7 +110,7 @@ export async function processBachsWebhook(payload: BachsEvent) {
   if (SUBSCRIPTION_EVENTS.has(type)) {
     if (!payload.data?.id) return { received: true, ignored: 'no-subscription' }
     const subscription = bachsSubscriptionSchema.parse(payload.data)
-    if (subscription.metadata?.calendzaPlan === 'personal_pro') {
+    if (subscription.metadata?.schedraPlan === 'personal_pro') {
       const result = await applyPersonalSubscriptionState(subscription)
       if (result.applied && result.userId) {
         await recordSecurityAudit({

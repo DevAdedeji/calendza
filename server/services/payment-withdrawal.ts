@@ -98,7 +98,7 @@ function publicWithdrawal(row: typeof paymentWithdrawals.$inferSelect) {
 
 function previewSignature(encoded: string) {
   return createHmac('sha256', useEnv().authSecret)
-    .update(`calendza-withdrawal-preview-v${PREVIEW_VERSION}.${encoded}`)
+    .update(`schedra-withdrawal-preview-v${PREVIEW_VERSION}.${encoded}`)
     .digest('base64url')
 }
 
@@ -371,7 +371,7 @@ export async function createPaymentWithdrawal(input: {
   const availableCents = await availableBalanceCents(accountId, confirmation.sourceCurrency)
   ensureBalanceCovers(availableCents, confirmation.totalDebitedCents, confirmation.sourceCurrency)
 
-  const reference = `calendza-wd-${input.request.requestId}`
+  const reference = `schedra-wd-${input.request.requestId}`
   const values: typeof paymentWithdrawals.$inferInsert = {
     id: input.request.requestId,
     recipientId: recipient.id,
@@ -415,8 +415,8 @@ export async function createPaymentWithdrawal(input: {
         ? { quoteId: confirmation.quoteId }
         : { amount: toDecimalString(confirmation.requestedAmountCents) }),
       metadata: {
-        calendza_withdrawal_id: input.request.requestId,
-        calendza_recipient_id: recipient.id
+        schedra_withdrawal_id: input.request.requestId,
+        schedra_recipient_id: recipient.id
       }
     })
     const updated = await applyProviderPayout(row.id, payout)

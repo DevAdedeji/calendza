@@ -628,13 +628,13 @@ function eventBody(input: CalendarEventInput, includeTransactionId: boolean) {
       ? { isOnlineMeeting: true, onlineMeetingProvider: 'teamsForBusiness' }
       : {},
     ...includeTransactionId
-      ? { transactionId: transactionId(`calendza:${input.calendarEventKey ?? input.uid}`) }
+      ? { transactionId: transactionId(`schedra:${input.calendarEventKey ?? input.uid}`) }
       : {}
   }
 }
 
 export function microsoftEventId(uid: string) {
-  return transactionId(`calendza:${uid}`)
+  return transactionId(`schedra:${uid}`)
 }
 
 export async function upsertMicrosoftCalendarEvent(

@@ -76,14 +76,14 @@ describe('Bachs paid-booking webhooks', () => {
       organization_id: 'acct_host',
       data: {
         withdrawal_id: 'pay_123',
-        reference: 'calendza-wd-request'
+        reference: 'schedra-wd-request'
       }
     })).resolves.toEqual({ received: true, applied: true })
 
     expect(applyWithdrawalPayoutEvent).toHaveBeenCalledWith({
       accountId: 'acct_host',
       payoutId: 'pay_123',
-      reference: 'calendza-wd-request',
+      reference: 'schedra-wd-request',
       providerEventId: 'evt_payout'
     })
   })

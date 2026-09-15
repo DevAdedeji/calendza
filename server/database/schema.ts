@@ -50,7 +50,7 @@ export const organizations = pgTable('organizations', {
   brandColor: text('brand_color'),
   brandDarkColor: text('brand_dark_color'),
   bookingPageTheme: text('booking_page_theme').notNull().default('system'),
-  hideCalendzaBranding: boolean('hide_calendza_branding').notNull().default(false),
+  hideCalendzaBranding: boolean('hide_schedra_branding').notNull().default(false),
   bookingEmailTemplates: jsonb('booking_email_templates').$type<BookingEmailTemplateSettings>(),
   metadata: jsonb('metadata').$type<Record<string, unknown>>(),
   // Organizations are archived rather than deleted so booking history, exports
@@ -91,7 +91,7 @@ export const users = pgTable('users', {
   brandColor: text('brand_color'),
   brandDarkColor: text('brand_dark_color'),
   bookingPageTheme: text('booking_page_theme').notNull().default('system'),
-  hideCalendzaBranding: boolean('hide_calendza_branding').notNull().default(false),
+  hideCalendzaBranding: boolean('hide_schedra_branding').notNull().default(false),
   bookingEmailTemplates: jsonb('booking_email_templates').$type<BookingEmailTemplateSettings>(),
   timeZone: text('time_zone').notNull().default('UTC'),
   twoFactorEnabled: boolean('two_factor_enabled').notNull().default(false),

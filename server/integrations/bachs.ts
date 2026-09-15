@@ -281,7 +281,7 @@ export function createConnectedAccount(input: {
     // Email addresses are not unique across personal and team recipients.
     // The immutable Calendza owner reference makes retries safe without ever
     // merging two payout accounts that happen to share an inbox.
-    idempotencyKey: `calendza-recipient-${input.reference}`,
+    idempotencyKey: `schedra-recipient-${input.reference}`,
     body: {
       contact_email: input.email,
       display_name: input.name,
@@ -678,7 +678,7 @@ async function findProductByPlan(key: string) {
     const page = await bachsFetch<BachsProductPage>('/products', {
       query: { limit: 100, cursor }
     })
-    const match = (page.items ?? []).find(item => item.metadata?.calendza_plan === key)
+    const match = (page.items ?? []).find(item => item.metadata?.schedra_plan === key)
     if (match) return match
     cursor = page.pagination?.has_more ? page.pagination.next_cursor ?? undefined : undefined
   } while (cursor)
@@ -706,7 +706,7 @@ export async function ensureTeamProduct(interval: BillingInterval, seats: number
 
   const created = await bachsFetch<BachsProduct>('/products', {
     method: 'POST',
-    idempotencyKey: `calendza-${key}`,
+    idempotencyKey: `schedra-${key}`,
     body: {
       name: `Calendza Team — ${billable} ${billable === 1 ? 'seat' : 'seats'} (${interval})`,
       description: `Team scheduling on Calendza for ${billable} occupied ${billable === 1 ? 'seat' : 'seats'}.`,
@@ -716,7 +716,7 @@ export async function ensureTeamProduct(interval: BillingInterval, seats: number
         amount: toDecimalString(seatPriceCents(interval) * billable)
       },
       billing_cycle: { interval: interval === 'yearly' ? 'year' : 'month', frequency: 1 },
-      metadata: { calendza_plan: key, calendza_seats: String(billable) }
+      metadata: { schedra_plan: key, schedra_seats: String(billable) }
     }
   })
 
@@ -737,7 +737,7 @@ export async function ensurePersonalProProduct(interval: BillingInterval): Promi
 
   const created = await bachsFetch<BachsProduct>('/products', {
     method: 'POST',
-    idempotencyKey: `calendza-${key}`,
+    idempotencyKey: `schedra-${key}`,
     body: {
       name: `Calendza Personal Pro (${interval})`,
       description: 'Advanced solo scheduling, custom branding and lower paid-booking fees.',
@@ -747,7 +747,7 @@ export async function ensurePersonalProProduct(interval: BillingInterval): Promi
         amount: toDecimalString(personalProPriceCents(interval))
       },
       billing_cycle: { interval: interval === 'yearly' ? 'year' : 'month', frequency: 1 },
-      metadata: { calendza_plan: key }
+      metadata: { schedra_plan: key }
     }
   })
 

@@ -35,7 +35,7 @@ function periodEnd(from: Date, interval: BillingInterval) {
  * idempotency key, so a retried checkout can never create a second charge.
  */
 function invoiceReference(organizationId: string, periodStart: Date) {
-  return `calendza-team-${organizationId}-${periodStart.toISOString().slice(0, 10)}-${crypto.randomUUID().slice(0, 8)}`
+  return `schedra-team-${organizationId}-${periodStart.toISOString().slice(0, 10)}-${crypto.randomUUID().slice(0, 8)}`
 }
 
 /**
@@ -275,7 +275,7 @@ export async function applySubscriptionState(subscription: BachsSubscription) {
   const status = subscription.status as OrganizationPlanStatus
 
   const metadataSeats = Number.parseInt(
-    subscription.product?.metadata?.calendza_seats
+    subscription.product?.metadata?.schedra_seats
     ?? subscription.metadata?.seats
     ?? '',
     10

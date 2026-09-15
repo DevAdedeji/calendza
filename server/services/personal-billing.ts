@@ -58,7 +58,7 @@ export async function startPersonalCheckout(input: {
   }
 
   const db = useDatabase()
-  const reference = `calendza-personal-${input.userId}-${input.requestId}`
+  const reference = `schedra-personal-${input.userId}-${input.requestId}`
   const [existing] = await db.select().from(personalInvoices)
     .where(eq(personalInvoices.reference, reference)).limit(1)
   if (existing?.checkoutUrl && existing.status === 'pending') {
@@ -77,7 +77,7 @@ export async function startPersonalCheckout(input: {
   const metadata = {
     userId: input.userId,
     interval: input.interval,
-    calendzaPlan: 'personal_pro'
+    schedraPlan: 'personal_pro'
   }
 
   const [invoice] = await db.insert(personalInvoices).values({
@@ -232,11 +232,11 @@ export async function markPersonalInvoiceFailed(reference: string, reason: strin
 
 export async function applyPersonalSubscriptionState(subscription: BachsSubscription) {
   const userId = subscription.metadata?.userId
-  if (!userId || subscription.metadata?.calendzaPlan !== 'personal_pro') {
+  if (!userId || subscription.metadata?.schedraPlan !== 'personal_pro') {
     return { applied: false, reason: 'not-personal-pro' as const }
   }
 
-  const key = subscription.product?.metadata?.calendza_plan ?? ''
+  const key = subscription.product?.metadata?.schedra_plan ?? ''
   const interval: BillingInterval = key.endsWith('_monthly')
     || subscription.metadata?.interval === 'monthly'
     ? 'monthly'

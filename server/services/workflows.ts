@@ -418,10 +418,10 @@ async function deliverWebhook(
     headers: {
       'content-type': 'application/json',
       'user-agent': 'Calendza-Webhooks/1.0',
-      'x-calendza-event': trigger,
-      'x-calendza-delivery': runId,
-      'x-calendza-timestamp': timestamp,
-      'x-calendza-signature': `v1=${signature}`
+      'x-schedra-event': trigger,
+      'x-schedra-delivery': runId,
+      'x-schedra-timestamp': timestamp,
+      'x-schedra-signature': `v1=${signature}`
     },
     body
   })

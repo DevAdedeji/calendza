@@ -207,7 +207,7 @@ describe('bachs checkout payment methods', () => {
       customer: { email: 'guest@example.com', name: 'Guest' },
       successUrl: 'https://calendza.xyz/booking/uid',
       cancelUrl: 'https://calendza.xyz/booking/uid?payment=cancelled',
-      metadata: { calendza_booking_uid: 'uid' },
+      metadata: { schedra_booking_uid: 'uid' },
       platformFee: '1.25',
       destinationAccountId: 'acct_host',
       expiresInMinutes: 60
@@ -354,7 +354,7 @@ describe('bachs checkout payment methods', () => {
 
     const options = fetchMock.mock.calls[0]?.[1] as RequestInit
     expect(String(fetchMock.mock.calls[0]?.[0])).toBe('https://sandbox-api.bachs.io/v1/accounts')
-    expect(new Headers(options.headers).get('Idempotency-Key')).toBe('calendza-recipient-organization-org_123')
+    expect(new Headers(options.headers).get('Idempotency-Key')).toBe('schedra-recipient-organization-org_123')
     expect(JSON.parse(String(options.body))).toMatchObject({
       entity_type: 'company',
       first_name: 'Ada',
@@ -518,7 +518,7 @@ describe('bachs checkout payment methods', () => {
       fee: '100.00',
       total_debited: '5100.00',
       destination: 'pd_ready',
-      reference: 'calendza-wd-123'
+      reference: 'schedra-wd-123'
     }), { status: 200 }))
     vi.stubGlobal('fetch', fetchMock)
 
@@ -527,20 +527,20 @@ describe('bachs checkout payment methods', () => {
       accountId: 'acct_host',
       destinationId: 'pd_ready',
       amount: '5000.00',
-      reference: 'calendza-wd-123',
-      metadata: { calendza_withdrawal_id: '123' }
+      reference: 'schedra-wd-123',
+      metadata: { schedra_withdrawal_id: '123' }
     })
 
     const [url, options] = fetchMock.mock.calls[0] as [URL, RequestInit]
     const headers = new Headers(options.headers)
     expect(String(url)).toBe('https://sandbox-api.bachs.io/v1/payouts')
     expect(headers.get('X-Account-Id')).toBe('acct_host')
-    expect(headers.get('Idempotency-Key')).toBe('calendza-wd-123')
+    expect(headers.get('Idempotency-Key')).toBe('schedra-wd-123')
     expect(JSON.parse(String(options.body))).toEqual({
       destination: 'pd_ready',
-      reference: 'calendza-wd-123',
+      reference: 'schedra-wd-123',
       amount: '5000.00',
-      metadata: { calendza_withdrawal_id: '123' }
+      metadata: { schedra_withdrawal_id: '123' }
     })
   })
 

@@ -151,7 +151,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       update users set
         brand_name = 'Host Studio',
         brand_color = '#123456',
-        hide_calendza_branding = true,
+        hide_schedra_branding = true,
         booking_email_templates = ${sql.json({
           templates: {
             confirmation: {
@@ -265,7 +265,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       uid: 'rescheduled-booking',
       eventTitle: 'Coaching session',
       hostName: 'Calendza Team',
-      hostUsername: 'calendza-team',
+      hostUsername: 'schedra-team',
       hostEmail: 'organizer@example.com',
       hostTimeZone: 'Africa/Lagos',
       attendeeName: 'Guest Person',
@@ -281,7 +281,7 @@ describe.skipIf(!url)('meeting delivery', () => {
       hostRecipients: [
         { name: 'New Host', email: 'new-host@example.com', timeZone: 'Africa/Lagos', isOrganizer: true }
       ],
-      publicBookingPath: '/team/calendza-team/coaching-session'
+      publicBookingPath: '/team/schedra-team/coaching-session'
     }
     const details = {
       previousStartsAt: '2030-09-07T08:00:00Z',

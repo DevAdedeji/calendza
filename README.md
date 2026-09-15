@@ -83,7 +83,7 @@ pnpm dev
 The application runs at `http://localhost:3002` by default. The values required
 for local development are documented in `.env.example`.
 
-This clean Calendza setup requires fresh databases and reconnected integrations.
+This Calendza release keeps the existing databases and saved integrations.
 See [setup and deployment instructions](docs/CALENDZA_SETUP.md) before deploying.
 The separate local database runs on port `5443`.
 

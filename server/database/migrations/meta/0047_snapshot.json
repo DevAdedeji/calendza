@@ -7793,8 +7793,8 @@
           "notNull": true,
           "default": "'system'"
         },
-        "hide_calendza_branding": {
-          "name": "hide_calendza_branding",
+        "hide_schedra_branding": {
+          "name": "hide_schedra_branding",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,

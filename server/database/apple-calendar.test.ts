@@ -198,7 +198,7 @@ describe.skipIf(!url)('Apple Calendar integration', () => {
       provider: 'caldav',
       calendar_id: 'https://caldav.icloud.com/123/calendars/home/'
     })
-    expect(mapping?.event_id).toMatch(/^calendza-[a-f0-9]{40}\.ics$/)
+    expect(mapping?.event_id).toMatch(/^schedra-[a-f0-9]{40}\.ics$/)
 
     await sql`
       update bookings set starts_at = '2026-09-07T09:00:00Z', ends_at = '2026-09-07T09:30:00Z'

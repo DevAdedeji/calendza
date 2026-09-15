@@ -366,7 +366,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     const [originalMapping] = await sql<{ event_id: string }[]>`
       select event_id from booking_calendar_events where booking_id = ${originalId}
     `
-    expect(originalMapping?.event_id).toMatch(/^[a-f0-9]{64}$/)
+    expect(originalMapping?.event_id).toMatch(/^schedra[a-f0-9]{64}$/)
 
     await sql`
       update bookings
@@ -435,7 +435,7 @@ describe.skipIf(!url)('Google Calendar integration', () => {
     expect(requestBody.conferenceData.createRequest).toMatchObject({
       conferenceSolutionKey: { type: 'hangoutsMeet' }
     })
-    expect(requestBody.conferenceData.createRequest.requestId).toMatch(/^calendza-[a-f0-9]{32}$/)
+    expect(requestBody.conferenceData.createRequest.requestId).toMatch(/^schedra-[a-f0-9]{32}$/)
 
     const [booking] = await sql<{ meeting_url: string }[]>`
       select meeting_url from bookings where id = ${bookingId}

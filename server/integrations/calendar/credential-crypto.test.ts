@@ -30,9 +30,9 @@ describe('integration credential encryption', () => {
     expect(() => decryptCredential(parts.join('.'))).toThrow()
   })
 
-  it('decrypts a saved credential using the Calendza key namespace', async () => {
+  it('still decrypts credentials saved before the rebrand', async () => {
     const { decryptCredential } = await import('@@/server/integrations/calendar/credential-crypto')
-    const encryptionKey = createHash('sha256').update(`calendza:integrations:${process.env.AUTH_SECRET}`).digest()
+    const encryptionKey = createHash('sha256').update(`schedra:integrations:${process.env.AUTH_SECRET}`).digest()
     const iv = Buffer.alloc(12, 1)
     const cipher = createCipheriv('aes-256-gcm', encryptionKey, iv)
     const encrypted = Buffer.concat([cipher.update('existing-icloud-password', 'utf8'), cipher.final()])

@@ -106,7 +106,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
       update users set
         brand_name = 'North Studio',
         brand_color = '#123456',
-        hide_calendza_branding = true,
+        hide_schedra_branding = true,
         booking_email_templates = ${sql.json(settings('Welcome: {{event_name}}'))}
       where id = ${host.id}
     `
@@ -142,7 +142,7 @@ describe.skipIf(!url)('booking email template persistence and entitlement', () =
     const host = await userFixture('team-host')
     const [organization] = await sql<{ id: string }[]>`
       insert into organizations (
-        name, slug, brand_color, hide_calendza_branding, booking_email_templates
+        name, slug, brand_color, hide_schedra_branding, booking_email_templates
       ) values (
         'Acme Team', 'acme-team', '#ABCDEF', false,
         ${sql.json(settings('Acme confirmed: {{event_name}}'))}

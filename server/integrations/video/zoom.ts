@@ -324,7 +324,7 @@ export async function checkZoomConnection(userId: string) {
 }
 
 function marker(uid: string) {
-  return `[Calendza:${uid}]`
+  return `[Schedra:${uid}]`
 }
 
 function meetingBody(input: ZoomMeetingInput) {

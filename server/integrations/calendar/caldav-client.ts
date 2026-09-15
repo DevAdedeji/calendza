@@ -374,7 +374,7 @@ function eventDescription(input: CalendarEventInput) {
 }
 
 function eventCalendar(input: CalendarEventInput, eventId: string) {
-  const uid = `calendza-${eventId.replace(/\.ics$/, '')}@calendza.xyz`
+  const uid = `schedra-${eventId.replace(/\.ics$/, '')}@schedra.xyz`
   const location = ['google_meet', 'microsoft_teams', 'zoom'].includes(input.locationType)
     ? input.meetingUrl ?? input.locationType.replaceAll('_', ' ')
     : input.locationDetails
@@ -401,7 +401,7 @@ function eventCalendar(input: CalendarEventInput, eventId: string) {
 }
 
 export function appleEventId(uid: string) {
-  return `calendza-${createHash('sha256').update(uid).digest('hex').slice(0, 40)}.ics`
+  return `schedra-${createHash('sha256').update(uid).digest('hex').slice(0, 40)}.ics`
 }
 
 function eventUrl(calendarId: string, eventId: string) {

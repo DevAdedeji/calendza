@@ -40,7 +40,7 @@ export function bookingCalendarFile(booking: ManagedBooking, origin: string) {
     'CALSCALE:GREGORIAN',
     `METHOD:${booking.status === 'cancelled' ? 'CANCEL' : 'PUBLISH'}`,
     'BEGIN:VEVENT',
-    `UID:${escape(booking.uid)}@calendza`,
+    `UID:${escape(booking.uid)}@schedra`,
     `DTSTAMP:${utc(new Date())}`,
     `DTSTART:${utc(booking.startsAt)}`,
     `DTEND:${utc(booking.endsAt)}`,

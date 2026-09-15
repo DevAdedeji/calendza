@@ -16,6 +16,7 @@ export interface EmailBranding {
   logoUrl?: string
   accentColor: string
   hideCalendzaBranding: boolean
+  hideSchedraBranding?: boolean
 }
 
 export interface Email {
@@ -125,9 +126,9 @@ export function renderEmailHtml(email: Email) {
   const brand = emailBrand(email)
   const poweredBy = !email.branding
     ? 'Sent by Calendza · Scheduling that works around you'
-    : email.branding.hideCalendzaBranding
-      ? `Sent by ${escapeHtml(brand.name)}`
-      : `Sent by ${escapeHtml(brand.name)} · Powered by Calendza`
+    : (email.branding.hideCalendzaBranding ?? email.branding.hideSchedraBranding)
+        ? `Sent by ${escapeHtml(brand.name)}`
+        : `Sent by ${escapeHtml(brand.name)} · Powered by Calendza`
 
   return `<!doctype html>
 <html lang="en">
@@ -190,9 +191,9 @@ export function renderEmailText(email: Email) {
   const brandName = email.branding?.name.trim() || 'Calendza'
   const signature = !email.branding
     ? 'Calendza'
-    : email.branding.hideCalendzaBranding
-      ? brandName
-      : `${brandName} · Powered by Calendza`
+    : (email.branding.hideCalendzaBranding ?? email.branding.hideSchedraBranding)
+        ? brandName
+        : `${brandName} · Powered by Calendza`
   return `${email.heading}\n\n${email.body}${details}\n\n${email.action.label}: ${email.action.url}${footer}\n\n— ${signature}`
 }
 
@@ -218,7 +219,7 @@ export async function sendEmail(email: Email, idempotencyKey?: string) {
         subject: email.subject,
         html,
         text,
-        headers: idempotencyKey ? { 'X-Calendza-Idempotency-Key': idempotencyKey } : undefined
+        headers: idempotencyKey ? { 'X-Schedra-Idempotency-Key': idempotencyKey } : undefined
       })
     } catch (error) {
       if (isPermanentEmailDeliveryError(error)) {

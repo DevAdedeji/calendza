@@ -36,7 +36,7 @@ describe.skipIf(!url)('payment withdrawal database invariants', () => {
         destination_id, destination_name, source_currency, destination_currency,
         requested_amount_cents, status
       ) values (
-        ${requestId}, ${recipientId}, ${userId}, 'calendza-wd-1', 'pay_1',
+        ${requestId}, ${recipientId}, ${userId}, 'schedra-wd-1', 'pay_1',
         'pd_1', 'Primary bank', 'NGN', 'NGN', 500000, 'pending'
       )
     `
@@ -47,7 +47,7 @@ describe.skipIf(!url)('payment withdrawal database invariants', () => {
         destination_name, source_currency, destination_currency,
         requested_amount_cents, status
       ) values (
-        ${crypto.randomUUID()}, ${recipientId}, 'calendza-wd-2', 'pay_1', 'pd_1',
+        ${crypto.randomUUID()}, ${recipientId}, 'schedra-wd-2', 'pay_1', 'pd_1',
         'Primary bank', 'NGN', 'NGN', 500000, 'pending'
       )
     `).rejects.toMatchObject({ code: '23505' })
@@ -59,7 +59,7 @@ describe.skipIf(!url)('payment withdrawal database invariants', () => {
         id, recipient_id, reference, destination_id, destination_name,
         source_currency, destination_currency, requested_amount_cents, status
       ) values (
-        ${crypto.randomUUID()}, ${recipientId}, 'calendza-wd-invalid', 'pd_1', 'Primary bank',
+        ${crypto.randomUUID()}, ${recipientId}, 'schedra-wd-invalid', 'pd_1', 'Primary bank',
         'BTC', 'NGN', -1, 'lost'
       )
     `).rejects.toMatchObject({ code: '23514' })
@@ -71,7 +71,7 @@ describe.skipIf(!url)('payment withdrawal database invariants', () => {
         id, recipient_id, reference, destination_id, destination_name,
         source_currency, destination_currency, requested_amount_cents
       ) values (
-        ${crypto.randomUUID()}, ${recipientId}, 'calendza-wd-history', 'pd_1', 'Primary bank',
+        ${crypto.randomUUID()}, ${recipientId}, 'schedra-wd-history', 'pd_1', 'Primary bank',
         'USD', 'NGN', 500
       )
     `

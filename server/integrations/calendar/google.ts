@@ -468,13 +468,13 @@ function eventBody(input: CalendarEventInput) {
       ? {
           conferenceData: {
             createRequest: {
-              requestId: `calendza-${createHash('sha256').update(input.calendarEventKey ?? input.uid).digest('hex').slice(0, 32)}`,
+              requestId: `schedra-${createHash('sha256').update(input.calendarEventKey ?? input.uid).digest('hex').slice(0, 32)}`,
               conferenceSolutionKey: { type: 'hangoutsMeet' }
             }
           }
         }
       : {},
-    extendedProperties: { private: { calendzaBookingUid: input.uid } }
+    extendedProperties: { private: { schedraBookingUid: input.uid } }
   }
 }
 
@@ -485,8 +485,8 @@ function meetingUrl(event: GoogleEventResponse) {
 }
 
 export function googleEventId(uid: string) {
-  // Google accepts only base32hex characters, so keep the brand inside the hash.
-  return createHash('sha256').update(`calendza:${uid}`).digest('hex')
+  // Keep existing provider IDs stable so a retry cannot create a second event.
+  return `schedra${createHash('sha256').update(uid).digest('hex')}`
 }
 
 export async function upsertGoogleCalendarEvent(

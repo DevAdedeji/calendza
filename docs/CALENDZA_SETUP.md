@@ -1,17 +1,17 @@
-# Calendza clean setup
+# Calendza deployment
 
-This release uses **Calendza** and **https://calendza.xyz** exclusively. It is a fresh-start release, not an in-place data migration. There are no previous-brand environment aliases, embed aliases, or domain redirects.
+The app uses **Calendza** and **https://calendza.xyz**. Keep the existing Neon databases already configured in Railway. There are no old-domain redirects or public embed aliases.
 
 ## Databases and deployment
 
-1. Provision separate, empty databases for staging and production. Keep existing databases as backups until you deliberately decide to remove them.
-2. Set `DATABASE_URL` and, for a pooled connection, `DIRECT_URL` to the new database in **both web and worker services**. Do not reuse an existing database or copy its migration ledger.
+1. Keep the current staging and production Neon databases. Do not reset them or create replacement databases for this release.
+2. Leave `DATABASE_URL` and `DIRECT_URL` unchanged in Railway. Keep `AUTH_SECRET` and `INTEGRATION_ENCRYPTION_KEY` unchanged so existing encrypted records remain readable.
 3. Set `CALENDZA_URL=https://staging.calendza.xyz` on staging and `CALENDZA_URL=https://calendza.xyz` on production. Docker needs this value as a build argument as well as a runtime variable.
-4. Set `CALENDZA_ENVIRONMENT` to `staging` or `production`, `CALENDZA_PROCESS_ROLE` to the service's `web` or `worker` role, and `CALENDZA_BILLING_MODE` to `sandbox` or `live`, matching its Bachs key. Keep portfolio demonstrations in sandbox mode.
-5. Configure the required secrets from `.env.example`. Do not copy secrets into source control. Run `node scripts/migrate.mjs` before starting the app. Migration files and snapshots describe a fresh Calendza database; the runner rejects a mismatched migration history without changing it.
-6. Create your account again. `PLATFORM_ADMIN_EMAILS` still controls administrator access. Recreate test teams, event types, subscriptions and bookings as needed.
+4. Set `CALENDZA_ENVIRONMENT` to `staging` or `production` and keep the current process role in `CALENDZA_PROCESS_ROLE`. Both environments remain in sandbox payment mode: use `CALENDZA_BILLING_MODE=sandbox` with the existing sandbox Bachs key and matching webhook secret.
+5. Run `node scripts/migrate.mjs` before starting the app, as Railway's pre-deploy command already does. Applied migrations and physical column names are preserved, so existing databases do not need a rebrand schema migration.
+6. Existing accounts, teams, event types and bookings remain. Sign in again on the new domain because browsers do not transfer login cookies between domains.
 
-Do not replay old jobs, webhooks or pending checkouts into the new database. Credentials, payment metadata, provider identifiers and queued payloads now use Calendza names. Previously encrypted integration credentials are not portable into this setup.
+Historical migrations, encryption namespaces and provider idempotency identifiers retain their original internal names. These are data formats, not display branding: changing them would break saved credentials or repeat existing provider operations. New UI copy, emails and public URLs use Calendza. Previously sent emails cannot be edited; resend links from the app if needed. Do not roll back to a version with different credential encryption settings.
 
 ## Provider dashboards
 
@@ -27,7 +27,7 @@ Configure these production URLs, and use `staging.calendza.xyz` for staging inte
 | Zoom webhook | `https://calendza.xyz/api/webhooks/zoom` |
 | Bachs webhook | `https://calendza.xyz/api/webhooks/bachs` |
 
-Update provider display names, homepage, privacy policy, terms and support links. Reconnect calendars and Zoom from the Integrations page. Apple Calendar still uses the user's app-specific password, not an OAuth client ID.
+Update provider display names, homepage, privacy policy, terms and support links. Existing encrypted calendar credentials remain readable. Reauthorize a provider if it requests consent after its callback settings change. Apple Calendar still uses the user's app-specific password, not an OAuth client ID. Enable connected-account event sources on the Bachs sandbox webhook as well as platform events.
 
 Verify the email domain before using `EMAIL_FROM=Calendza <hello@calendza.xyz>`, and make sure `support@calendza.xyz` reaches you. Provision DNS and TLS for the new domains. Updating this code does not change DNS, provider dashboards, GitHub settings, or cloud databases.
 

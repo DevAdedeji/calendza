@@ -176,7 +176,7 @@ export async function openPaidBookingCheckout(uid: string) {
       // its own query string so the return marker is always parsed correctly.
       successUrl: `${base}/booking/${encodeURIComponent(uid)}`,
       cancelUrl: `${base}/booking/${encodeURIComponent(uid)}?payment=cancelled`,
-      metadata: { calendza_booking_uid: uid, calendza_payment_reference: payment.reference },
+      metadata: { schedra_booking_uid: uid, schedra_payment_reference: payment.reference },
       platformFee: toDecimalString(payment.platformFeeCents),
       destinationAccountId: currentRecipient.bachsAccountId!,
       expiresInMinutes: 60
