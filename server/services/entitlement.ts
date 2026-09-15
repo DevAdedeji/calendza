@@ -1,6 +1,6 @@
 import { count, eq } from 'drizzle-orm'
 import type { BillingInterval, OrganizationEntitlement, OrganizationPlanStatus } from '#shared/billing'
-import { TEAM_PLAN, invoiceTotalCents } from '#shared/billing'
+import { DEFAULT_BILLING_INTERVAL, TEAM_PLAN, invoiceTotalCents } from '#shared/billing'
 import { members, organizationSubscriptions } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
 import { addToInstant, DAY_MS } from '@@/server/utils/date-time'
@@ -70,7 +70,7 @@ export async function organizationEntitlement(
   if (!row) {
     return {
       status: 'canceled',
-      interval: 'yearly',
+      interval: DEFAULT_BILLING_INTERVAL,
       seatsUsed,
       seatLimit: 0,
       canAddMembers: false,
@@ -118,7 +118,7 @@ export async function startTrial(organizationId: string, now = new Date()) {
   await useDatabase().insert(organizationSubscriptions).values({
     organizationId,
     status: 'trialing',
-    interval: 'yearly',
+    interval: DEFAULT_BILLING_INTERVAL,
     trialEndsAt: addDays(now, TEAM_PLAN.trialDays)
   }).onConflictDoNothing()
 }

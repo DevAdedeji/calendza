@@ -9,6 +9,7 @@ export interface TeamInvoiceRecord {
   seats: number
   amountCents: number
   collectionCurrency: CollectionCurrency
+  collectionAmount: string | null
   periodStart: string
   periodEnd: string
   paidAt: string | null
@@ -56,6 +57,7 @@ export interface PersonalBillingResponse {
     interval: BillingInterval
     amountCents: number
     collectionCurrency: CollectionCurrency
+    collectionAmount: string | null
     periodStart: string
     periodEnd: string
     paidAt: string | null

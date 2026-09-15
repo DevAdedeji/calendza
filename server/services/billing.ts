@@ -1,7 +1,6 @@
 import { eq, sql } from 'drizzle-orm'
 import type { BillingInterval, CollectionCurrency, OrganizationPlanStatus } from '#shared/billing'
 import {
-  TEAM_PLAN,
   billingCheckoutReason,
   billableSeats,
   collectionMethodFor,
@@ -15,9 +14,9 @@ import {
   createSubscriptionCheckout,
   ensureTeamProduct,
   NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-  quoteConversion,
   type BachsSubscription
 } from '@@/server/integrations/bachs'
+import { planPriceCents } from '#shared/regional-pricing'
 import { organizationEntitlement } from '@@/server/services/entitlement'
 import { recordAudit } from '@@/server/services/organization'
 import { enqueueSubscriptionSeatSync } from '@@/server/services/subscription-seat-sync'
@@ -130,12 +129,10 @@ export async function startCheckout(input: {
     throw failure
   }
 
-  // The USD path records what was charged too, so both paths reconcile the same way.
-  if (method === 'charge_automatically') {
-    await db.update(organizationInvoices)
-      .set({ collectionAmount: toDecimalString(amountCents), updatedAt: sql`now()` })
-      .where(eq(organizationInvoices.id, invoice.id))
-  }
+  const collectionAmount = toDecimalString(planPriceCents('team', input.interval, input.collectionCurrency) * seats)
+  await db.update(organizationInvoices)
+    .set({ collectionAmount, updatedAt: sql`now()` })
+    .where(eq(organizationInvoices.id, invoice.id))
 
   const session = method === 'charge_automatically'
     // USD by card: a recurring product makes Bachs open the session in
@@ -156,27 +153,16 @@ export async function startCheckout(input: {
     // NGN is bank transfer, which subscriptions do not support, so each period
     // is a one-off charge the team chooses to pay. Bachs refuses to bill a
     // USD-priced checkout in NGN, so it has to be priced in NGN outright.
-    : await quoteConversion(TEAM_PLAN.currency, input.collectionCurrency, toDecimalString(amountCents))
-        .then(async (quote) => {
-          await db.update(organizationInvoices)
-            .set({
-              collectionAmount: quote.to_amount,
-              exchangeRate: quote.exchange_rate,
-              updatedAt: sql`now()`
-            })
-            .where(eq(organizationInvoices.id, invoice.id))
-
-          return createCheckoutSession({
-            amount: quote.to_amount,
-            currency: input.collectionCurrency,
-            paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-            reference,
-            customer: input.customer,
-            successUrl,
-            cancelUrl,
-            metadata: { ...metadata, usdAmount: toDecimalString(amountCents), rate: quote.exchange_rate }
-          })
-        })
+    : await createCheckoutSession({
+        amount: collectionAmount,
+        currency: input.collectionCurrency,
+        paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
+        reference,
+        customer: input.customer,
+        successUrl,
+        cancelUrl,
+        metadata
+      })
         .catch(fail)
 
   await db.update(organizationInvoices)

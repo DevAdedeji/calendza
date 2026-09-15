@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm'
-import { TEAM_PLAN, formatUsd, invoiceTotalCents, type BillingInterval } from '#shared/billing'
+import { TEAM_PLAN, type BillingInterval } from '#shared/billing'
 import { members, organizationSubscriptions, organizations, users } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
 import { emailDedupeKey, enqueueEmails } from '@@/server/services/email-outbox'
@@ -155,7 +155,7 @@ export async function processBillingReminders(now = new Date()) {
     const owners = await ownersOf(team.organizationId)
     if (!owners.length) continue
 
-    const amount = formatUsd(invoiceTotalCents(team.seats, team.interval))
+    const amount = 'the current total shown on your billing page'
     const copy = COPY[team.stage]({
       name: team.name,
       amount,

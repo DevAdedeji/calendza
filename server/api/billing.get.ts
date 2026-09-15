@@ -16,6 +16,7 @@ export default defineEventHandler(async (event) => {
       interval: personalInvoices.interval,
       amountCents: personalInvoices.amountCents,
       collectionCurrency: personalInvoices.collectionCurrency,
+      collectionAmount: personalInvoices.collectionAmount,
       periodStart: personalInvoices.periodStart,
       periodEnd: personalInvoices.periodEnd,
       paidAt: personalInvoices.paidAt,

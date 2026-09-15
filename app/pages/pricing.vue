@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { PERSONAL_PRO_PLAN, TEAM_PLAN, formatUsd, type BillingInterval } from '#shared/billing'
+import { DEFAULT_BILLING_INTERVAL, PERSONAL_PRO_PLAN, TEAM_PLAN, formatUsd, type BillingInterval } from '#shared/billing'
+import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 
 definePageMeta({ layout: 'default' })
 
@@ -14,24 +15,13 @@ const proDestination = computed(() => isSignedIn.value ? '/billing' : '/signup')
 const proCta = computed(() => isSignedIn.value ? 'Upgrade to Personal Pro' : 'Start with a free account')
 const teamCta = computed(() => isSignedIn.value ? 'Create a team' : 'Start a team free')
 
-const interval = ref<BillingInterval>('yearly')
+const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
+const { price, monthlyEquivalent } = useSubscriptionPricing()
 const hydrated = ref(false)
 
 onMounted(() => {
   hydrated.value = true
 })
-
-// The headline is always the amount that actually gets charged. Leading with a
-// monthly-equivalent for a yearly plan reads as a $6.67 debit that never happens.
-const teamHeadlineCents = computed(() => interval.value === 'yearly'
-  ? TEAM_PLAN.yearlyCentsPerSeat
-  : TEAM_PLAN.monthlyCentsPerSeat)
-const proHeadlineCents = computed(() => interval.value === 'yearly'
-  ? PERSONAL_PRO_PLAN.yearlyCents
-  : PERSONAL_PRO_PLAN.monthlyCents)
-
-const teamMonthlyEquivalentCents = Math.round(TEAM_PLAN.yearlyCentsPerSeat / 12)
-const proMonthlyEquivalentCents = Math.round(PERSONAL_PRO_PLAN.yearlyCents / 12)
 
 const yearlySavingMonths = Math.round(
   12 - TEAM_PLAN.yearlyCentsPerSeat / TEAM_PLAN.monthlyCentsPerSeat
@@ -151,7 +141,7 @@ const faqs = [
   },
   {
     q: 'How do I pay?',
-    a: 'Card in USD, or bank transfer in Nigerian naira. Prices are always quoted in USD. Because a bank transfer cannot be charged automatically, nothing renews silently — each period you get an invoice and choose to pay it.'
+    a: 'Choose Nigeria for fixed naira prices, or Other countries for US dollars. Naira bank-transfer renewals are paid manually each period; US dollar card subscriptions renew automatically until cancelled. Paid bookings use the currency chosen by the host.'
   },
   {
     q: 'Can I change between monthly and yearly?',
@@ -221,6 +211,7 @@ useHead({
 
     <section class="border-b border-default bg-muted">
       <div class="mx-auto max-w-312 px-6 py-16 lg:px-10 lg:py-20">
+        <BillingRegionControl class="mb-8" />
         <!-- Sits with the cards, not up in the hero: the price above changes
              when this changes, so the control has to be next to what it moves. -->
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -230,7 +221,7 @@ useHead({
             aria-label="Billing period"
           >
             <button
-              v-for="option in (['yearly', 'monthly'] as const)"
+              v-for="option in (['monthly', 'yearly'] as const)"
               :key="option"
               type="button"
               class="rounded-full px-4 py-2 text-[14px] font-medium transition-colors"
@@ -287,16 +278,16 @@ useHead({
             <p class="eyebrow text-primary">
               Personal Pro
             </p>
-            <p class="mt-6 font-editorial text-[3rem] leading-none tracking-[-0.02em] text-highlighted">
-              {{ formatUsd(proHeadlineCents) }}
-              <span class="font-sans text-[16px] tracking-normal text-muted">/ {{ interval === 'yearly' ? 'year' : 'month' }}</span>
+            <p class="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-2 font-editorial text-[3rem] leading-none tracking-[-0.02em] text-highlighted">
+              <span>{{ price('personal', interval) }}</span>
+              <span class="whitespace-nowrap font-sans text-[16px] tracking-normal text-muted">/ {{ interval === 'yearly' ? 'year' : 'month' }}</span>
             </p>
             <p class="mt-3 text-[15px] text-muted">
               <template v-if="interval === 'yearly'">
-                Charged once a year — {{ formatUsd(proMonthlyEquivalentCents) }} a month.
+                One annual payment, equivalent to {{ monthlyEquivalent('personal') }} a month.
               </template>
               <template v-else>
-                Charged every month.
+                One payment each month.
               </template>
             </p>
             <p class="mt-6 max-w-[40ch] text-[16px] leading-relaxed text-muted">
@@ -321,18 +312,18 @@ useHead({
             <p class="eyebrow text-dimmed">
               Team
             </p>
-            <p class="mt-6 font-editorial text-[3rem] leading-none tracking-[-0.02em] text-highlighted">
-              {{ formatUsd(teamHeadlineCents) }}
-              <span class="font-sans text-[16px] tracking-normal text-muted">
+            <p class="mt-6 flex flex-wrap items-baseline gap-x-2 gap-y-2 font-editorial text-[3rem] leading-none tracking-[-0.02em] text-highlighted">
+              <span>{{ price('team', interval) }}</span>
+              <span class="whitespace-nowrap font-sans text-[16px] tracking-normal text-muted">
                 per member / {{ interval === 'yearly' ? 'year' : 'month' }}
               </span>
             </p>
             <p class="mt-3 text-[15px] text-muted">
               <template v-if="interval === 'yearly'">
-                Charged once a year — the same as {{ formatUsd(teamMonthlyEquivalentCents) }} a month.
+                One annual payment, equivalent to {{ monthlyEquivalent('team') }} a month.
               </template>
               <template v-else>
-                Charged every month.
+                One payment each month.
               </template>
               You only pay for people who have joined, starting with the team owner.
             </p>

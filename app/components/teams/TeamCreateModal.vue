@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { createOrganizationSchema, TEAM_PLAN, formatUsd } from '#shared/billing'
+import { createOrganizationSchema, TEAM_PLAN } from '#shared/billing'
+import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 import { teamsApi, type SlugAvailability } from '@/services/api/teams'
 
@@ -9,6 +10,7 @@ const emit = defineEmits<{ 'update:open': [value: boolean], 'created': [slug: st
 const authClient = useAuthClient()
 const { host } = useSiteUrl()
 const feedback = useFeedback()
+const { price } = useSubscriptionPricing()
 
 const form = reactive({ name: '', slug: '' })
 const slugTouched = ref(false)
@@ -162,13 +164,15 @@ async function create() {
                 {{ TEAM_PLAN.trialDays }} days free, no card needed
               </p>
               <p class="mt-1">
-                After the trial it is {{ formatUsd(TEAM_PLAN.monthlyCentsPerSeat) }} per member monthly or
-                {{ formatUsd(TEAM_PLAN.yearlyCentsPerSeat) }} per member yearly. You only pay for people who
+                After the trial it is {{ price('team', 'monthly') }} per member monthly or
+                {{ price('team', 'yearly') }} per member yearly. You only pay for people who
                 have joined, and your personal booking page stays free.
               </p>
             </div>
           </div>
         </div>
+
+        <BillingRegionControl />
 
         <p
           v-if="error"

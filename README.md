@@ -158,6 +158,25 @@ the Bachs refund state moves from pending to its provider-confirmed result. The
 automated suite covers these boundaries with fakes, but it does not replace live
 iCloud or Bachs validation.
 
+## Regional subscription pricing
+
+Personal Pro and Team plans keep their USD base prices. The billing-region
+selector defaults to NGN for devices using `Africa/Lagos` and USD elsewhere;
+users can correct this suggestion, which is remembered in a cookie. It is not
+location verification and does not send IP addresses to a geolocation service.
+
+Monthly billing is selected by default. Personal Pro costs ₦7,500/month or
+₦75,000/year in Nigeria; Team costs ₦10,000/member/month or ₦100,000/member/year.
+These are fixed prices, not exchange-rate conversions. USD prices remain
+$6/month or $60/year for Personal Pro and $8/member/month or $80/member/year
+for Team. USD card subscriptions retain automatic renewal; NGN invoices
+require manual payment each period. Existing subscriptions are not converted
+automatically.
+
+Invoice history displays the original collection amount and currency, never
+today's conversion rate. Host-set paid-booking prices, payouts and refunds are
+unchanged. This feature needs no new dependency, database migration or secret.
+
 ## Apple Calendar
 
 Apple Calendar connects through iCloud CalDAV. Users must enable two-factor
