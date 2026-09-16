@@ -52,7 +52,7 @@ const { isSignedIn, accountDestination } = await useLandingNavigation()
 
         <div class="relative min-w-0">
           <div
-            class="absolute inset-0 rounded-4xl bg-primary/10 sm:-inset-6 sm:-rotate-2"
+            class="absolute inset-0 rounded-4xl bg-primary/10 lg:-inset-6 lg:-rotate-2"
             aria-hidden="true"
           />
           <div class="relative rounded-2xl bg-default p-2 shadow-2xl ring-1 ring-black/5">

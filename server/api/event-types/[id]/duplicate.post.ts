@@ -1,4 +1,4 @@
-import { and, count, eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
 import { eventTypes } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database/index'
@@ -10,16 +10,12 @@ export default defineEventHandler(async (event) => {
   if (!id.success) throw createError({ statusCode: 400, statusMessage: 'Invalid event type.' })
 
   const db = useDatabase()
-  const [[source], [total], slugs] = await Promise.all([
+  const [[source], slugs] = await Promise.all([
     db.select().from(eventTypes)
       .where(and(eq(eventTypes.id, id.data), eq(eventTypes.userId, session.user.id))).limit(1),
-    db.select({ value: count() }).from(eventTypes).where(eq(eventTypes.userId, session.user.id)),
     db.select({ slug: eventTypes.slug }).from(eventTypes).where(eq(eventTypes.userId, session.user.id))
   ])
   if (!source) throw createError({ statusCode: 404, statusMessage: 'No such event type.' })
-  if ((total?.value ?? 0) >= 50) {
-    throw createError({ statusCode: 409, statusMessage: 'You have reached the 50 event type limit.' })
-  }
 
   const taken = new Set(slugs.map(row => row.slug.toLowerCase()))
   const base = `${source.slug}-copy`.slice(0, 64).replace(/-$/, '')

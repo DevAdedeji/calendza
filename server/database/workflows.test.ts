@@ -115,6 +115,49 @@ describe.skipIf(!url)('workflow automation durability', () => {
     expect(cancelled?.status).toBe('cancelled')
   })
 
+  it('creates more than 50 workflows without a subscription', async () => {
+    const { createWorkflow } = await import('@@/server/services/workflows')
+    for (let i = 0; i < 51; i++) {
+      await createWorkflow({ userId }, userId, {
+        name: `Workflow ${i}`, trigger: 'booking_created', offsetMinutes: 0,
+        eventTypeId: null, active: false,
+        action: { type: 'email', recipient: 'attendee', subject: 'Hi', body: 'Hello' }
+      })
+    }
+    const [row] = await sql`select count(*)::int as total from automation_workflows where user_id = ${userId}`
+    expect(row?.total).toBe(51)
+  })
+
+  it('defers excess workflow deliveries without using retries and resumes after reset', async () => {
+    const { createWorkflow, publishBookingEvent, dispatchDomainEvents, processAutomationRuns } = await import('@@/server/services/workflows')
+    const { consumeRateLimit } = await import('@@/server/services/rate-limit')
+    const { WORKFLOW_DELIVERY_PER_HOUR } = await import('#shared/usage-protection')
+    await createWorkflow({ userId }, userId, {
+      name: 'Queued welcome', trigger: 'booking_created', offsetMinutes: 0,
+      eventTypeId, active: true,
+      action: { type: 'email', recipient: 'attendee', subject: 'Hi', body: 'Hello' }
+    })
+    await publishBookingEvent({ type: 'booking_created', userId, bookingId, eventTypeId })
+    await dispatchDomainEvents()
+    const allowances = await Promise.all(Array.from({ length: WORKFLOW_DELIVERY_PER_HOUR + 5 }, () =>
+      consumeRateLimit(`workflow-delivery:user:${userId}`, WORKFLOW_DELIVERY_PER_HOUR, 3600)
+    ))
+    expect(allowances.filter(result => result.allowed)).toHaveLength(WORKFLOW_DELIVERY_PER_HOUR)
+    await processAutomationRuns()
+    const [queued] = await sql`select status, attempts, available_at > now() as deferred from automation_runs`
+    expect(queued).toMatchObject({ status: 'pending', attempts: 0, deferred: true })
+    const [empty] = await sql`select count(*)::int as total from email_outbox`
+    expect(empty?.total).toBe(0)
+    expect((await consumeRateLimit('workflow-delivery:team:another-workspace', WORKFLOW_DELIVERY_PER_HOUR, 3600)).allowed).toBe(true)
+    await sql`update api_rate_limits set expires_at = now() - interval '1 second'`
+    await sql`update automation_runs set available_at = now()`
+    await processAutomationRuns()
+    const [sent] = await sql`select status, attempts from automation_runs`
+    expect(sent).toMatchObject({ status: 'completed', attempts: 1 })
+    const [emails] = await sql`select count(*)::int as total from email_outbox`
+    expect(emails?.total).toBe(1)
+  })
+
   it('prevents a workflow from targeting another account event type', async () => {
     const [other] = await sql<{ id: string }[]>`
       insert into users (email, name, username)

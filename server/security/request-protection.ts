@@ -1,3 +1,5 @@
+import { CONFIGURATION_WRITES_PER_MINUTE } from '#shared/usage-protection'
+
 const UNSAFE_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 export const DEFAULT_API_BODY_BYTES = 64 * 1024
@@ -33,6 +35,9 @@ export function apiBodyLimit(pathname: string) {
 
 export function sensitiveRateLimit(pathname: string, method: string): SensitiveRateLimit | undefined {
   if (!UNSAFE_METHODS.has(method.toUpperCase())) return
+  if (/^\/api\/(?:teams\/[^/]+\/)?(?:event-types|workflows|routing-forms)(?:\/[^/]+(?:\/duplicate)?)?$/.test(pathname)) {
+    return { namespace: 'scheduling-configuration', limit: CONFIGURATION_WRITES_PER_MINUTE, windowSeconds: 60 }
+  }
   if (pathname === '/api/auth/sign-in/email') {
     return { namespace: 'auth-sign-in', limit: 10, windowSeconds: 10 * 60 }
   }

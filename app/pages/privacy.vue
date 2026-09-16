@@ -12,7 +12,7 @@ useSeoMeta({
     eyebrow="Legal"
     title="Privacy, without the fog."
     summary="This policy explains what Calendza collects, why we need it, who receives it and the controls available to you."
-    updated="30 August 2026"
+    updated="16 September 2026"
   >
     <section>
       <h2>1. Who this policy covers</h2>
@@ -46,21 +46,27 @@ useSeoMeta({
       <h3>Connected services</h3>
       <p>
         If you connect a calendar or video provider, we receive the account identifier,
-        account label, granted permissions and OAuth credentials needed to operate the
-        integration. Access and refresh tokens are encrypted before database storage.
+        account label, selected calendars and credentials needed to operate the integration.
+        Google, Microsoft and Zoom connections use OAuth access and refresh tokens. Apple Calendar
+        uses your Apple account identifier and an app-specific password through CalDAV, not your
+        main Apple account password. Integration credentials are encrypted before database storage.
       </p>
       <p>
-        For Google Calendar, Calendza reads the calendars you select for conflict checking and
-        writes booking events to the calendar you choose. For Zoom, Calendza creates, updates
+        For Google Calendar, Microsoft Calendar and Apple Calendar, Calendza reads the calendars
+        you select for conflict checking and writes booking events to the calendar you choose.
+        Calendar event times and identifiers are processed to check availability and keep bookings
+        synchronized. For Zoom, Calendza creates, updates
         and deletes meetings for bookings whose location is Zoom. Calendza does not access Zoom
         meeting audio, video, chat, recordings, transcripts, participant activity or analytics.
       </p>
 
       <h3>Billing information</h3>
       <p>
-        For paid team plans, we keep subscription, seat, invoice, currency and payment-status
-        information. Payment providers process card and bank details; Calendza does not store
-        complete payment-card or bank-account numbers.
+        For Personal Pro and Team plans, we keep subscription, invoice, currency and payment-status
+        information, plus seat information for teams. For paid appointments, we also keep the booking's
+        payment amount, fees, provider references, refund status and settlement or withdrawal records.
+        Payment providers process card and bank details; Calendza does not store complete payment-card
+        or bank-account numbers.
       </p>
 
       <h3>Technical and security information</h3>
@@ -88,7 +94,8 @@ useSeoMeta({
         <li>Prevent double-booking and keep connected calendars and meetings synchronized.</li>
         <li>Authenticate users, prevent abuse and investigate security or reliability incidents.</li>
         <li>Deliver service messages, including verification, booking and billing emails.</li>
-        <li>Administer team subscriptions, invoices and occupied seats.</li>
+        <li>Administer Personal Pro and Team subscriptions, invoices and occupied team seats.</li>
+        <li>Confirm paid bookings and track payments, refunds, settlements and withdrawals.</li>
         <li>Understand visitor journeys and improve the usability and reliability of Calendza.</li>
         <li>Comply with legal obligations and enforce our Terms.</li>
       </ul>
@@ -106,7 +113,7 @@ useSeoMeta({
       <ul>
         <li>The host, guest and invited attendees involved in a booking.</li>
         <li>Members of a team, according to their role and the team features they use.</li>
-        <li>Google and Zoom when a user connects and uses those integrations.</li>
+        <li>Google, Microsoft, Apple and Zoom when a user connects and uses those integrations.</li>
         <li>
           Infrastructure, database, analytics, email-delivery and payment providers acting for
           Calendza, including Umami for aggregate usage analytics.
@@ -127,8 +134,11 @@ useSeoMeta({
         period where needed for security, support, accounting, dispute resolution or legal compliance.
       </p>
       <p>
-        Disconnecting Google Calendar or Zoom revokes the connection and removes the encrypted
-        credentials stored by Calendza. Zoom’s deauthorization event also removes the related local
+        Disconnecting a calendar or Zoom removes the connection and encrypted credentials stored by
+        Calendza. You can also revoke access in the provider's account settings. For Apple Calendar,
+        revoke the app-specific password in your Apple account if you no longer want it to be usable.
+        Disconnecting does not itself cancel existing bookings or remove events already on a calendar.
+        Zoom’s deauthorization event also removes the related local
         meeting mappings and join links. Deleting a Calendza account removes the account’s booking
         links, schedules, bookings and connected-service credentials, subject to records we must
         retain by law and short-lived infrastructure backups that expire through their normal cycle.

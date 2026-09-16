@@ -1,6 +1,6 @@
 import postgres from 'postgres'
 import { afterAll, beforeEach, describe, expect, it } from 'vitest'
-import { getTestDatabaseUrl } from '@@/test/helpers/database'
+import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
 
@@ -10,6 +10,9 @@ describe.skipIf(!url)('routing form database invariants', () => {
   let eventTypeId: string
 
   beforeEach(async () => {
+    configureAppTestEnvironment(url!)
+    const { resetEnv } = await import('@@/server/config/env')
+    resetEnv()
     await sql`truncate table routing_responses, routing_rules, routing_forms, event_types, users, organizations restart identity cascade`
     const [user] = await sql<{ id: string }[]>`
       insert into users (email, name, username) values ('router@example.com', 'Route Host', 'route-host') returning id
@@ -36,6 +39,24 @@ describe.skipIf(!url)('routing form database invariants', () => {
       insert into routing_forms (user_id, default_event_type_id, slug, title, questions)
       values (${userId}, ${eventTypeId}, 'empty', 'Empty', '[]'::jsonb)
     `).rejects.toMatchObject({ code: '23514' })
+  })
+
+  it('creates more than 20 forms and lists them across bounded pages', async () => {
+    const { createRoutingForm, listRoutingForms } = await import('@@/server/services/routing-forms')
+    for (let i = 0; i < 21; i++) {
+      await createRoutingForm({ userId }, {
+        slug: `form-${i}`, title: `Form ${i}`, description: '', active: true,
+        defaultEventTypeId: eventTypeId,
+        questions: [{ id: crypto.randomUUID(), label: 'Question', options: ['A', 'B'], required: true }],
+        rules: []
+      })
+    }
+    const first = await listRoutingForms({ userId }, 1, 10)
+    const last = await listRoutingForms({ userId }, 3, 10)
+    expect(first.items).toHaveLength(10)
+    expect(first.pagination).toMatchObject({ total: 21, totalPages: 3 })
+    expect(last.items).toHaveLength(1)
+    expect(first.items.some(item => item.id === last.items[0]?.id)).toBe(false)
   })
 
   it('keeps public slugs unique per owner regardless of case', async () => {

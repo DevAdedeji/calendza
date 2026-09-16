@@ -2,15 +2,22 @@
 import { apiErrorMessage } from '@/services/api/http'
 import { routingFormsApi, type RoutingFormsResponse, type RoutingFormSummary } from '@/services/api/routing'
 import { compactActionMenuUi } from '@/utils/action-menu'
+import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 const props = defineProps<{ teamSlug?: string, canManage?: boolean }>()
 const feedback = useFeedback()
 const { data: currentUser } = await useCurrentUser()
 const { host } = useSiteUrl()
 const { copy, isCopied } = useCopy()
+const page = ref(1)
 const { data, refresh, status, error: loadFailure } = await useLazyFetch<RoutingFormsResponse>(
-  () => routingFormsApi.listEndpoint(props.teamSlug)
+  () => routingFormsApi.listEndpoint(props.teamSlug),
+  { query: computed(() => ({ page: page.value, pageSize: DEFAULT_LIST_PAGE_SIZE })) }
 )
+
+watch(() => data.value?.pagination.totalPages, (totalPages) => {
+  if (totalPages && page.value > totalPages) page.value = totalPages
+})
 
 const items = computed(() => data.value?.items ?? [])
 const eventOptions = computed(() => (data.value?.eventTypes ?? []).map(item => ({ label: item.title, value: item.id })))
@@ -190,6 +197,14 @@ async function remove() {
           </div>
         </li>
       </ul>
+      <ListPagination
+        :page="data?.pagination.page ?? 1"
+        :total-pages="data?.pagination.totalPages ?? 1"
+        :total="data?.pagination.total ?? 0"
+        :page-size="data?.pagination.pageSize"
+        :disabled="refreshing"
+        @change="page = $event"
+      />
     </section>
 
     <UModal

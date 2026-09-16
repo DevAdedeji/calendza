@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DEFAULT_BILLING_INTERVAL, PERSONAL_PRO_PLAN, TEAM_PLAN, formatUsd, type BillingInterval } from '#shared/billing'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
+import { CONFIGURATION_WRITES_PER_MINUTE, WORKFLOW_DELIVERY_PER_HOUR } from '#shared/usage-protection'
 
 definePageMeta({ layout: 'default' })
 
@@ -27,12 +28,40 @@ const yearlySavingMonths = Math.round(
   12 - TEAM_PLAN.yearlyCentsPerSeat / TEAM_PLAN.monthlyCentsPerSeat
 )
 
-/**
- * One list for the whole comparison. Adding a feature is a single row. A value
- * is `true`, `false`, the literal `'soon'` for something on the way, or any
- * other string when a plan needs a number instead of a tick.
- */
-type Availability = boolean | 'soon' | string
+const highlights = {
+  free: [
+    'Unlimited event types',
+    'Calendar connections and meeting links',
+    'Booking confirmations and reminders',
+    'Unlimited workflows and routing forms',
+    'Paid bookings and core analytics'
+  ],
+  pro: [
+    'Your logo and brand colours',
+    'Remove Calendza branding',
+    'Custom branded guest emails',
+    'Revenue reports and CSV exports',
+    'Lower fees on personal paid bookings'
+  ],
+  team: [
+    'Shared booking pages and event types',
+    'Round-robin and collective meetings',
+    'Managed event templates',
+    'Member roles and team activity',
+    'Each host’s own availability and calendars'
+  ]
+}
+
+const includedFeatures = [
+  { title: 'Unlimited event types', detail: 'Your own booking page, with links for every meeting you offer.' },
+  { title: 'Availability controls', detail: '10 schedules, date overrides, time zones, buffers and booking limits.' },
+  { title: 'Booking essentials', detail: 'Questions, approvals, group bookings, reminders and rescheduling. Embed booking on your website.' },
+  { title: 'Calendar and video integrations', detail: 'Connect your calendars and add Google Meet, Microsoft Teams or Zoom meeting links.' },
+  { title: 'Unlimited workflows and routing forms', detail: 'Automate follow-ups and guide guests to the right booking page. Delivery safeguards apply.' },
+  { title: 'Paid bookings and core analytics', detail: 'Collect payments and see your booking activity. Platform and payment-provider fees apply.' }
+]
+
+type Availability = boolean | string
 
 interface ComparisonRow {
   label: string
@@ -44,48 +73,22 @@ interface ComparisonRow {
 
 const comparison: { group: string, rows: ComparisonRow[] }[] = [
   {
-    group: 'Your own scheduling',
+    group: 'Branding and business',
     rows: [
-      { label: 'Personal booking page', free: true, pro: true, team: true },
-      { label: 'Event types', free: 'Unlimited', pro: 'Unlimited', team: 'Unlimited' },
-      { label: 'Weekly hours and date overrides', free: true, pro: true, team: true },
-      { label: 'Multiple schedules', free: '10', pro: '10', team: '10' },
-      { label: 'Timezone-correct slots', free: true, pro: true, team: true },
-      { label: 'Buffers, notice and daily limits', free: true, pro: true, team: true },
-      { label: 'Custom booking questions', free: true, pro: true, team: true },
-      { label: 'Booking approvals', free: true, pro: true, team: true },
-      { label: 'Group events with capacity', free: true, pro: true, team: true },
-      { label: 'Additional guests on a booking', free: true, pro: true, team: true },
-      { label: 'Reminder emails', free: true, pro: true, team: true },
-      { label: 'Cancel and reschedule links', free: true, pro: true, team: true },
-      { label: 'Export your account data', free: true, pro: true, team: true }
-    ]
-  },
-  {
-    group: 'Automation and insights',
-    rows: [
-      { label: 'Email and webhook workflows', free: 'Unlimited', pro: 'Unlimited', team: true },
-      { label: 'Routing forms', free: 'Unlimited', pro: 'Unlimited', team: true },
-      { label: 'Booking analytics', free: 'Core insights', pro: 'Revenue + CSV', team: true },
-      { label: 'Custom booking-page branding', free: false, pro: true, team: true },
+      { label: 'Custom booking-page branding', detail: 'Your logo and colours, without Calendza branding.', free: false, pro: true, team: true },
       { label: 'Custom branded guest emails', free: false, pro: true, team: true },
-      { label: 'Remove Calendza branding', free: false, pro: true, team: true },
-      { label: 'Paid bookings', free: true, pro: true, team: true },
-      { label: 'Paid-booking platform fee', free: '5%', pro: '2.5%', team: '5%' },
-      { label: 'Payment and settlement activity', free: true, pro: true, team: true }
+      { label: 'Revenue reports and CSV exports', free: false, pro: true, team: true },
+      { label: 'Paid-booking platform fee', detail: 'Personal booking fees for Free and Pro; team booking fees for Team. Provider fees are separate.', free: '5%', pro: '2.5%', team: '5%' }
     ]
   },
   {
     group: 'Scheduling together',
     rows: [
-      { label: 'Shared team booking page', free: false, pro: false, team: true },
-      { label: 'Shared team event types', free: false, pro: false, team: true },
+      { label: 'Team booking pages', detail: `Shared event types for up to ${TEAM_PLAN.maxSeats} members.`, free: false, pro: false, team: true },
       { label: 'Managed event templates', free: false, pro: false, team: true },
-      { label: 'Members', free: false, pro: false, team: `Up to ${TEAM_PLAN.maxSeats}` },
-      { label: 'Roles and permissions', free: false, pro: false, team: 'Owner, admin, member' },
       {
         label: 'Round-robin assignment',
-        detail: 'The free, fairest host takes the booking.',
+        detail: 'Distribute bookings across available teammates.',
         free: false, pro: false,
         team: true
       },
@@ -95,57 +98,27 @@ const comparison: { group: string, rows: ComparisonRow[] }[] = [
         free: false, pro: false,
         team: true
       },
-      { label: 'Per-host availability and calendars', free: false, pro: false, team: true },
-      { label: 'Guest rescheduling for team bookings', free: false, pro: false, team: true },
-      { label: 'Team bookings and activity log', free: false, pro: false, team: true },
-      { label: 'Ownership transfer and team archiving', free: false, pro: false, team: true }
-    ]
-  },
-  {
-    group: 'Integrations and distribution',
-    rows: [
-      { label: 'Booking overlay for your website', free: true, pro: true, team: true },
-      { label: 'Google Calendar conflict checks and sync', free: true, pro: true, team: true },
-      { label: 'Microsoft Calendar conflict checks and sync', free: true, pro: true, team: true },
-      { label: 'Google Meet links', free: true, pro: true, team: true },
-      { label: 'Microsoft Teams links', free: true, pro: true, team: true },
-      { label: 'Zoom meeting links', free: true, pro: true, team: true },
-      { label: 'Automatic calendar-sync retries', free: true, pro: true, team: true }
-    ]
-  },
-  {
-    group: 'Everywhere',
-    rows: [
-      { label: 'No ads and no reselling personal data', free: true, pro: true, team: true },
-      { label: 'Email support', free: true, pro: true, team: true }
+      { label: 'Team administration', detail: 'Member roles, permissions and activity history.', free: false, pro: false, team: true }
     ]
   }
 ]
 
 const faqs = [
   {
-    q: 'What is included in Personal Pro?',
-    a: 'Personal Pro adds custom booking-page and guest-email branding, reusable email wording, revenue reports, CSV exports and a lower 2.5% paid-booking platform fee. Workflows, routing forms and core booking analytics remain free.'
+    q: 'Why choose Personal Pro?',
+    a: 'Free covers everyday scheduling. Pro adds your branding, custom guest emails and revenue reports, and lowers the platform fee on personal paid bookings from 5% to 2.5%. You pay for business features, not more booking links.'
   },
   {
-    q: 'Who exactly am I paying for?',
-    a: 'Only people who have actually joined a team. A pending invitation costs nothing until it is accepted, and someone you remove stops counting from that moment. There are no prepaid or empty seats.'
+    q: 'How does billing work?',
+    a: 'Choose monthly or yearly billing, with two months free when paying yearly. Nigeria uses fixed naira prices and manual bank-transfer renewals. US dollar card subscriptions renew automatically until cancelled. Paid bookings use the currency chosen by the host.'
   },
   {
-    q: 'Is my personal booking page affected?',
-    a: 'No. Your own page, hours, event types and calendar integrations stay free forever, whether or not you ever join a team. Joining a team never moves or shares any of it — a team only ever sees whether you are free or busy, never what you are doing.'
+    q: 'How does the Team plan work?',
+    a: `Share booking links, distribute meetings and manage your team’s events. You pay for joined members, including the owner; pending invitations cost nothing. Try it free for ${TEAM_PLAN.trialDays} days without a card. If unpaid after the ${TEAM_PLAN.graceDays}-day grace period, the team becomes read-only without deleting its data. Your personal free scheduling stays available.`
   },
   {
-    q: 'What happens when the trial ends?',
-    a: `You get ${TEAM_PLAN.trialDays} days free with no card. If the trial ends unpaid there is a ${TEAM_PLAN.graceDays}-day grace period, after which the team goes read-only: team booking pages stop taking new bookings, but nothing is deleted. Every booking, member and export stays exactly where it is, and paying restores it immediately.`
-  },
-  {
-    q: 'How do I pay?',
-    a: 'Choose Nigeria for fixed naira prices, or Other countries for US dollars. Naira bank-transfer renewals are paid manually each period; US dollar card subscriptions renew automatically until cancelled. Paid bookings use the currency chosen by the host.'
-  },
-  {
-    q: 'Can I change between monthly and yearly?',
-    a: 'Yes, at any renewal. Yearly works out at two months free and means one payment a year instead of twelve.'
+    q: 'What does unlimited mean?',
+    a: `Create as many event types, workflows and routing forms as you need. Every plan has abuse safeguards: ${WORKFLOW_DELIVERY_PER_HOUR} workflow email or webhook attempts per hour per workspace, including retries, with excess actions queued. Built-in confirmations and reminders are separate. Configuration changes across these features are limited to ${CONFIGURATION_WRITES_PER_MINUTE} requests per minute per IP address.`
   }
 ]
 
@@ -200,11 +173,11 @@ useHead({
           Pricing
         </p>
         <h1 class="mt-6 max-w-[18ch] font-editorial text-[clamp(2.5rem,6vw,4rem)] leading-[1.02] tracking-[-0.02em] text-highlighted">
-          Start free. Upgrade when your scheduling works harder.
+          Free gets you booked.
         </h1>
         <p class="mt-6 max-w-[52ch] text-[17px] leading-relaxed text-muted">
-          Essential personal scheduling, workflows, routing and core analytics stay free.
-          Personal Pro adds your brand and business reporting, while teams pay only for people who join.
+          Pro makes it your brand and helps you earn more from every booking.
+          Keep scheduling free, or upgrade for custom branding, revenue reports and lower fees on paid bookings.
         </p>
       </div>
     </section>
@@ -254,9 +227,24 @@ useHead({
             <p class="mt-3 text-[15px] text-muted">
               Forever, for one person. No card, no expiry.
             </p>
-            <p class="mt-6 max-w-[40ch] text-[16px] leading-relaxed text-muted">
-              Everything you need to share a link or add booking to your website:
-              flexible hours, timezone-correct slots, calendar sync and video links.
+            <p class="mt-6 text-[16px] text-muted">
+              Everything you need to get booked.
+            </p>
+            <ul class="my-6 space-y-3">
+              <li
+                v-for="feature in highlights.free"
+                :key="feature"
+                class="flex items-start gap-3 text-[15px] leading-relaxed text-toned"
+              >
+                <UIcon
+                  name="i-lucide-check"
+                  class="mt-1 size-4 shrink-0 text-primary"
+                />
+                <span>{{ feature }}</span>
+              </li>
+            </ul>
+            <p class="mb-6 text-[14px] leading-relaxed text-muted">
+              5% platform fee on paid bookings.
             </p>
             <UButton
               :to="accountDestination"
@@ -290,12 +278,24 @@ useHead({
                 One payment each month.
               </template>
             </p>
-            <p class="mt-6 max-w-[40ch] text-[16px] leading-relaxed text-muted">
-              Build a professional booking experience with your logo, colours and
-              custom guest emails, remove Calendza branding, and unlock revenue reports.
+            <p class="mt-6 text-[16px] text-muted">
+              Everything in Free, made your own.
             </p>
-            <p class="my-4 rounded-xl bg-muted px-4 py-3 text-[14px] leading-relaxed text-muted">
-              Includes a lower 2.5% platform fee on paid bookings.
+            <ul class="my-6 space-y-3">
+              <li
+                v-for="feature in highlights.pro"
+                :key="feature"
+                class="flex items-start gap-3 text-[15px] leading-relaxed text-toned"
+              >
+                <UIcon
+                  name="i-lucide-check"
+                  class="mt-1 size-4 shrink-0 text-primary"
+                />
+                <span>{{ feature }}</span>
+              </li>
+            </ul>
+            <p class="mb-6 text-[14px] leading-relaxed text-muted">
+              2.5% platform fee on personal paid bookings, instead of 5%.
             </p>
             <UButton
               :to="proDestination"
@@ -325,15 +325,26 @@ useHead({
               <template v-else>
                 One payment each month.
               </template>
-              You only pay for people who have joined, starting with the team owner.
             </p>
-            <p class="mt-6 max-w-[40ch] text-[16px] leading-relaxed text-muted">
-              One shared link the whole team hosts. Round-robin, collective
-              meetings, roles and an audit trail — on top of everything above,
-              which each member still keeps for themselves.
+            <p class="mt-6 text-[16px] text-muted">
+              Bring everyone’s scheduling together.
             </p>
-            <p class="my-4 rounded-xl bg-muted px-4 py-3 text-[14px] leading-relaxed text-muted">
-              {{ TEAM_PLAN.trialDays }} days free, no card needed. Pending invitations are never billed.
+            <ul class="my-6 space-y-3">
+              <li
+                v-for="feature in highlights.team"
+                :key="feature"
+                class="flex items-start gap-3 text-[15px] leading-relaxed text-toned"
+              >
+                <UIcon
+                  name="i-lucide-check"
+                  class="mt-1 size-4 shrink-0 text-primary"
+                />
+                <span>{{ feature }}</span>
+              </li>
+            </ul>
+            <p class="mb-6 text-[14px] leading-relaxed text-muted">
+              {{ TEAM_PLAN.trialDays }} days free, no card needed.
+              5% platform fee on team paid bookings.
             </p>
             <UButton
               :to="teamDestination"
@@ -346,42 +357,70 @@ useHead({
             </UButton>
           </article>
         </div>
+        <p class="mt-6 text-center text-[14px] leading-relaxed text-muted">
+          Payment-provider fees are separate from Calendza’s platform fee.
+        </p>
       </div>
     </section>
 
     <section class="border-b border-default">
       <div class="mx-auto max-w-312 px-6 py-16 lg:px-10 lg:py-20">
         <h2 class="font-editorial text-[clamp(1.75rem,3.5vw,2.5rem)] leading-[1.1] tracking-[-0.02em] text-highlighted">
-          What is in each plan
+          Included in every plan
         </h2>
-
-        <p class="mt-3 max-w-[58ch] text-[15px] leading-relaxed text-muted">
-          Scan every category at once, then open only the details you want to compare.
-        </p>
-
-        <div class="mt-8 overflow-hidden rounded-2xl border border-default bg-default">
-          <details
-            v-for="(section, sectionIndex) in comparison"
-            :key="section.group"
-            :open="sectionIndex === 0"
-            class="group border-b border-default last:border-b-0"
+        <dl class="mt-8 grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-3">
+          <div
+            v-for="feature in includedFeatures"
+            :key="feature.title"
           >
-            <summary class="surface-secondary flex cursor-pointer list-none items-center gap-4 px-5 py-4 marker:hidden sm:px-6 [&::-webkit-details-marker]:hidden">
-              <div class="min-w-0 flex-1">
-                <h3 class="text-[16px] font-semibold text-highlighted">
-                  {{ section.group }}
-                </h3>
-                <p class="mt-0.5 text-[13px] text-muted">
-                  {{ section.rows.length }} features
-                </p>
-              </div>
-              <UIcon
-                name="i-lucide-chevron-down"
-                class="size-4 shrink-0 text-dimmed transition-transform group-open:rotate-180"
-              />
-            </summary>
+            <dt class="text-[16px] font-semibold text-highlighted">
+              {{ feature.title }}
+            </dt>
+            <dd class="mt-2 text-[14px] leading-relaxed text-muted">
+              {{ feature.detail }}
+            </dd>
+          </div>
+        </dl>
+        <p class="mb-8 mt-6 text-[14px] text-muted">
+          Looking for a specific capability?
+          <NuxtLink
+            to="/features"
+            class="text-primary underline underline-offset-4"
+          >
+            Explore Calendza’s features
+          </NuxtLink>
+        </p>
+        <details class="group overflow-hidden rounded-2xl border border-default bg-default">
+          <summary class="surface-secondary flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 marker:hidden sm:px-6 [&::-webkit-details-marker]:hidden">
+            <h2 class="text-[18px] font-semibold text-highlighted">
+              Compare plans
+            </h2>
+            <UIcon
+              name="i-lucide-chevron-down"
+              class="size-5 shrink-0 text-dimmed transition-transform group-open:rotate-180"
+            />
+          </summary>
+          <p class="px-5 pt-5 text-[14px] leading-relaxed text-muted sm:px-6">
+            Every plan includes the essentials above. Here’s what changes when you upgrade.
+          </p>
+          <p class="px-5 pt-5 text-[14px] text-muted sm:hidden">
+            Scroll each table sideways to compare plans.
+          </p>
+          <section
+            v-for="section in comparison"
+            :key="section.group"
+            class="border-b border-default last:border-b-0"
+          >
+            <h3 class="px-5 pb-2 pt-6 text-[16px] font-semibold text-highlighted sm:px-6">
+              {{ section.group }}
+            </h3>
 
-            <div class="overflow-x-auto px-5 pb-3 sm:px-6">
+            <div
+              tabindex="0"
+              role="region"
+              :aria-label="`${section.group} plan comparison`"
+              class="overflow-x-auto px-5 pb-3 sm:px-6"
+            >
               <table class="w-full min-w-176 border-collapse text-left">
                 <thead>
                   <tr class="border-b border-default">
@@ -419,41 +458,32 @@ useHead({
                     <td
                       v-for="plan in (['free', 'pro', 'team'] as const)"
                       :key="plan"
-                      class="py-4 align-top"
+                      class="relative py-4 align-top"
                     >
-                      <template v-if="row[plan] === 'soon'">
-                        <UBadge
-                          color="neutral"
-                          variant="subtle"
-                          size="sm"
-                        >
-                          Soon
-                        </UBadge>
-                      </template>
-                      <template v-else-if="typeof row[plan] === 'string'">
+                      <template v-if="typeof row[plan] === 'string'">
                         <span class="text-[15px] text-toned">{{ row[plan] }}</span>
                       </template>
                       <template v-else-if="row[plan]">
                         <UIcon
                           name="i-lucide-check"
                           class="size-4.5 text-primary"
-                          :aria-label="`Included in ${plan === 'free' ? 'Personal Free' : plan === 'pro' ? 'Personal Pro' : 'Team'}`"
                         />
+                        <span class="sr-only">Included</span>
                       </template>
                       <template v-else>
                         <UIcon
                           name="i-lucide-minus"
                           class="size-4.5 text-dimmed"
-                          :aria-label="`Not in ${plan === 'free' ? 'Personal Free' : plan === 'pro' ? 'Personal Pro' : 'Team'}`"
                         />
+                        <span class="sr-only">Not included</span>
                       </template>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-          </details>
-        </div>
+          </section>
+        </details>
       </div>
     </section>
 

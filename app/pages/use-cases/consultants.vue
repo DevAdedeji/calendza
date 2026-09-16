@@ -2,7 +2,7 @@
 import { seoLandingPages } from '@/data/seo-landing-pages'
 
 definePageMeta({ layout: 'default' })
-const page = seoLandingPages['/solutions/paid-appointments']!
+const page = seoLandingPages['/use-cases/consultants']!
 </script>
 
 <template>

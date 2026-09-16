@@ -21,6 +21,8 @@ import { useEnv } from '@@/server/config/env'
 import { logEvent } from '@@/server/observability/logger'
 import { paginationMeta } from '#shared/pagination'
 import { addToInstant, subtractFromInstant, unixSeconds } from '@@/server/utils/date-time'
+import { consumeRateLimit } from '@@/server/services/rate-limit'
+import { WORKFLOW_DELIVERY_PER_HOUR } from '#shared/usage-protection'
 
 export type WorkflowScope = { userId: string, organizationId?: never } | { organizationId: string, userId?: never }
 export type WorkflowExecutor = Pick<Database, 'insert' | 'update'>
@@ -112,10 +114,6 @@ export async function listWorkflows(scope: WorkflowScope, page: number, pageSize
 
 export async function createWorkflow(scope: WorkflowScope, createdByUserId: string, input: WorkflowInput) {
   const db = useDatabase()
-  const [total] = await db.select({ value: count() }).from(automationWorkflows).where(scopeWhere(scope))
-  if ((total?.value ?? 0) >= 50) {
-    throw new WorkflowServiceError(409, 'This workspace has reached the 50 workflow limit.')
-  }
   await assertEventTypeInScope(scope, input.eventTypeId)
   const webhookSecret = input.action.type === 'webhook' ? `whsec_${randomBytes(32).toString('base64url')}` : null
   if (input.action.type === 'webhook') await validateWebhookDestination(input.action.url)
@@ -457,6 +455,20 @@ export async function processAutomationRuns(batchSize = 20) {
       if (['before_start', 'after_end'].includes(workflow.trigger) && booking.status !== 'confirmed') {
         await db.update(automationRuns).set({ status: 'cancelled', lockedAt: null, updatedAt: sql`now()` })
           .where(eq(automationRuns.id, run.id))
+        continue
+      }
+      const allowance = await consumeRateLimit(
+        `workflow-delivery:${workflow.organizationId ? `team:${workflow.organizationId}` : `user:${workflow.userId}`}`,
+        WORKFLOW_DELIVERY_PER_HOUR,
+        3600
+      )
+      if (!allowance.allowed) {
+        await db.update(automationRuns).set({
+          status: 'pending', lockedAt: null, availableAt: allowance.expiresAt,
+          attempts: sql`${automationRuns.attempts} - 1`,
+          lastError: 'Queued until the workspace workflow delivery window resets.',
+          updatedAt: sql`now()`
+        }).where(and(eq(automationRuns.id, run.id), eq(automationRuns.status, 'processing')))
         continue
       }
       if (workflow.action.type === 'email') await deliverEmail(run.id, workflow.action, booking)

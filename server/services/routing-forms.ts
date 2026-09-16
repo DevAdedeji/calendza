@@ -11,6 +11,7 @@ import {
   users
 } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
+import { paginationMeta } from '#shared/pagination'
 
 export type RoutingOwner
   = | { userId: string, organizationId?: never }
@@ -35,8 +36,10 @@ export async function routingEventOptions(owner: RoutingOwner) {
     .orderBy(asc(eventTypes.title))
 }
 
-export async function listRoutingForms(owner: RoutingOwner) {
-  const forms = await useDatabase().select({
+export async function listRoutingForms(owner: RoutingOwner, page: number, pageSize: number) {
+  const db = useDatabase()
+  const [total] = await db.select({ value: count() }).from(routingForms).where(ownerWhere(owner))
+  const forms = await db.select({
     id: routingForms.id,
     slug: routingForms.slug,
     title: routingForms.title,
@@ -48,7 +51,9 @@ export async function listRoutingForms(owner: RoutingOwner) {
   }).from(routingForms)
     .innerJoin(eventTypes, eq(eventTypes.id, routingForms.defaultEventTypeId))
     .where(ownerWhere(owner))
-    .orderBy(desc(routingForms.createdAt))
+    .orderBy(desc(routingForms.createdAt), desc(routingForms.id))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize)
 
   const responseCounts = forms.length
     ? await useDatabase().select({ formId: routingResponses.formId, value: count() })
@@ -57,11 +62,12 @@ export async function listRoutingForms(owner: RoutingOwner) {
         .groupBy(routingResponses.formId)
     : []
   const counts = new Map(responseCounts.map(row => [row.formId, row.value]))
-  return forms.map(form => ({
+  const items = forms.map(form => ({
     ...form,
     responseCount: counts.get(form.id) ?? 0,
     createdAt: form.createdAt.toISOString()
   }))
+  return { items, pagination: paginationMeta(total?.value ?? 0, page, pageSize) }
 }
 
 export async function getRoutingForm(owner: RoutingOwner, id: string) {
@@ -87,10 +93,6 @@ async function validateTargets(owner: RoutingOwner, input: RoutingFormInput, exe
 
 export async function createRoutingForm(owner: RoutingOwner, input: RoutingFormInput) {
   return useDatabase().transaction(async (tx) => {
-    const [total] = await tx.select({ value: count() }).from(routingForms).where(ownerWhere(owner))
-    if ((total?.value ?? 0) >= 20) {
-      throw createError({ statusCode: 409, statusMessage: 'You have reached the 20 routing form limit.' })
-    }
     await validateTargets(owner, input, tx)
     const [form] = await tx.insert(routingForms).values({
       ...owner,

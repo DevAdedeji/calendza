@@ -5,7 +5,7 @@ const props = defineProps<{ page: SeoLandingPageContent }>()
 const origin = useRuntimeConfig().public.siteUrl || useRequestURL().origin
 const canonical = `${origin.replace(/\/$/, '')}${props.page.path}`
 const { isSignedIn, accountDestination } = await useLandingNavigation()
-const sectionName = props.page.path.startsWith('/features/') ? 'Features' : props.page.path.startsWith('/compare/') ? 'Compare' : 'Solutions'
+const sectionName = props.page.path.startsWith('/features/') ? 'Features' : props.page.path.startsWith('/compare/') ? 'Compare' : 'Use cases'
 
 useSeoMeta({
   title: props.page.metaTitle,
@@ -76,7 +76,12 @@ useHead({
             name="i-lucide-chevron-right"
             class="size-3.5"
           />
-          <span>{{ sectionName }}</span>
+          <NuxtLink
+            v-if="sectionName === 'Use cases'"
+            to="/#use-cases"
+            class="transition-colors hover:text-highlighted"
+          >{{ sectionName }}</NuxtLink>
+          <span v-else>{{ sectionName }}</span>
           <UIcon
             name="i-lucide-chevron-right"
             class="size-3.5"
@@ -101,21 +106,41 @@ useHead({
                 size="xl"
                 class="rounded-full px-7 font-medium"
               >
-                {{ isSignedIn ? 'Go to dashboard' : 'Create your booking page' }}
+                {{ isSignedIn ? 'Go to dashboard' : page.ctaLabel || 'Create your booking page' }}
               </UButton>
               <UButton
-                to="/features"
+                :to="page.walkthrough ? '#booking-example' : '/features'"
                 size="xl"
                 color="neutral"
                 variant="outline"
                 class="rounded-full px-7 font-medium"
               >
-                Explore features
+                {{ page.walkthrough ? 'See a booking example' : 'Explore features' }}
               </UButton>
             </div>
           </div>
 
-          <aside class="rounded-2xl border border-default bg-default p-6 sm:p-8">
+          <aside
+            v-if="page.walkthrough"
+            class="rounded-2xl border border-default bg-default p-6 sm:p-8"
+          >
+            <p class="eyebrow text-dimmed">
+              The problem it solves
+            </p>
+            <h2 class="mt-5 text-xl font-semibold text-highlighted">
+              {{ page.problemTitle }}
+            </h2>
+            <p class="mt-3 text-[16px] leading-relaxed text-muted">
+              {{ page.problemDescription }}
+            </p>
+            <p class="mt-5 border-t border-default pt-5 text-sm leading-relaxed text-muted">
+              For {{ page.useCases.join(', ').toLowerCase() }}.
+            </p>
+          </aside>
+          <aside
+            v-else
+            class="rounded-2xl border border-default bg-default p-6 sm:p-8"
+          >
             <p class="eyebrow text-dimmed">
               Built for
             </p>
@@ -137,7 +162,86 @@ useHead({
       </div>
     </section>
 
-    <section class="border-b border-default bg-default">
+    <section
+      v-if="page.walkthrough"
+      id="booking-example"
+      aria-labelledby="booking-example-title"
+      class="scroll-mt-24 border-b border-default bg-default"
+    >
+      <div class="mx-auto max-w-312 px-6 py-14 lg:px-10 lg:py-20">
+        <p class="eyebrow text-primary">
+          See it in practice
+        </p>
+        <h2
+          id="booking-example-title"
+          class="mt-5 max-w-3xl font-editorial text-[clamp(2.1rem,5vw,3.5rem)] leading-tight text-highlighted"
+        >
+          {{ page.walkthrough.title }}
+        </h2>
+        <p class="mt-5 max-w-[68ch] text-[17px] leading-relaxed text-toned">
+          {{ page.walkthrough.description }}
+        </p>
+        <p class="mt-3 max-w-[80ch] text-sm leading-relaxed text-muted">
+          {{ page.walkthrough.note }}
+        </p>
+        <div class="mt-10 space-y-12">
+          <article
+            v-for="scene in page.walkthrough.scenes"
+            :key="scene.title"
+            class="grid min-w-0 items-center gap-6"
+            :class="scene.screenshot ? 'lg:grid-cols-[1.6fr_1fr] lg:gap-10' : 'rounded-2xl border border-default bg-muted p-6 sm:p-8'"
+          >
+            <figure
+              v-if="scene.screenshot"
+              class="min-w-0"
+            >
+              <figcaption class="mb-3 text-sm text-muted sm:hidden">
+                Swipe to explore, or use the full-size link below.
+              </figcaption>
+              <div
+                tabindex="0"
+                role="region"
+                :aria-label="`${scene.title} screenshot. Scroll horizontally to explore.`"
+                class="overflow-x-auto overscroll-x-contain rounded-2xl border border-default bg-muted focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary"
+              >
+                <img
+                  :src="scene.screenshot.src"
+                  :alt="scene.screenshot.alt"
+                  :width="scene.screenshot.width"
+                  :height="scene.screenshot.height"
+                  loading="lazy"
+                  decoding="async"
+                  class="block h-auto w-full min-w-176 sm:min-w-0"
+                >
+              </div>
+            </figure>
+            <div>
+              <h3 class="text-xl font-semibold tracking-tight text-highlighted">
+                {{ scene.title }}
+              </h3>
+              <p class="mt-3 max-w-[55ch] text-base leading-relaxed text-toned">
+                {{ scene.description }}
+              </p>
+              <a
+                v-if="scene.screenshot"
+                :href="scene.screenshot.src"
+                target="_blank"
+                rel="noopener noreferrer"
+                :aria-label="`View full-size screenshot: ${scene.title} (opens in a new tab)`"
+                class="mt-4 inline-block text-sm font-medium text-primary underline underline-offset-4"
+              >
+                View full-size screenshot
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section
+      v-if="!page.walkthrough"
+      class="border-b border-default bg-default"
+    >
       <div class="mx-auto max-w-312 px-6 py-20 lg:px-10 lg:py-24">
         <div class="max-w-3xl">
           <p class="eyebrow text-primary">
@@ -178,10 +282,10 @@ useHead({
       <div class="mx-auto grid max-w-312 gap-12 px-6 py-20 lg:grid-cols-[0.7fr_1.3fr] lg:gap-20 lg:px-10 lg:py-24">
         <div>
           <p class="eyebrow text-dimmed">
-            How it works
+            {{ page.walkthrough ? 'Get started' : 'How it works' }}
           </p>
           <h2 class="mt-5 max-w-[14ch] font-editorial text-[clamp(2.35rem,5vw,3.75rem)] leading-[1.03] tracking-[-0.02em] text-highlighted">
-            A clear path from setup to booked.
+            {{ page.walkthrough ? 'Set it up in three steps.' : 'A clear path from setup to booked.' }}
           </h2>
         </div>
 
@@ -277,6 +381,24 @@ useHead({
             <p class="mt-3 text-[15px] leading-relaxed text-muted">
               {{ item.description }}
             </p>
+          </NuxtLink>
+        </div>
+        <div
+          v-if="page.walkthrough"
+          class="mt-12 flex flex-wrap items-center gap-4 border-t border-default pt-8"
+        >
+          <UButton
+            :to="accountDestination"
+            size="xl"
+            class="max-w-full whitespace-normal rounded-full px-7"
+          >
+            {{ isSignedIn ? 'Go to dashboard' : page.ctaLabel }}
+          </UButton>
+          <NuxtLink
+            to="/pricing"
+            class="text-sm font-medium text-primary underline underline-offset-4"
+          >
+            See plans and what is included
           </NuxtLink>
         </div>
       </div>

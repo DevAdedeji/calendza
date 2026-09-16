@@ -19,7 +19,7 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
 
 <template>
   <div class="bg-muted">
-    <section class="border-b border-default">
+    <section class="border-b border-default bg-default">
       <div class="mx-auto max-w-312 px-6 py-20 text-center lg:px-10 lg:py-28">
         <p class="eyebrow text-primary">
           Calendza features
@@ -89,12 +89,20 @@ useHead({ link: [{ rel: 'canonical', href: canonical }] })
             <p class="mt-3 text-[15px] leading-relaxed text-muted">
               {{ feature.summary }}
             </p>
+            <NuxtLink
+              v-if="feature.to"
+              :to="feature.to"
+              :aria-label="`Learn more about ${feature.title.toLowerCase()}`"
+              class="mt-4 inline-block text-sm font-medium text-primary underline underline-offset-4"
+            >
+              Learn more
+            </NuxtLink>
           </article>
         </div>
       </div>
     </section>
 
-    <section>
+    <section class="bg-default">
       <div class="mx-auto max-w-312 px-6 py-20 text-center lg:px-10 lg:py-24">
         <h2 class="font-editorial text-[clamp(2.5rem,5vw,4rem)] leading-none text-highlighted">
           Your next meeting can be easier.

@@ -4,6 +4,7 @@ import type { EventTypesResponse, TeamEventTypesResponse } from '@/services/api/
 import { compactActionMenuUi } from '@/utils/action-menu'
 import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 import { WORKFLOW_OFFSET_OPTIONS, WORKFLOW_RECIPIENT_OPTIONS, WORKFLOW_TRIGGER_OPTIONS } from '@/constants/workflows'
+import { WORKFLOW_DELIVERY_PER_HOUR } from '#shared/usage-protection'
 
 const props = defineProps<{
   teamSlug?: string
@@ -70,6 +71,11 @@ watch(modalOpen, async (open) => {
         </UButton>
       </template>
     </PageHeader>
+    <p class="text-sm leading-relaxed text-muted">
+      Create as many workflows as you need. This workspace starts up to {{ WORKFLOW_DELIVERY_PER_HOUR }}
+      email or webhook action attempts per hour, including retries. Additional actions stay queued
+      for a later window. Built-in booking confirmations and reminders are separate.
+    </p>
 
     <section class="overflow-hidden rounded-xl border border-default bg-default">
       <AsyncErrorState

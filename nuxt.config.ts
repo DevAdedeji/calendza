@@ -37,10 +37,22 @@ export default defineNuxtConfig({
     '/features': publicPage(),
     '/features/booking-widget': publicPage(),
     '/pricing': publicPage(),
-    '/solutions/consultants': publicPage(),
-    '/solutions/small-business': publicPage(),
-    '/solutions/paid-appointments': publicPage(),
-    '/solutions/team-scheduling': publicPage(),
+    '/use-cases/consultants': publicPage(),
+    '/use-cases/small-business': publicPage(),
+    '/use-cases/paid-appointments': publicPage(),
+    '/use-cases/team-scheduling': publicPage(),
+    '/solutions/consultants': {
+      redirect: { to: '/use-cases/consultants', statusCode: 301 }
+    },
+    '/solutions/small-business': {
+      redirect: { to: '/use-cases/small-business', statusCode: 301 }
+    },
+    '/solutions/paid-appointments': {
+      redirect: { to: '/use-cases/paid-appointments', statusCode: 301 }
+    },
+    '/solutions/team-scheduling': {
+      redirect: { to: '/use-cases/team-scheduling', statusCode: 301 }
+    },
     '/compare/calendly-alternative': publicPage(),
     '/privacy': publicPage(),
     '/terms': publicPage(),

@@ -12,43 +12,73 @@ export interface SeoLandingPageContent {
   useCases: string[]
   faqs: Array<{ question: string, answer: string }>
   related: Array<{ label: string, description: string, to: string }>
+  ctaLabel?: string
+  walkthrough?: {
+    title: string
+    description: string
+    note: string
+    scenes: Array<{
+      title: string
+      description: string
+      screenshot?: {
+        src: string
+        alt: string
+        width: number
+        height: number
+      }
+    }>
+  }
 }
 
 export const seoLandingPages: Record<string, SeoLandingPageContent> = {
-  '/solutions/consultants': {
-    path: '/solutions/consultants',
-    eyebrow: 'Scheduling for consultants',
+  '/use-cases/consultants': {
+    path: '/use-cases/consultants',
+    eyebrow: 'Client consultations',
     metaTitle: 'Online Scheduling Software for Consultants',
     metaDescription: 'Let consulting clients book the right meeting, pay when required and receive automatic reminders with Calendza scheduling software.',
-    headline: 'Spend less time scheduling. More time consulting.',
-    intro: 'Give every prospect and client one clear place to choose the right call, see your real availability and confirm a time in their own timezone.',
-    problemTitle: 'A professional booking flow without the calendar admin',
-    problemDescription: 'Calendza handles the repetitive work around a consulting meeting while you keep control of your availability, meeting formats and client experience.',
+    headline: 'Book client consultations.',
+    ctaLabel: 'Create your consultation link',
+    walkthrough: {
+      title: 'From “Can we talk?” to a booked consultation.',
+      description: 'You offer a free 15-minute discovery call and a paid 60-minute advisory session. Give each its own link so clients know what they are booking.',
+      note: 'Actual Calendza interface with fictional demo details. This example does not create a booking.',
+      scenes: [{
+        title: 'Your client sees when you are available',
+        description: 'Send your discovery-call link. Your client picks an available time, answers your questions and receives a confirmation. You both have the details without another email thread.',
+        screenshot: {
+          src: '/images/solutions/consultation-desktop.jpg',
+          alt: 'Calendza discovery-call booking page for demo consultant Ada, showing a 15-minute meeting and available times.',
+          width: 1100, height: 820
+        }
+      }]
+    },
+    intro: 'Let clients choose a time for a discovery call or advisory session. Calendza checks your availability and sends the booking details.',
+    problemTitle: 'Too much back-and-forth before the call?',
+    problemDescription: 'Instead of exchanging possible times, share a booking link. Clients see when you are free in their own timezone.',
     benefits: [
       { title: 'One link, several meeting lengths', description: 'Offer a focused call or a longer working session from the same event type without maintaining duplicate links.', icon: 'i-lucide-timer' },
       { title: 'Charge for your time', description: 'Collect payment for paid appointments and keep the booking connected to its payment status.', icon: 'i-lucide-wallet-cards' },
       { title: 'Follow-ups that run themselves', description: 'Send confirmations, reminders and workflow emails without manually chasing every client.', icon: 'i-lucide-workflow' }
     ],
     steps: [
-      { title: 'Choose your meeting formats', description: 'Create discovery calls, advisory sessions or recurring client check-ins with the durations you actually use.' },
-      { title: 'Connect your working calendar', description: 'Calendza checks connected calendars and only offers times that remain available.' },
-      { title: 'Share one clear next step', description: 'Place your booking link in proposals, email signatures and your website so clients can book without another email thread.' }
+      { title: 'Create a consultation', description: 'Add an event type with a name, duration, meeting location and any questions for your client.' },
+      { title: 'Set when you are available', description: 'Choose your working hours and connect the calendars Calendza should check for conflicts.' },
+      { title: 'Share your link', description: 'Send it to a client or add it to your email signature. They choose a time and receive a confirmation.' }
     ],
     useCases: ['Independent consultants', 'Coaches and advisors', 'Freelance specialists', 'Agencies offering consultations'],
     faqs: [
       { question: 'Can clients choose between different meeting lengths?', answer: 'Yes. One event type can offer its main duration plus additional durations, so clients choose without making you manage several nearly identical links.' },
       { question: 'Can I require payment before confirming a consultation?', answer: 'Yes. Paid event types connect the reservation to its checkout so the appointment is not treated as paid until the payment provider confirms it.' },
-      { question: 'Will Calendza handle client timezones?', answer: 'Yes. Guests see available times in their own timezone while your availability remains tied to the timezone you configured.' },
-      { question: 'Can I send reminders automatically?', answer: 'Yes. Event reminders and workflows can send the right message before or after a booking without manual follow-up.' }
+      { question: 'Can I start on the Free plan?', answer: 'Yes. Free includes event types, calendar connections, reminders and paid bookings. Personal Pro adds branding, revenue reports and a lower fee on personal paid bookings. See Pricing for the details.' }
     ],
     related: [
-      { label: 'Paid appointments', description: 'Connect scheduling and payment in one flow.', to: '/solutions/paid-appointments' },
+      { label: 'Get paid for appointments', description: 'See how a client books and pays for a session.', to: '/use-cases/paid-appointments' },
       { label: 'Booking widget', description: 'Let clients book without leaving your website.', to: '/features/booking-widget' },
       { label: 'Explore every feature', description: 'See scheduling, analytics, workflows and integrations.', to: '/features' }
     ]
   },
-  '/solutions/small-business': {
-    path: '/solutions/small-business',
+  '/use-cases/small-business': {
+    path: '/use-cases/small-business',
     eyebrow: 'Scheduling for small businesses',
     metaTitle: 'Appointment Scheduling for Small Businesses',
     metaDescription: 'Accept appointments online, reduce scheduling messages and coordinate staff availability with Calendza for small businesses.',
@@ -74,71 +104,122 @@ export const seoLandingPages: Record<string, SeoLandingPageContent> = {
       { question: 'Can we see how the team is performing?', answer: 'Yes. Team analytics show booking activity and can be exported according to each member’s permissions.' }
     ],
     related: [
-      { label: 'Team scheduling', description: 'Coordinate shared availability and assignment.', to: '/solutions/team-scheduling' },
-      { label: 'Paid appointments', description: 'Collect payment as part of booking.', to: '/solutions/paid-appointments' },
+      { label: 'Team scheduling', description: 'Coordinate shared availability and assignment.', to: '/use-cases/team-scheduling' },
+      { label: 'Paid appointments', description: 'Collect payment as part of booking.', to: '/use-cases/paid-appointments' },
       { label: 'Pricing', description: 'Compare personal and team plans.', to: '/pricing' }
     ]
   },
-  '/solutions/paid-appointments': {
-    path: '/solutions/paid-appointments',
-    eyebrow: 'Paid appointment booking',
+  '/use-cases/paid-appointments': {
+    path: '/use-cases/paid-appointments',
+    eyebrow: 'Paid appointments',
     metaTitle: 'Paid Appointment Booking Software',
     metaDescription: 'Create paid booking links, confirm appointments after payment and track refunds and settlements with Calendza.',
-    headline: 'Get the booking and the payment in one clear flow.',
-    intro: 'Set a price on an event type and let clients reserve and pay without separating your calendar from your checkout.',
-    problemTitle: 'Know which appointments are actually paid',
-    problemDescription: 'Calendza links each checkout to one booking and waits for verified provider confirmation, giving you a reliable record instead of trusting a browser success screen.',
+    headline: 'Get paid for appointments.',
+    intro: 'Set a price for your session. Your client chooses a time and pays, and Calendza confirms the appointment after payment is verified.',
+    problemTitle: 'Still chasing payment after booking?',
+    problemDescription: 'Keep payment in the booking flow instead of sending separate payment instructions and checking who has paid.',
+    ctaLabel: 'Create a paid appointment',
+    walkthrough: {
+      title: 'A ₦15,000 advisory session, from booking to payment.',
+      description: 'A client wants your 60-minute advisory session. They see the ₦15,000 price, choose a time and continue to checkout.',
+      note: 'Actual Calendza interface with fictional demo details. ₦15,000 is an example appointment price, not a Calendza subscription price. No money was charged for these screenshots.',
+      scenes: [
+        {
+          title: 'The price is clear before checkout',
+          description: 'Set the appointment price and currency in your event settings. Guests choose an available time and enter their details before continuing to payment.',
+          screenshot: {
+            src: '/images/solutions/paid-booking-desktop.jpg',
+            alt: 'Calendza demo advisory-session booking page showing a 60-minute appointment priced at NGN 15,000.',
+            width: 1100, height: 820
+          }
+        },
+        {
+          title: 'Keep the booking and payment together',
+          description: 'Once payment is verified, the booking is confirmed and marked paid. The booking record keeps the appointment and its payment status together.',
+          screenshot: {
+            src: '/images/solutions/paid-confirmation-desktop.jpg',
+            alt: 'Calendza booking details for a fictional advisory session showing a confirmed booking and a paid NGN 15,000 payment.',
+            width: 1100, height: 820
+          }
+        }
+      ]
+    },
     benefits: [
-      { title: 'Payment-linked reservations', description: 'A paid appointment keeps its amount, currency and checkout state attached to the booking.', icon: 'i-lucide-calendar-check' },
+      { title: 'Know who has paid', description: 'See the price, currency and payment status alongside the appointment they belong to.', icon: 'i-lucide-calendar-check' },
       { title: 'Clear financial history', description: 'Review confirmed payments, fees, settlement information, withdrawals and refund progress.', icon: 'i-lucide-receipt-text' },
-      { title: 'Safe failure recovery', description: 'Expired holds and failed refunds remain visible so they can be reconciled instead of silently disappearing.', icon: 'i-lucide-shield-check' }
+      { title: 'Know when something needs attention', description: 'See unfinished payments and refund problems instead of assuming every checkout succeeded.', icon: 'i-lucide-shield-check' }
     ],
     steps: [
-      { title: 'Connect a payment recipient', description: 'Complete the payment-provider setup for your personal account or team.' },
+      { title: 'Set up payments', description: 'Open Payments and complete the Bachs account setup and any required verification for yourself or your team.' },
       { title: 'Set the appointment price', description: 'Choose a supported collection currency and show the price before a guest selects a time.' },
-      { title: 'Let confirmation follow payment', description: 'Calendza holds the slot during checkout and confirms the booking from verified payment state.' }
+      { title: 'Share your booking link', description: 'Your client picks a time and pays. Calendza temporarily holds the slot during checkout and confirms it after payment is verified.' }
     ],
     useCases: ['Paid consultations', 'Coaching sessions', 'Classes and workshops', 'Professional advisory calls'],
     faqs: [
-      { question: 'Is a booking confirmed just because the customer returns from checkout?', answer: 'No. Calendza uses verified payment-provider state as the source of truth before treating a paid reservation as successful.' },
-      { question: 'What happens if checkout is abandoned?', answer: 'The slot is held for a limited period. If payment is not completed, the hold expires so the time can become available again.' },
-      { question: 'Can teams collect payments?', answer: 'Yes. A team can connect its payment recipient and use paid team event types independently of a member’s personal plan.' },
-      { question: 'Can I track a refund?', answer: 'Yes. Refunds retain requested, processing, successful or failed state rather than being shown as complete before the provider confirms them.' }
+      { question: 'Which currencies can I price appointments in?', answer: 'Paid event types support Nigerian naira (NGN) and US dollars (USD). You choose the appointment currency in the event settings; it is separate from the currency used for your Calendza subscription.' },
+      { question: 'Do I need a paid plan, and are there fees?', answer: 'Paid bookings are available on Free with a 5% platform fee. Personal Pro lowers the fee on personal paid bookings to 2.5%; team paid bookings use 5%. Payment-provider fees are separate. Complete the Bachs setup and required verification before collecting payments.' },
+      { question: 'What if the client does not finish paying?', answer: 'The appointment is confirmed only after payment is verified. An unpaid slot hold expires so someone else can book the time.' },
+      { question: 'When will the money reach my bank?', answer: 'Not immediately after a booking is paid. Funds first settle with Bachs. Once funds are available and your payout destination is approved, you can request a withdrawal. Processing time and any currency conversion depend on the provider and destination.' }
     ],
     related: [
-      { label: 'Consultant scheduling', description: 'Turn expertise into bookable sessions.', to: '/solutions/consultants' },
-      { label: 'Small-business scheduling', description: 'Organise staff and customer appointments.', to: '/solutions/small-business' },
-      { label: 'Pricing', description: 'See the plans that include advanced tools.', to: '/pricing' }
+      { label: 'Book client consultations', description: 'Start with a discovery call or advisory session.', to: '/use-cases/consultants' },
+      { label: 'Schedule as a team', description: 'Let clients book the right available teammate.', to: '/use-cases/team-scheduling' },
+      { label: 'Pricing', description: 'Compare plans and paid-booking fees.', to: '/pricing' }
     ]
   },
-  '/solutions/team-scheduling': {
-    path: '/solutions/team-scheduling',
+  '/use-cases/team-scheduling': {
+    path: '/use-cases/team-scheduling',
     eyebrow: 'Team scheduling software',
     metaTitle: 'Round-Robin and Team Scheduling Software',
     metaDescription: 'Distribute meetings with round-robin scheduling, coordinate collective events and manage team booking links with Calendza.',
-    headline: 'Route every meeting to the right available teammate.',
-    intro: 'Create team booking pages that respect each member’s calendar while keeping shared event types, branding and reporting organised.',
-    problemTitle: 'Shared scheduling without a shared-calendar mess',
-    problemDescription: 'Team members keep their own availability. Calendza combines it only when a shared booking needs to choose or coordinate hosts.',
+    headline: 'Schedule as a team.',
+    ctaLabel: 'Set up team scheduling',
+    walkthrough: {
+      title: 'One teammate, or everyone together?',
+      description: 'A sales call needs one available teammate. A panel interview needs everyone together. Here is how the same team can offer both.',
+      note: 'Actual Calendza interface with a fictional demo team. Example meetings are not live booking links.',
+      scenes: [
+        {
+          title: 'Round robin: one available teammate',
+          description: 'Three salespeople share a discovery-call link. A client picks a time and Calendza assigns an available host. This is called round-robin scheduling.',
+          screenshot: {
+            src: '/images/solutions/team-setup-desktop.jpg',
+            alt: 'Calendza demo team event settings showing round-robin scheduling and three selected hosts.',
+            width: 1100, height: 820
+          }
+        },
+        {
+          title: 'Collective: everyone needed for the meeting',
+          description: 'An interview needs two panel members. Calendza only offers times when both can attend. This is called collective scheduling.',
+          screenshot: {
+            src: '/images/solutions/team-booking-desktop.jpg',
+            alt: 'Calendza demo team interview booking page showing times available for a collective meeting.',
+            width: 1100, height: 820
+          }
+        }
+      ]
+    },
+    intro: 'Give customers one booking link, whether they need any available teammate or several people in the same meeting.',
+    problemTitle: 'Whose calendar should the customer use?',
+    problemDescription: 'They do not need to choose. A shared link checks the hosts’ availability and offers the right times for that meeting.',
     benefits: [
       { title: 'Round-robin distribution', description: 'Offer times from available team members and distribute new meetings through a fair assignment flow.', icon: 'i-lucide-refresh-cw' },
       { title: 'Collective meetings', description: 'Find a time when every required host is free for panels, onboarding or multi-person calls.', icon: 'i-lucide-users-round' },
       { title: 'Managed event templates', description: 'Give selected members consistent booking links while allowing controlled personalisation.', icon: 'i-lucide-layout-template' }
     ],
     steps: [
-      { title: 'Create the team workspace', description: 'Invite members and assign clear owner, administrator and member permissions.' },
-      { title: 'Choose how hosts are assigned', description: 'Use one host, round robin or collective availability for each team event type.' },
-      { title: 'Measure and improve', description: 'Review team booking analytics and export the data each role is allowed to see.' }
+      { title: 'Invite your teammates', description: 'Create a team. Each host sets availability and connects the calendars to check for conflicts.' },
+      { title: 'Create a shared event', description: 'Choose round robin for one available host, or collective for everyone who must attend.' },
+      { title: 'Share the team link', description: 'Customers choose a time without comparing calendars. The assigned hosts receive the booking details.' }
     ],
     useCases: ['Sales and discovery teams', 'Customer onboarding', 'Recruiting panels', 'Agencies with shared services'],
     faqs: [
-      { question: 'What is round-robin scheduling?', answer: 'Round robin offers times from a group of eligible hosts and assigns a booking to an available member instead of sending every meeting to one person.' },
-      { question: 'What is collective scheduling?', answer: 'Collective scheduling only offers times when all required hosts are available, which is useful when several team members must attend together.' },
       { question: 'Do team members lose their personal booking pages?', answer: 'No. Team membership and personal scheduling are separate. A member can keep personal event types while also hosting team event types.' },
-      { question: 'Can team administrators standardise event types?', answer: 'Yes. Managed templates can create consistent member links and keep administrator-controlled fields synchronised.' }
+      { question: 'Can team administrators standardise event types?', answer: 'Yes. Managed templates can create consistent member links and keep administrator-controlled fields synchronised.' },
+      { question: 'Which plan do we need?', answer: 'Shared team scheduling uses a Team subscription, with a trial available. Personal Pro alone does not provide a team workspace subscription. See Pricing for current regional prices and billing options.' }
     ],
     related: [
-      { label: 'Small-business scheduling', description: 'Build a customer-friendly appointment flow.', to: '/solutions/small-business' },
+      { label: 'Book client consultations', description: 'See the booking flow for individual client calls.', to: '/use-cases/consultants' },
       { label: 'Booking widget', description: 'Embed team booking into your website.', to: '/features/booking-widget' },
       { label: 'Explore every feature', description: 'See workflows, routing, analytics and more.', to: '/features' }
     ]
@@ -170,8 +251,8 @@ export const seoLandingPages: Record<string, SeoLandingPageContent> = {
       { question: 'Will visitors see times in their timezone?', answer: 'Yes. The booking flow presents availability using the guest’s selected timezone while preserving the host’s scheduling rules.' }
     ],
     related: [
-      { label: 'Consultant scheduling', description: 'Make consultation pages easier to convert.', to: '/solutions/consultants' },
-      { label: 'Team scheduling', description: 'Embed a shared team booking flow.', to: '/solutions/team-scheduling' },
+      { label: 'Consultant scheduling', description: 'Make consultation pages easier to convert.', to: '/use-cases/consultants' },
+      { label: 'Team scheduling', description: 'Embed a shared team booking flow.', to: '/use-cases/team-scheduling' },
       { label: 'All Calendza features', description: 'Explore everything around the booking widget.', to: '/features' }
     ]
   },
@@ -203,7 +284,7 @@ export const seoLandingPages: Record<string, SeoLandingPageContent> = {
     ],
     related: [
       { label: 'All features', description: 'Review the complete Calendza feature set.', to: '/features' },
-      { label: 'Team scheduling', description: 'Compare shared scheduling modes.', to: '/solutions/team-scheduling' },
+      { label: 'Team scheduling', description: 'Compare shared scheduling modes.', to: '/use-cases/team-scheduling' },
       { label: 'Pricing', description: 'See personal and team plan options.', to: '/pricing' }
     ]
   }

@@ -1,4 +1,4 @@
-import { and, count, desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 import { eventTypeSchema } from '#shared/validation'
 import { eventTypes, schedules } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database/index'
@@ -22,19 +22,12 @@ export default defineEventHandler(async (event) => {
 
   const db = useDatabase()
   const { scheduleId: requestedScheduleId, ...input } = parsed.data
-  const [[total], [schedule]] = await Promise.all([
-    db.select({ value: count() }).from(eventTypes).where(eq(eventTypes.userId, session.user.id)),
-    db.select({ id: schedules.id }).from(schedules)
-      .where(requestedScheduleId
-        ? and(eq(schedules.id, requestedScheduleId), eq(schedules.userId, session.user.id))
-        : eq(schedules.userId, session.user.id))
-      .orderBy(desc(schedules.isDefault), desc(schedules.createdAt))
-      .limit(1)
-  ])
-
-  if ((total?.value ?? 0) >= 50) {
-    throw createError({ statusCode: 409, statusMessage: 'You have reached the 50 event type limit.' })
-  }
+  const [schedule] = await db.select({ id: schedules.id }).from(schedules)
+    .where(requestedScheduleId
+      ? and(eq(schedules.id, requestedScheduleId), eq(schedules.userId, session.user.id))
+      : eq(schedules.userId, session.user.id))
+    .orderBy(desc(schedules.isDefault), desc(schedules.createdAt))
+    .limit(1)
   if (!schedule) {
     throw createError({ statusCode: 409, statusMessage: 'Set your availability before creating an event type.' })
   }

@@ -3,7 +3,7 @@ definePageMeta({ layout: 'default' })
 
 useSeoMeta({
   title: 'Terms of service',
-  description: 'The terms that apply when you use Calendza scheduling and team services.'
+  description: 'The terms that apply to Calendza scheduling, subscriptions, paid appointments and connected services.'
 })
 </script>
 
@@ -11,8 +11,8 @@ useSeoMeta({
   <PublicDocument
     eyebrow="Legal"
     title="Terms built for clear expectations."
-    summary="These terms describe the rules for using Calendza, paid team plans and connected services."
-    updated="26 August 2026"
+    summary="These terms describe the rules for using Calendza, Personal Pro and Team plans, paid appointments and connected services."
+    updated="16 September 2026"
   >
     <section>
       <h2>1. Agreement</h2>
@@ -54,7 +54,7 @@ useSeoMeta({
     <section>
       <h2>4. Connected services</h2>
       <p>
-        Google, Zoom, payment providers and other integrations are separate services governed by their
+        Google, Microsoft, Apple, Zoom and payment providers are separate services governed by their
         own terms. You authorize Calendza to exchange the information and take the actions needed to
         operate an integration you connect. You can revoke that access from Calendza or the provider.
       </p>
@@ -65,17 +65,38 @@ useSeoMeta({
     </section>
 
     <section>
-      <h2>5. Paid team plans</h2>
+      <h2>5. Plans and payments</h2>
+      <h3>Personal Pro and Team subscriptions</h3>
       <p>
-        Personal scheduling is free unless the pricing page says otherwise. Paid team plans are charged
-        for members who have joined, using the billing period and currency shown at checkout. Pending
-        invitations are not billed.
+        Personal Free includes the features and limits on our <NuxtLink to="/pricing">pricing page</NuxtLink>.
+        Personal Pro is a paid individual plan. Team plans are charged for members who have joined;
+        pending invitations are not billed. The price, billing period, currency and renewal method
+        shown at checkout apply to your purchase.
       </p>
       <p>
         Card subscriptions renew automatically unless cancelled before renewal. Bank-transfer plans do
         not renew silently and require payment for each period. Taxes, currency conversion and provider
-        fees may apply where disclosed. Failed or overdue payments can place team features into a grace
-        period or read-only state, but do not immediately delete team data.
+        fees may apply where disclosed. You can manage or cancel renewal from your billing settings.
+        Cancelling renewal does not itself refund an earlier payment. Failed or overdue payments can
+        restrict paid features or place a team into a grace period or read-only state, but do not
+        immediately delete team data. Contact support for subscription payment or refund questions.
+      </p>
+      <h3>Paid appointments</h3>
+      <p>
+        Appointment charges are separate from Calendza subscriptions. Hosts set their appointment
+        prices and are responsible for providing the service and explaining any cancellation or
+        refund terms to guests before payment. Guests should review the amount and currency at checkout
+        and contact the host about the appointment or a refund request.
+      </p>
+      <p>
+        Payments are processed through Bachs. Calendza confirms payment using the provider's status,
+        not just the checkout return page. A refund request is not a completed refund; processing
+        time depends on the provider and payment method. Applicable consumer rights remain unaffected.
+      </p>
+      <p>
+        A successful booking payment is not the same as money arriving in the host's bank account.
+        Withdrawals depend on settlement, available funds, provider review and an approved destination.
+        Platform fees, provider fees and any currency conversion affect the final amount received.
       </p>
     </section>
 

@@ -83,6 +83,14 @@ describe('API request protection', () => {
     expect(sensitiveRateLimit('/api/account', 'GET')).toBeUndefined()
   })
 
+  it('throttles configuration bursts without restricting reads or bookings', () => {
+    for (const path of ['/api/event-types', '/api/event-types/id/duplicate', '/api/workflows/id', '/api/routing-forms', '/api/teams/acme/workflows', '/api/teams/acme/routing-forms/id', '/api/teams/acme/event-types']) {
+      expect(sensitiveRateLimit(path, 'POST')).toMatchObject({ namespace: 'scheduling-configuration', limit: 30, windowSeconds: 60 })
+      expect(sensitiveRateLimit(path, 'GET')).toBeUndefined()
+    }
+    expect(sensitiveRateLimit('/api/bookings', 'POST')).toBeUndefined()
+  })
+
   it('rejects malformed declared lengths', () => {
     expect(requestProtectionFailure({ ...request, contentLength: '-1' })).toMatchObject({ statusCode: 400 })
     expect(requestProtectionFailure({ ...request, contentLength: 'not-a-number' })).toMatchObject({ statusCode: 400 })

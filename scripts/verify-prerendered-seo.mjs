@@ -26,10 +26,10 @@ const routes = [
   '/features',
   '/features/booking-widget',
   '/pricing',
-  '/solutions/consultants',
-  '/solutions/small-business',
-  '/solutions/paid-appointments',
-  '/solutions/team-scheduling',
+  '/use-cases/consultants',
+  '/use-cases/small-business',
+  '/use-cases/paid-appointments',
+  '/use-cases/team-scheduling',
   '/compare/calendly-alternative',
   '/privacy',
   '/terms',
@@ -39,10 +39,10 @@ const routes = [
 
 const contentLandingRoutes = new Set([
   '/features/booking-widget',
-  '/solutions/consultants',
-  '/solutions/small-business',
-  '/solutions/paid-appointments',
-  '/solutions/team-scheduling',
+  '/use-cases/consultants',
+  '/use-cases/small-business',
+  '/use-cases/paid-appointments',
+  '/use-cases/team-scheduling',
   '/compare/calendly-alternative'
 ])
 

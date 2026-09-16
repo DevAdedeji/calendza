@@ -1,5 +1,6 @@
 import type { RoutingQuestion, RoutingFormInput, RoutingRule } from '#shared/routing'
 import { resource } from '@/services/api/http'
+import type { PaginationMeta } from '#shared/pagination'
 
 export interface RoutingFormSummary {
   id: string
@@ -20,6 +21,7 @@ export interface RoutingFormRecord extends Omit<RoutingFormInput, 'rules'> {
 
 export interface RoutingFormsResponse {
   items: RoutingFormSummary[]
+  pagination: PaginationMeta
   eventTypes: Array<{ id: string, title: string, slug: string }>
 }
 
