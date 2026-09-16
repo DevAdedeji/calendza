@@ -1,7 +1,6 @@
 import { useEnv } from '@@/server/config/env'
 import { fetchWithTimeout } from '@@/server/integrations/fetch'
 import nodemailer from 'nodemailer'
-import { logEvent } from '@@/server/observability/logger'
 
 let smtpTransport: ReturnType<typeof nodemailer.createTransport> | null = null
 
@@ -199,16 +198,23 @@ export function renderEmailText(email: Email) {
 
 export async function sendEmail(email: Email, idempotencyKey?: string) {
   const env = useEnv()
+  const html = renderEmailHtml(email)
+  const text = renderEmailText(email)
 
   if (env.emailDeliveryMode === 'log') {
-    logEvent('info', 'email_delivery_skipped', {
-      reason: 'No transactional email transport is configured'
+    if (env.environment !== 'development') {
+      throw new Error('Email previews are only allowed in development.')
+    }
+    // Keep private action links in local previews, not the shared production logger.
+    console.info('[email:development] Preview only; no email sent', {
+      from: env.emailFrom,
+      to: email.to,
+      subject: email.subject,
+      details: email.details,
+      text
     })
     return
   }
-
-  const html = renderEmailHtml(email)
-  const text = renderEmailText(email)
 
   if (env.emailDeliveryMode === 'smtp') {
     smtpTransport ??= nodemailer.createTransport(env.smtpUrl!)
