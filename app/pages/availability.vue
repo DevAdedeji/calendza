@@ -192,8 +192,6 @@ function timeMinutes(value: string) {
       {{ pageError }}
     </p>
 
-    <AwayPeriodsPanel />
-
     <section class="overflow-hidden rounded-xl border border-default bg-default">
       <div class="surface-secondary flex flex-col gap-3 border-b border-default px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <ListFilter
@@ -386,6 +384,8 @@ function timeMinutes(value: string) {
         />
       </template>
     </section>
+
+    <AwayPeriodsPanel />
 
     <ScheduleEditorModal
       v-model:open="editorOpen"
