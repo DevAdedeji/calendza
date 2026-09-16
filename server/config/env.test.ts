@@ -119,6 +119,7 @@ describe('environment validation', () => {
 
     expect(useEnv().environment).toBe('production')
     expect(useEnv().billingMode).toBe('live')
+    expect(useEnv().emailDeliveryMode).toBe('resend')
   })
 
   it('allows an explicitly sandboxed portfolio deployment without weakening production protections', () => {
@@ -157,6 +158,40 @@ describe('environment validation', () => {
     process.env.EMAIL_FROM = 'Calendza <hello@calendza.example>'
 
     expect(useEnv().environment).toBe('staging')
+    expect(useEnv().emailDeliveryMode).toBe('resend')
+  })
+
+  it('logs local emails even with both Resend and SMTP credentials configured', () => {
+    process.env.RESEND_API_KEY = 're_example'
+    process.env.SMTP_URL = 'smtp://localhost:1025'
+    expect(useEnv().emailDeliveryMode).toBe('log')
+  })
+
+  it.each(['http://localhost:3002', 'http://127.0.0.1:3002', 'http://[::1]:3002'])('recognizes local email previews at %s', (url) => {
+    process.env.CALENDZA_URL = url
+    expect(useEnv()).toMatchObject({ environment: 'development', emailDeliveryMode: 'log' })
+  })
+
+  it('logs explicitly development emails without requiring a provider', () => {
+    process.env.CALENDZA_URL = 'https://dev.calendza.example'
+    process.env.CALENDZA_ENVIRONMENT = 'development'
+    expect(useEnv().emailDeliveryMode).toBe('log')
+  })
+
+  it('requires real email configuration for staging, even on a local URL', () => {
+    process.env.CALENDZA_ENVIRONMENT = 'staging'
+    expect(() => useEnv()).toThrow('Configure SMTP_URL or RESEND_API_KEY')
+    process.env.RESEND_API_KEY = 're_example'
+    expect(() => useEnv()).toThrow('EMAIL_FROM is required')
+    process.env.EMAIL_FROM = 'Calendza <hello@calendza.example>'
+    expect(useEnv().emailDeliveryMode).toBe('resend')
+  })
+
+  it('preserves the configured SMTP transport on staging', () => {
+    process.env.CALENDZA_ENVIRONMENT = 'staging'
+    process.env.SMTP_URL = 'smtp://localhost:1025'
+    process.env.EMAIL_FROM = 'Calendza <hello@calendza.example>'
+    expect(useEnv().emailDeliveryMode).toBe('smtp')
   })
 
   it('validates and exposes database connection budgets', () => {

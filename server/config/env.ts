@@ -158,7 +158,7 @@ export function useEnv(): Env {
     throw new Error('CALENDZA_URL must be an origin without credentials, a path, query, or fragment.')
   }
   const publicUrl = siteUrl
-  const local = ['localhost', '127.0.0.1', '::1'].includes(publicUrl.hostname)
+  const local = ['localhost', '127.0.0.1', '[::1]'].includes(publicUrl.hostname)
   const configuredEnvironment = optional('CALENDZA_ENVIRONMENT')
   const environment = configuredEnvironment
     ?? (local ? 'development' : /(^|\.)staging\./i.test(publicUrl.hostname) ? 'staging' : 'production')
@@ -189,10 +189,10 @@ export function useEnv(): Env {
     throw new Error('ZOOM_WEBHOOK_SECRET is required whenever Zoom is configured outside local development.')
   }
   if (smtpUrl) parseUrl('SMTP_URL', smtpUrl, ['smtp:', 'smtps:'])
-  if (!resendApiKey && !smtpUrl && !local) {
+  if (!resendApiKey && !smtpUrl && environment !== 'development') {
     throw new Error('Configure SMTP_URL or RESEND_API_KEY outside local development so account and booking emails are not lost.')
   }
-  if (!emailFrom && !local) throw new Error('EMAIL_FROM is required outside local development.')
+  if (!emailFrom && environment !== 'development') throw new Error('EMAIL_FROM is required outside local development.')
 
   cached = {
     databaseUrl: parseUrl('DATABASE_URL', process.env.DATABASE_URL!, ['postgres:', 'postgresql:']),
@@ -219,7 +219,7 @@ export function useEnv(): Env {
     zoomWebhookSecret,
     resendApiKey,
     smtpUrl,
-    emailDeliveryMode: smtpUrl ? 'smtp' : resendApiKey ? 'resend' : 'log',
+    emailDeliveryMode: environment === 'development' ? 'log' : smtpUrl ? 'smtp' : 'resend',
     emailFrom: emailFrom ?? 'Calendza <onboarding@resend.dev>',
     platformAdminEmails,
     operationsAlertEmails: operationsAlertEmails.length ? operationsAlertEmails : platformAdminEmails,
