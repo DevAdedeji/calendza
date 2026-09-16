@@ -4,7 +4,7 @@ import { bookings } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database/index'
 import { findPublicEventType, slotsFor } from '@@/server/services/booking-page'
 import type { EventTypeRow } from '@@/server/services/booking-page'
-import { bookingToReschedule } from '@@/server/services/booking-reschedule'
+import { bookingToReschedule, requireZoomRescheduleReady, transferRescheduledZoomMeeting } from '@@/server/services/booking-reschedule'
 import { queueBookingEmails, queueBookingRequestEmails, queueBookingRescheduledEmails } from '@@/server/services/booking-emails'
 import { cancelBookingReminders } from '@@/server/services/email-outbox'
 import { cancelPendingAutomationRuns, publishBookingEvent } from '@@/server/services/workflows'
@@ -194,6 +194,7 @@ export async function createPersonalBooking(input: CreateBookingInput): Promise<
         }
       }
       if (previous && previous.status !== 'cancelled') {
+        await requireZoomRescheduleReady(previous, tx)
         const [moved] = await tx
           .update(bookings)
           .set({ status: 'cancelled', cancellationReason: 'Moved to another time', updatedAt: sql`now()` })
@@ -262,6 +263,15 @@ export async function createPersonalBooking(input: CreateBookingInput): Promise<
       }).returning({ id: bookings.id })
 
       if (!created) throw new Error('Booking insert did not return a record.')
+      if (previous) {
+        await transferRescheduledZoomMeeting(previous, {
+          id: created.id,
+          hostId: eventType.hostId,
+          locationType: eventType.locationType,
+          status: awaitingPayment ? 'awaiting_payment' : eventType.requiresConfirmation ? 'pending' : 'confirmed',
+          groupSessionId: groupSession?.id ?? null
+        }, tx)
+      }
       if (awaitingPayment && payment) {
         await createPaymentRecord({
           bookingId: created.id,

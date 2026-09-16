@@ -66,7 +66,7 @@ describe.skipIf(!url)('teams', () => {
       where organization_id = ${team!.id}
     `
     expect(subscription?.status).toBe('trialing')
-    expect(subscription?.interval).toBe('yearly')
+    expect(subscription?.interval).toBe('monthly')
     expect(subscription!.trial_ends_at.getTime()).toBeGreaterThan(Date.now())
 
     const [audit] = await sql<{ action: string }[]>`
@@ -122,7 +122,7 @@ describe.skipIf(!url)('teams', () => {
     // A pending invitation costs nothing until it is accepted.
     expect(entitlement.seatsUsed).toBe(1)
     expect(entitlement.status).toBe('trialing')
-    expect(entitlement.nextInvoiceCents).toBe(8000)
+    expect(entitlement.nextInvoiceCents).toBe(800)
   })
 
   it('lets an invited person join and records it', async () => {

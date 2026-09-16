@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
       seats: organizationInvoices.seats,
       amountCents: organizationInvoices.amountCents,
       collectionCurrency: organizationInvoices.collectionCurrency,
+      collectionAmount: organizationInvoices.collectionAmount,
       periodStart: organizationInvoices.periodStart,
       periodEnd: organizationInvoices.periodEnd,
       paidAt: organizationInvoices.paidAt,

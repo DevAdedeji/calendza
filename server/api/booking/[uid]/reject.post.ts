@@ -6,6 +6,7 @@ import { assignedHostsForBooking, findBookingByUid } from '@@/server/repositorie
 import { requireAuthSession } from '@@/server/services/session'
 import { useDatabase } from '@@/server/database/index'
 import { cancelPendingAutomationRuns, publishBookingEvent } from '@@/server/services/workflows'
+import { enqueueCalendarSync } from '@@/server/services/calendar-sync'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
@@ -35,6 +36,7 @@ export default defineEventHandler(async (event) => {
     }).where(and(eq(bookings.id, booking.id), eq(bookings.status, 'pending')))
       .returning({ id: bookings.id })
     if (!rejected) throw createError({ statusCode: 409, statusMessage: 'This request was already handled.' })
+    if (booking.locationType === 'zoom') await enqueueCalendarSync(booking.id, 'delete', tx)
     await cancelPendingAutomationRuns(booking.id, tx)
     await publishBookingEvent({
       type: 'booking_rejected',

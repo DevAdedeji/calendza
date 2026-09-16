@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
+
+const { price, ready } = useSubscriptionPricing()
 withDefaults(defineProps<{
   title: string
   description: string
@@ -37,7 +40,7 @@ withDefaults(defineProps<{
         icon="i-lucide-arrow-up-right"
         class="shrink-0 rounded-full px-5 font-medium"
       >
-        Upgrade for $6/month
+        {{ ready ? `Upgrade for ${price('personal', 'monthly')}/month` : 'View Personal Pro pricing' }}
       </UButton>
     </div>
   </section>

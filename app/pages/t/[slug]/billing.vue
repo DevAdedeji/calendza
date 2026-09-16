@@ -1,16 +1,15 @@
 <script setup lang="ts">
 import {
   billableSeats,
+  DEFAULT_BILLING_INTERVAL,
   seatPriceCents,
   billingIntervals,
   billingCheckoutReason,
-  collectionCurrencies,
-  collectionMethodFor,
-  formatUsd,
   invoiceTotalCents,
-  type BillingInterval,
-  type CollectionCurrency
+  type BillingInterval
 } from '#shared/billing'
+import { formatInvoiceAmount, formatSubscriptionMoney } from '#shared/regional-pricing'
+import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 import { billingApi, type TeamBillingResponse } from '@/services/api/billing'
 import { formatInstant } from '@/utils/date-time'
@@ -50,32 +49,19 @@ const checkoutLabel = computed(() => {
   return 'Pay and activate'
 })
 
-const interval = ref<BillingInterval>('yearly')
-const currency = ref<CollectionCurrency>('USD')
+const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
+const { currency, ready: pricingReady, price } = useSubscriptionPricing()
 const starting = ref(false)
 const retryingSeatSync = ref(false)
 
 watch(entitlement, (value) => {
-  if (value) interval.value = value.interval
-}, { immediate: true })
-
-watch(() => seatBilling.value?.collectionCurrency, (value) => {
-  if (value) currency.value = value
+  if (value && value.status !== 'trialing') interval.value = value.interval
 }, { immediate: true })
 
 const intervalOptions = billingIntervals.map(value => ({
   label: value === 'yearly' ? 'Yearly — two months free' : 'Monthly',
   value
 }))
-const currencyOptions = collectionCurrencies.map(value => ({
-  label: value === 'NGN' ? 'Pay in NGN (bank transfer)' : 'Pay in USD (card)',
-  value
-}))
-
-// USD by card becomes a Bachs subscription that renews itself. NGN is bank
-// transfer, which nothing can charge for us, so each period is a fresh invoice.
-const willAutoRenew = computed(() => collectionMethodFor(currency.value) === 'charge_automatically')
-
 const seats = computed(() => entitlement.value?.seatsUsed ?? 0)
 // What the picker currently adds up to, used for the checkout button.
 const total = computed(() => invoiceTotalCents(seats.value, interval.value))
@@ -83,7 +69,7 @@ const total = computed(() => invoiceTotalCents(seats.value, interval.value))
 // The headline is what will actually be charged on the current subscription, not
 // what the picker says — changing the picker must not rewrite the plan summary.
 const headlineCents = computed(() => entitlement.value?.nextInvoiceCents ?? total.value)
-const headlinePeriod = computed(() => entitlement.value?.interval === 'monthly' ? 'month' : 'year')
+const headlinePeriod = computed(() => (hasBillingHistory.value ? entitlement.value?.interval : interval.value) === 'monthly' ? 'month' : 'year')
 const perSeatCents = computed(() => seatPriceCents(entitlement.value?.interval ?? 'yearly'))
 const billedSeats = computed(() => billableSeats(seats.value))
 
@@ -97,6 +83,13 @@ const payingByCard = computed(() => seatBilling.value?.collectionMethod === 'cha
 const hasBillingHistory = computed(() => Boolean(
   seatBilling.value?.billedSeats != null || invoices.value.some(invoice => invoice.status === 'paid')
 ))
+const lastPaidInvoice = computed(() => invoices.value.find(invoice => invoice.status === 'paid'))
+const existingNairaBilling = computed(() => hasBillingHistory.value && seatBilling.value?.collectionCurrency === 'NGN')
+const headline = computed(() => {
+  if (!hasBillingHistory.value) return price('team', interval.value, billedSeats.value)
+  if (existingNairaBilling.value) return lastPaidInvoice.value ? formatInvoiceAmount(lastPaidInvoice.value) : 'Amount unavailable'
+  return formatSubscriptionMoney(headlineCents.value, 'USD')
+})
 
 const paymentMethod = computed(() => payingByCard.value
   ? {
@@ -143,7 +136,7 @@ watch(paidJustNow, async (paid) => {
 }, { immediate: true })
 
 async function startCheckout() {
-  if (starting.value || !checkoutReason.value) return
+  if (starting.value || !checkoutReason.value || !pricingReady.value) return
   starting.value = true
 
   try {
@@ -322,19 +315,36 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
 
             <!-- The one number this page leads with. Proportional figures: at this
                  size tabular digits read loose. -->
-            <p class="mt-3 flex items-baseline gap-1.5">
-              <span class="text-[44px] font-semibold leading-none tracking-[-0.02em] text-highlighted">
-                {{ formatUsd(headlineCents) }}
+            <p
+              v-if="existingNairaBilling"
+              class="mt-3 text-sm text-muted"
+            >
+              Last paid invoice
+            </p>
+            <p class="mt-3 flex flex-wrap items-baseline gap-1.5">
+              <span class="break-words text-[clamp(1.75rem,5vw,2.75rem)] font-semibold leading-none tracking-[-0.02em] text-highlighted">
+                {{ headline }}
               </span>
-              <span class="text-[15px] text-muted">/{{ headlinePeriod }}</span>
+              <span
+                v-if="!existingNairaBilling"
+                class="text-[15px] text-muted"
+              >/{{ headlinePeriod }}</span>
             </p>
 
             <p class="mt-3 text-[14px] leading-relaxed text-muted">
-              {{ billedSeats }} {{ billedSeats === 1 ? 'member' : 'members' }} ×
-              {{ formatUsd(perSeatCents) }}/{{ headlinePeriod }}<template v-if="billedSeats !== seats">
+              {{ billedSeats }} {{ billedSeats === 1 ? 'member' : 'members' }}<template v-if="!existingNairaBilling">
+                × {{ hasBillingHistory ? formatSubscriptionMoney(perSeatCents, 'USD') : price('team', interval) }}/{{ headlinePeriod }}
+              </template><template v-if="billedSeats !== seats">
                 — billed at the {{ billedSeats }}-member minimum
               </template>.
               Only members who have joined are counted.
+            </p>
+            <p
+              v-if="hasBillingHistory"
+              class="mt-2 text-sm text-muted"
+            >
+              Your existing subscription and past invoices keep their original currency.
+              Changing the billing region only changes a new checkout.
             </p>
 
             <p
@@ -418,29 +428,16 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
                   class="w-full"
                 />
               </UFormField>
-              <UFormField
-                label="Pay with"
-                :help="willAutoRenew
-                  ? 'Renews automatically on the saved card each period.'
-                  : 'Bank transfer requires a new invoice each period.'"
-              >
-                <USelectMenu
-                  v-model="currency"
-                  :items="currencyOptions"
-                  value-key="value"
-                  size="lg"
-                  class="w-full"
-                />
-              </UFormField>
+              <BillingRegionControl />
             </div>
             <UButton
               size="lg"
               block
               :loading="starting"
-              :disabled="!data?.configured"
+              :disabled="!data?.configured || !pricingReady"
               @click="startCheckout"
             >
-              {{ checkoutLabel }} · {{ formatUsd(total) }}
+              {{ checkoutLabel }} · {{ price('team', interval, billedSeats) }}
             </UButton>
           </div>
 
@@ -506,7 +503,7 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
 
             <!-- A column of figures, so these get tabular digits to align. -->
             <p class="tnum text-right text-[15px] font-medium text-highlighted">
-              {{ formatUsd(invoice.amountCents) }}
+              {{ formatInvoiceAmount(invoice) }}
             </p>
 
             <div class="col-span-2 sm:col-span-1 sm:justify-self-end">

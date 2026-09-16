@@ -15,6 +15,7 @@ export async function findBookingByUid(uid: string) {
       hostId: bookings.hostId,
       eventTypeId: bookings.eventTypeId,
       seriesId: bookings.seriesId,
+      groupSessionId: bookings.groupSessionId,
       seriesPosition: bookings.seriesPosition,
       seriesOccurrenceCount: bookingSeries.occurrenceCount,
       seriesFrequency: bookingSeries.frequency,

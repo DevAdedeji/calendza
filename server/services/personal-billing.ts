@@ -1,7 +1,6 @@
 import { eq, sql } from 'drizzle-orm'
 import type { BillingInterval, CollectionCurrency, OrganizationPlanStatus } from '#shared/billing'
 import {
-  PERSONAL_PRO_PLAN,
   collectionMethodFor,
   personalProPriceCents,
   toDecimalString
@@ -14,9 +13,9 @@ import {
   createSubscriptionCheckout,
   ensurePersonalProProduct,
   NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-  quoteConversion,
   type BachsSubscription
 } from '@@/server/integrations/bachs'
+import { planPriceCents } from '#shared/regional-pricing'
 import { useEnv } from '@@/server/config/env'
 import { addUtcCalendarPeriod } from '@@/server/utils/date-time'
 import { paidTeamCoverageForUser, personalPlanEntitlement } from '@@/server/services/personal-entitlement'
@@ -100,11 +99,10 @@ export async function startPersonalCheckout(input: {
     throw failure
   }
 
-  if (method === 'charge_automatically') {
-    await db.update(personalInvoices)
-      .set({ collectionAmount: toDecimalString(amountCents), updatedAt: sql`now()` })
-      .where(eq(personalInvoices.id, invoice.id))
-  }
+  const collectionAmount = toDecimalString(planPriceCents('personal', input.interval, input.collectionCurrency))
+  await db.update(personalInvoices)
+    .set({ collectionAmount, updatedAt: sql`now()` })
+    .where(eq(personalInvoices.id, invoice.id))
 
   const session = method === 'charge_automatically'
     ? await ensurePersonalProProduct(input.interval)
@@ -118,24 +116,16 @@ export async function startPersonalCheckout(input: {
           metadata
         }))
         .catch(fail)
-    : await quoteConversion(PERSONAL_PRO_PLAN.currency, input.collectionCurrency, toDecimalString(amountCents))
-        .then(async (quote) => {
-          await db.update(personalInvoices).set({
-            collectionAmount: quote.to_amount,
-            exchangeRate: quote.exchange_rate,
-            updatedAt: sql`now()`
-          }).where(eq(personalInvoices.id, invoice.id))
-          return createCheckoutSession({
-            amount: quote.to_amount,
-            currency: input.collectionCurrency,
-            paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-            reference,
-            customer: input.customer,
-            successUrl,
-            cancelUrl,
-            metadata: { ...metadata, usdAmount: toDecimalString(amountCents), rate: quote.exchange_rate }
-          })
-        })
+    : await createCheckoutSession({
+        amount: collectionAmount,
+        currency: input.collectionCurrency,
+        paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
+        reference,
+        customer: input.customer,
+        successUrl,
+        cancelUrl,
+        metadata
+      })
         .catch(fail)
 
   await db.transaction(async (tx) => {

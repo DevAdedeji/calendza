@@ -1,6 +1,7 @@
 import { and, asc, eq, inArray, isNull } from 'drizzle-orm'
 import {
   PERSONAL_PRO_PLAN,
+  DEFAULT_BILLING_INTERVAL,
   personalProPriceCents,
   type BillingInterval,
   type OrganizationPlanStatus,
@@ -82,13 +83,13 @@ export async function personalPlanEntitlement(
       plan: isPro ? 'pro' : 'free',
       status: teamCoverage?.status ?? 'free',
       source: isPro ? 'team' : 'free',
-      interval: teamCoverage?.interval ?? 'yearly',
+      interval: teamCoverage?.interval ?? DEFAULT_BILLING_INTERVAL,
       isPro,
       currentPeriodEnd: teamCoverage?.currentPeriodEnd ?? null,
       personalCurrentPeriodEnd: null,
       graceEndsAt: null,
       cancelAtPeriodEnd: false,
-      nextInvoiceCents: PERSONAL_PRO_PLAN.yearlyCents,
+      nextInvoiceCents: personalProPriceCents(DEFAULT_BILLING_INTERVAL),
       autoRenews: false,
       teamCoverage
     }
