@@ -35,4 +35,5 @@ playwright-report
 FEATURES.md
 .internal/
 docs/internal/
+/docs/
 *.private.md

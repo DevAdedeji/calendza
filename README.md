@@ -1,91 +1,48 @@
 # Calendza
 
-Calendza is a full-stack scheduling application built as a portfolio project:
-shareable booking pages, personal and team availability, calendar integrations,
-video meetings, recurring bookings, and payment-aware booking workflows.
+Less back-and-forth, more time for the meeting. Share your booking page and let people choose a time that works with your availability.
 
-[Application](https://calendza.xyz) · [Features](https://calendza.xyz/features) ·
-[Security reporting](SECURITY.md)
+[Try Calendza](https://calendza.xyz) · [Features](https://calendza.xyz/features) · [Pricing](https://calendza.xyz/pricing)
 
-The source is available for viewing and evaluation under the proprietary
-[LICENSE](LICENSE); public visibility does not make it open source. This is an
-actively maintained demonstration, not a claim of production certification or
-customer adoption. Payment mode is shown in the app when sandbox is configured.
+## Features
 
-## Explore the product
+- **Flexible bookings:** personal booking pages, multiple durations, recurring meetings, group sessions, approvals and custom booking questions.
+- **Availability controls:** time zones, buffers, away periods, date overrides and booking limits.
+- **Calendar and video integrations:** Google Calendar, Microsoft Calendar, Apple Calendar, Google Meet, Microsoft Teams and Zoom.
+- **Team scheduling:** round-robin and collective bookings, team roles and managed event templates.
+- **Your own experience:** custom branding, guest emails, routing forms, workflows and website embeds.
+- **Payments and insights:** paid bookings, personal and team subscriptions, analytics and attendance tracking.
 
-Use an account and email address you control. Create an event type, choose your
-hours, and open the booking link in a separate browser session. Make a test
-booking, then reschedule or cancel it to see the full lifecycle. Invite a second
-test account to explore team roles and round-robin or collective scheduling.
+## Try it out
 
-Sandbox checkout does not move real money, but emails, calendar invitations,
-and video meetings can still be real. Use dedicated test calendars and only
-Bachs-provided test payment details. Never enter someone else's personal data.
+Create an event type, set your available hours and open its booking link in a separate browser session. Make a booking, then reschedule or cancel it to see the full flow.
 
-## Implemented capabilities
+Use accounts and calendars you control. When checkout is marked as sandbox, use only test payment details. Emails, calendar invitations and video meetings can still be real.
 
-- Personal booking pages, multiple durations, recurring meetings, group capacity,
-  booking questions, approvals, single-use links, and website overlays.
-- Time-zone-aware schedules, date overrides, away periods, buffers, notice,
-  booking windows, and daily/weekly/monthly limits.
-- Google and Microsoft Calendar, iCloud CalDAV, Google Meet, Microsoft Teams,
-  and Zoom, with connection-health and retry handling.
-- Team roles, round-robin/collective assignment, managed event templates,
-  personal/team branding, and customizable guest emails.
-- Email/webhook workflows, routing forms, analytics, attendance tracking,
-  notification preferences, and authenticator-based two-factor authentication.
-- Bachs subscription and paid-booking flows, payment holds, refunds, ledger
-  records, reconciliation, and private operational controls.
+## Built with
 
-## Engineering decisions
+Nuxt 4, Vue, TypeScript, Nuxt UI, Tailwind CSS, PostgreSQL and Drizzle ORM. Better Auth handles sign-in and 2FA, Temporal handles time-zone calculations, and Bachs handles payments.
 
-| Concern | Implementation and reason |
-|---|---|
-| Availability | A pure TypeScript engine using Temporal handles time zones and daylight-saving changes; database constraints protect reservations when requests race. |
-| Durable work | PostgreSQL-backed queues hold email, workflow, and calendar jobs so a request can finish without waiting for a provider. Workers claim, retry, and expose failed work. |
-| Payments | Server-side provider verification, idempotent operations, payment holds, and reconciliation distinguish a checkout redirect from confirmed money. |
-| Access | Better Auth handles authentication and 2FA; server-side checks enforce personal/team ownership and a separate administrator allowlist. |
-| Structure | `server/domain` owns pure rules; `services` orchestrate workflows; `repositories` and `database` own persistence; frontend composables/components are grouped by feature. |
+Email, workflow and calendar jobs are stored in PostgreSQL so they can be retried after a failure or server restart.
 
-Frontend API clients live in `app/services/api/`, split by domain: bookings,
-event types, teams, billing, payments, integrations and the other product areas.
-Import the relevant module directly. `http.ts` contains only shared URL and
-error-message helpers.
+## Run locally
 
-Use `@/` for imports from `app/` and `@@/` for imports from the repository root
-(for example, `@@/server/services/bookings`). Nuxt's `#shared` alias remains
-available for shared contracts. Vitest uses the same aliases. Standalone scripts
-and bootstrap configuration keep runtime-compatible relative imports.
-
-Review expectations are in [PR standards](.github/PR_STANDARDS.md).
-
-Provider tests use controlled fakes; passing them does not prove a deployed
-calendar account or payment provider is configured correctly. Sandbox acceptance
-and restore drills remain part of release verification.
-
-## Technology
-
-Nuxt 4 · TypeScript · PostgreSQL · Drizzle ORM · Nuxt UI · Tailwind CSS
-
-## Local development
-
-Requirements: Node.js 22+, pnpm and Docker.
+Requires Node.js 22.13+, pnpm 11+ and Docker.
 
 ```bash
 pnpm install
 cp .env.example .env
+```
+
+Set a random 32+ character `AUTH_SECRET` in `.env`. The template already points to the local database on port `5443`. See [.env.example](.env.example) for calendar and payment credentials.
+
+```bash
 docker compose up -d db
 pnpm db:migrate
 pnpm dev
 ```
 
-The application runs at `http://localhost:3002` by default. The values required
-for local development are documented in `.env.example`.
-
-This Calendza release keeps the existing databases and saved integrations.
-See [setup and deployment instructions](docs/CALENDZA_SETUP.md) before deploying.
-The separate local database runs on port `5443`.
+Open [localhost:3002](http://localhost:3002). Development emails are logged to the terminal instead of sent.
 
 ## Checks
 
@@ -97,110 +54,10 @@ pnpm test:e2e
 pnpm build
 ```
 
-Database and browser tests require an isolated test database configured with
-`TEST_DATABASE_URL` in `.env.test`. Test commands may erase that database.
+Database and browser tests require an isolated `TEST_DATABASE_URL` in `.env.test`. Tests can delete data, so never use staging or production.
 
-Production builds require `CALENDZA_URL` during the build as well as at runtime.
-The build fails if prerendered marketing pages contain the wrong canonical URL
-or indexing directive. For Docker builds, pass it as a build argument, for
-example `--build-arg CALENDZA_URL=https://calendza.xyz`.
+## Security and license
 
-## Production deployment
+Report vulnerabilities privately using [SECURITY.md](SECURITY.md).
 
-For the Calendza → Calendza domain change, follow the
-[domain migration checklist](docs/CALENDZA_MIGRATION.md) before deploying.
-The new `CALENDZA_*` settings take precedence; existing `CALENDZA_*` equivalents
-remain supported as fallbacks. Keep encryption keys and the database unchanged.
-
-For a portfolio deployment on the production domain, keep
-`CALENDZA_ENVIRONMENT=production` and explicitly set `CALENDZA_BILLING_MODE=sandbox`
-with matching sandbox `BACHS_SECRET_KEY` and `BACHS_WEBHOOK_SECRET` values.
-Register the sandbox webhook at `/api/webhooks/bachs` on that deployment's HTTPS
-origin. Do not weaken application security by calling the deployment staging.
-
-The explicit mode rejects mismatched live credentials. It does not cancel or
-convert existing live subscriptions, remove payment records, or disable real
-email/calendar actions. Do not reuse a database containing live financial
-history for sandbox experimentation; use a separate demo environment instead.
-Never commit provider keys. See [the public-release checklist](docs/PUBLIC_RELEASE.md).
-
-Run `pnpm db:migrate` before starting the new application version. The current
-release candidate includes four ordered migrations that must not be skipped:
-
-- `0050_complete_lady_deathstrike.sql` adds managed-event assignments and the
-  list of template fields that a team member may personalize.
-- `0051_bumpy_rage.sql` adds email-notification preferences, authenticator 2FA
-  records and booking attendance/no-show fields.
-- `0052_cool_bruce_banner.sql` stores paid personal/team guest-email templates
-  and snapshots the selected branding into queued email jobs.
-- `0053_booking_buffer_reservations.sql` snapshots protected meeting buffers and
-  enforces them across every host reservation. Run the count-only conflict
-  preflight in [the migration guide](docs/BOOKING_BUFFER_MIGRATION.md) first;
-  existing conflicting buffers deliberately block deployment without moving guests.
-
-Background work must be running in every deployed environment. For a small
-deployment, use `CALENDZA_PROCESS_ROLE=all` on the application process. For
-separate services, run the web service with `CALENDZA_PROCESS_ROLE=web` and run
-`node scripts/start-worker.mjs` from the same built image as a continuously
-running worker (`pnpm worker` is the equivalent source-checkout command). The
-worker delivers queued email and workflows, synchronizes and periodically
-reconciles calendars, expires payment holds, recovers stale refunds, reconciles
-team seats and evaluates operational alerts. Without it, HTTP pages may still
-load while those durable jobs remain pending.
-
-After deployment, verify that migrations completed, `/api/healthz` responds,
-`/api/readyz` reports ready for the process role, and the private Operations page
-shows an online worker with no unexpected failed or stale jobs. Exercise a normal
-booking, reschedule and cancellation in staging before promoting the release.
-Provider-dependent release checks must use sandbox or dedicated staging accounts:
-confirm an Apple Calendar event can be created, updated and removed, and confirm
-the Bachs refund state moves from pending to its provider-confirmed result. The
-automated suite covers these boundaries with fakes, but it does not replace live
-iCloud or Bachs validation.
-
-## Regional subscription pricing
-
-Personal Pro and Team plans keep their USD base prices. The billing-region
-selector defaults to NGN for devices using `Africa/Lagos` and USD elsewhere;
-users can correct this suggestion, which is remembered in a cookie. It is not
-location verification and does not send IP addresses to a geolocation service.
-
-Monthly billing is selected by default. Personal Pro costs ₦7,500/month or
-₦75,000/year in Nigeria; Team costs ₦10,000/member/month or ₦100,000/member/year.
-These are fixed prices, not exchange-rate conversions. USD prices remain
-$6/month or $60/year for Personal Pro and $8/member/month or $80/member/year
-for Team. USD card subscriptions retain automatic renewal; NGN invoices
-require manual payment each period. Existing subscriptions are not converted
-automatically.
-
-Invoice history displays the original collection amount and currency, never
-today's conversion rate. Host-set paid-booking prices, payouts and refunds are
-unchanged. This feature needs no new dependency, database migration or secret.
-
-## Apple Calendar
-
-Apple Calendar connects through iCloud CalDAV. Users must enable two-factor
-authentication on their Apple Account and create an app-specific password at
-`account.apple.com` under **Sign-In and Security → App-Specific Passwords**.
-Calendza encrypts that password using `INTEGRATION_ENCRYPTION_KEY`; the normal
-Apple Account password must never be entered. Changing the main Apple Account
-password revokes app-specific passwords, so the integration will then show
-**Needs attention** until it is reconnected with a new one.
-
-No Apple-specific deployment secret or callback URL is required. Production
-must be able to make outbound HTTPS requests to `*.icloud.com`.
-
-The CalDAV implementation and failure handling have automated provider-boundary
-coverage. A real iCloud account should still complete the staging create,
-reschedule and cancellation check described above before launch.
-
-## Security
-
-Please do not disclose vulnerabilities in public issues. Follow the private
-reporting instructions in [SECURITY.md](SECURITY.md).
-
-## License
-
-Copyright © 2026 Calendza. All rights reserved. This project is proprietary;
-access to its source code does not grant permission to copy, modify,
-distribute or operate the software. See [LICENSE](LICENSE).
+Source is available for viewing and evaluation under a [proprietary license](LICENSE). Public visibility does not grant permission to reuse or redistribute the code.
