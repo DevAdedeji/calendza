@@ -4,7 +4,7 @@ import { apiErrorMessage } from '@/services/api/http'
 import { paymentsApi, type PaymentWithdrawalOptions, type PaymentWithdrawalPreview, type PaymentWithdrawalRecord } from '@/services/api/payments'
 import { formatDateTime } from '@/utils/date-time'
 
-const props = defineProps<{ teamSlug?: string }>()
+const props = defineProps<{ teamSlug?: string, balanceCurrency?: PaymentCurrency }>()
 const emit = defineEmits<{ updated: [] }>()
 const toast = useToast()
 const endpoint = computed(() => paymentsApi.withdrawalsEndpoint(props.teamSlug))
@@ -22,8 +22,11 @@ const formError = ref('')
 const previewRequests = useRequestGuard()
 const submissionRequests = useRequestGuard()
 
-const availableOptions = computed(() => (data.value?.available ?? [])
-  .filter(balance => balance.amountCents > 0)
+const withdrawableBalances = computed(() => (data.value?.available ?? [])
+  .filter(balance => balance.amountCents > 0))
+const displayBalance = computed(() => data.value?.available.find(balance => balance.currency === props.balanceCurrency))
+const hasNegativeBalance = computed(() => data.value?.available.some(balance => balance.amountCents < 0))
+const availableOptions = computed(() => withdrawableBalances.value
   .map(balance => ({
     value: balance.currency,
     label: `${formatMoney(balance.amountCents, balance.currency)} available`
@@ -39,7 +42,8 @@ const selectedBalance = computed(() => data.value?.available.find(item => item.c
 const crossCurrency = computed(() => Boolean(
   selectedDestination.value && selectedDestination.value.currency !== sourceCurrency.value
 ))
-const canStart = computed(() => Boolean(data.value?.ready && availableOptions.value.length && destinationOptions.value.length))
+const canStart = computed(() => Boolean(data.value?.ready && !error.value && !hasNegativeBalance.value
+  && displayBalance.value && displayBalance.value.amountCents > 0 && destinationOptions.value.length))
 
 watch(data, (value) => {
   if (!availableOptions.value.some(option => option.value === sourceCurrency.value)) {
@@ -83,7 +87,7 @@ function resetForm() {
   requestId.value = null
   amount.value = ''
   formError.value = ''
-  sourceCurrency.value = availableOptions.value[0]?.value ?? 'NGN'
+  sourceCurrency.value = props.balanceCurrency ?? availableOptions.value[0]?.value ?? 'NGN'
   destinationId.value = data.value?.destinations.find(destination => destination.isDefault)?.id
     ?? data.value?.destinations[0]?.id
     ?? ''
@@ -132,22 +136,18 @@ async function confirmWithdrawal() {
     }, props.teamSlug)
     if (!current()) return
     const uncertain = withdrawal.status === 'unknown' || withdrawal.status === 'creating'
-    const withdrawalAmount = formatMoney(withdrawal.requestedAmountCents, withdrawal.sourceCurrency)
-    const fee = withdrawal.feeCents == null
-      ? 'the Bachs fee'
-      : `${formatMoney(withdrawal.feeCents, withdrawal.sourceCurrency)} Bachs fee`
-    const total = withdrawal.totalDebitedCents == null
-      ? 'the final quoted total'
-      : formatMoney(withdrawal.totalDebitedCents, withdrawal.sourceCurrency)
-    const delivered = withdrawal.deliveredAmountCents == null
-      ? 'the quoted bank amount'
-      : formatMoney(withdrawal.deliveredAmountCents, withdrawal.destinationCurrency)
+    const failed = withdrawal.status === 'failed'
+    const completed = withdrawal.status === 'completed'
     toast.add({
-      title: uncertain ? 'Withdrawal is being verified' : 'Withdrawal submitted',
-      description: uncertain
-        ? 'Do not submit it again. Calendza is checking the same request with Bachs.'
-        : `${withdrawalAmount} withdrawal + ${fee} = ${total} deducted. ${delivered} is being sent to the bank.`,
-      color: uncertain ? 'warning' : 'success'
+      title: failed ? 'Withdrawal failed' : uncertain ? 'Withdrawal is being verified' : completed ? 'Withdrawal paid' : 'Withdrawal submitted',
+      description: failed
+        ? withdrawal.failureReason ?? 'Bachs could not complete this withdrawal. Check its status before trying again.'
+        : uncertain
+          ? 'Do not submit it again. Calendza is checking the same request with Bachs.'
+          : completed
+            ? 'Bachs confirmed the payout reached your destination.'
+            : 'Bachs is processing your withdrawal. It will show as paid once delivery is confirmed.',
+      color: failed ? 'error' : uncertain ? 'warning' : 'success'
     })
     open.value = false
     await refresh()
@@ -184,173 +184,229 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
     : withdrawal.destinationCurrency
   return formatMoney(cents, currency)
 }
+
+function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
+  if (withdrawal.deliveredAmountCents == null) return 'Requested withdrawal:'
+  if (withdrawal.status === 'completed') return 'Paid to bank:'
+  if (withdrawal.status === 'pending' || withdrawal.status === 'processing') return 'Expected at bank:'
+  return 'Quoted bank amount:'
+}
 </script>
 
 <template>
-  <section class="overflow-hidden rounded-2xl border border-default bg-default">
-    <header class="flex flex-col gap-4 border-b border-default p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6 surface-secondary">
-      <div>
-        <div class="flex items-center gap-2">
-          <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <UIcon
-              name="i-lucide-landmark"
-              class="size-4"
-            />
-          </span>
-          <h2 class="text-base font-semibold text-highlighted">
-            Withdraw funds
-          </h2>
-        </div>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Send settled funds from your Bachs balance to an approved destination. Delivery is confirmed asynchronously.
-        </p>
-      </div>
-      <div class="flex shrink-0 items-center gap-2">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-refresh-cw"
-          :loading="status === 'pending'"
-          aria-label="Refresh withdrawal status"
-          @click="() => refresh()"
-        />
-        <UButton
-          icon="i-lucide-banknote-arrow-up"
-          :disabled="!canStart"
-          @click="openWithdrawal"
-        >
-          Withdraw
-        </UButton>
-      </div>
-    </header>
-
-    <div
-      v-if="status === 'pending' && !data"
-      class="grid gap-4 p-5 sm:grid-cols-3 sm:p-6"
+  <div class="space-y-6">
+    <section
+      class="overflow-hidden rounded-2xl border border-default bg-default"
+      aria-label="Withdraw funds"
     >
-      <USkeleton
-        v-for="item in 3"
-        :key="item"
-        class="h-16 w-full"
-      />
-    </div>
-    <AsyncErrorState
-      v-else-if="error && !data"
-      compact
-      title="Could not load withdrawal details"
-      description="No money was moved. Check Bachs again before withdrawing."
-      :retrying="status === 'pending'"
-      @retry="refresh"
-    />
-    <div
-      v-else
-      class="space-y-5 p-5 sm:p-6"
-    >
-      <div class="grid gap-3 sm:grid-cols-2">
-        <div class="rounded-xl border border-default p-4">
-          <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
-            Available to withdraw
-          </p>
-          <div class="mt-2 flex flex-wrap gap-2">
-            <UBadge
-              v-for="balance in data?.available"
-              :key="balance.currency"
-              color="neutral"
-              variant="subtle"
-              size="lg"
-            >
-              {{ formatMoney(balance.amountCents, balance.currency) }}
-            </UBadge>
-            <span
-              v-if="!data?.available.some(balance => balance.amountCents > 0)"
-              class="text-sm text-muted"
-            >No settled balance yet</span>
+      <header class="flex flex-col gap-4 border-b border-default p-5 sm:flex-row sm:items-start sm:justify-between sm:p-6 surface-secondary">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="flex size-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <UIcon
+                name="i-lucide-landmark"
+                class="size-4"
+              />
+            </span>
+            <h2 class="text-base font-semibold text-highlighted">
+              Withdraw funds
+            </h2>
           </div>
-        </div>
-        <div class="rounded-xl border border-default p-4">
-          <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
-            Approved destinations
-          </p>
-          <p class="mt-2 text-sm text-toned">
-            {{ data?.destinations.length
-              ? `${data.destinations.length} destination${data.destinations.length === 1 ? '' : 's'} ready in Bachs`
-              : 'No approved payout destination is available.' }}
+          <p class="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            Send your available Bachs balance to an approved destination. If the currencies differ, Bachs converts the payout before it reaches your bank.
           </p>
         </div>
-      </div>
+        <div class="flex shrink-0 items-center gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-refresh-cw"
+            :loading="status === 'pending'"
+            aria-label="Refresh withdrawal status"
+            @click="() => refresh()"
+          />
+          <UButton
+            icon="i-lucide-banknote-arrow-up"
+            :disabled="!canStart"
+            @click="openWithdrawal"
+          >
+            Withdraw
+          </UButton>
+        </div>
+      </header>
 
       <div
-        v-if="data && !data.ready"
-        class="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-toned"
+        v-if="status === 'pending' && !data"
+        class="grid gap-4 p-5 sm:grid-cols-3 sm:p-6"
       >
-        <UIcon
-          name="i-lucide-shield-alert"
-          class="mt-0.5 size-4 shrink-0 text-warning"
+        <USkeleton
+          v-for="item in 3"
+          :key="item"
+          class="h-16 w-full"
         />
-        Bachs must finish reviewing the payout account and destination before withdrawals can be submitted.
       </div>
+      <AsyncErrorState
+        v-else-if="error"
+        compact
+        title="Could not load withdrawal details"
+        description="No money was moved. Check Bachs again before withdrawing."
+        :retrying="status === 'pending'"
+        @retry="refresh"
+      />
+      <div
+        v-else
+        class="space-y-5 p-5 sm:p-6"
+      >
+        <div class="grid gap-3 sm:grid-cols-2">
+          <div class="rounded-xl border border-default p-4">
+            <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
+              Available to withdraw
+            </p>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <UBadge
+                v-if="displayBalance && displayBalance.amountCents > 0"
+                color="neutral"
+                variant="subtle"
+                size="lg"
+              >
+                {{ formatMoney(displayBalance.amountCents, displayBalance.currency) }}
+              </UBadge>
+              <span
+                v-else
+                class="text-sm text-muted"
+              >No settled balance yet</span>
+            </div>
+          </div>
+          <div class="rounded-xl border border-default p-4">
+            <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
+              Approved destinations
+            </p>
+            <p class="mt-2 text-sm text-toned">
+              {{ data?.destinations.length
+                ? `${data.destinations.length} destination${data.destinations.length === 1 ? '' : 's'} ready in Bachs`
+                : 'No approved payout destination is available.' }}
+            </p>
+          </div>
+        </div>
 
-      <div v-if="data?.withdrawals.length">
-        <div class="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-          <h3 class="text-sm font-semibold text-highlighted">
-            Recent withdrawals
-          </h3>
-          <p class="text-xs text-muted">
-            Paid means Bachs confirmed the amount reached the destination.
+        <div
+          v-if="data && !data.ready"
+          class="flex items-start gap-2 rounded-xl border border-warning/30 bg-warning/5 px-4 py-3 text-sm text-toned"
+        >
+          <UIcon
+            name="i-lucide-shield-alert"
+            class="mt-0.5 size-4 shrink-0 text-warning"
+          />
+          Bachs must finish reviewing the payout account and destination before withdrawals can be submitted.
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="overflow-hidden rounded-2xl border border-default bg-default"
+      aria-labelledby="payout-history-title"
+    >
+      <header class="space-y-3 border-b border-default p-5 sm:p-6">
+        <div>
+          <h2
+            id="payout-history-title"
+            class="text-base font-semibold text-highlighted"
+          >
+            Payout history
+          </h2>
+          <p class="mt-1 text-sm text-muted">
+            Past bank receipts, not your current balance. Amounts use the destination currency after any conversion.
           </p>
         </div>
-        <ul class="divide-y divide-default rounded-xl border border-default">
-          <li
-            v-for="withdrawal in data.withdrawals"
-            :key="withdrawal.id"
-            class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <div class="min-w-0">
-              <div class="flex flex-wrap items-center gap-2">
-                <p class="font-medium text-highlighted">
-                  <span class="text-xs font-normal text-muted">
-                    {{ withdrawal.status === 'completed' ? 'Paid to bank:' : 'Expected at bank:' }}
-                  </span>
-                  {{ withdrawalAmount(withdrawal) }}
-                </p>
-                <UBadge
-                  :color="statusColor(withdrawal.status)"
-                  variant="subtle"
-                >
-                  {{ statusCopy(withdrawal.status) }}
-                </UBadge>
-              </div>
-              <p class="mt-1 text-xs text-muted">
-                {{ withdrawal.destinationName }} · {{ formatDateTime(withdrawal.createdAt, 'en') }}
-              </p>
-              <p class="mt-1 text-xs leading-relaxed text-muted">
-                Withdrawal amount: {{ formatMoney(withdrawal.requestedAmountCents, withdrawal.sourceCurrency) }}
-                <template v-if="withdrawal.feeCents != null">
-                  · Bachs fee: {{ formatMoney(withdrawal.feeCents, withdrawal.sourceCurrency) }}
-                </template>
-              </p>
-              <p
-                v-if="withdrawal.failureReason"
-                class="mt-1 text-xs text-error"
-              >
-                {{ withdrawal.failureReason }}
-              </p>
-            </div>
-            <div
-              v-if="withdrawal.totalDebitedCents != null"
-              class="shrink-0 rounded-lg bg-elevated px-3 py-2 sm:text-right"
+        <slot name="payout-summary" />
+      </header>
+      <div class="p-5 sm:p-6">
+        <USkeleton
+          v-if="status === 'pending' && !data"
+          class="h-24 w-full"
+        />
+        <AsyncErrorState
+          v-else-if="error"
+          compact
+          title="Could not load payout history"
+          description="Your past withdrawals are safe. Try loading them again."
+          :retrying="status === 'pending'"
+          @retry="refresh"
+        />
+        <div v-else-if="data?.withdrawals.length">
+          <div class="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+            <h3 class="text-sm font-semibold text-highlighted">
+              Recent withdrawals
+            </h3>
+            <p class="text-xs text-muted">
+              Paid means Bachs confirmed the amount reached the destination.
+            </p>
+          </div>
+          <ul class="divide-y divide-default rounded-xl border border-default">
+            <li
+              v-for="withdrawal in data.withdrawals"
+              :key="withdrawal.id"
+              class="flex flex-col gap-3 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
             >
-              <p class="text-[11px] font-medium uppercase tracking-wide text-dimmed">
-                Total deducted from {{ withdrawal.sourceCurrency }} balance
-              </p>
-              <p class="mt-0.5 font-medium tabular-nums text-highlighted">
-                {{ formatMoney(withdrawal.totalDebitedCents, withdrawal.sourceCurrency) }}
-              </p>
-            </div>
-          </li>
-        </ul>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="font-medium text-highlighted">
+                    <span class="text-xs font-normal text-muted">
+                      {{ withdrawalAmountLabel(withdrawal) }}
+                    </span>
+                    {{ withdrawalAmount(withdrawal) }}
+                  </p>
+                  <UBadge
+                    :color="statusColor(withdrawal.status)"
+                    variant="subtle"
+                  >
+                    {{ statusCopy(withdrawal.status) }}
+                  </UBadge>
+                </div>
+                <p class="mt-1 text-xs text-muted">
+                  {{ withdrawal.destinationName }} · {{ formatDateTime(withdrawal.createdAt, 'en') }}
+                </p>
+                <p class="mt-1 text-xs leading-relaxed text-muted">
+                  Withdrawal amount: {{ formatMoney(withdrawal.requestedAmountCents, withdrawal.sourceCurrency) }}
+                  <template v-if="withdrawal.feeCents != null">
+                    · Bachs fee: {{ formatMoney(withdrawal.feeCents, withdrawal.sourceCurrency) }}
+                  </template>
+                </p>
+                <p
+                  v-if="withdrawal.failureReason"
+                  class="mt-1 text-xs text-error"
+                >
+                  {{ withdrawal.failureReason }}
+                </p>
+              </div>
+              <div
+                v-if="withdrawal.totalDebitedCents != null"
+                class="rounded-lg bg-elevated px-3 py-2 sm:w-56 sm:shrink-0 sm:text-right"
+              >
+                <p class="text-[11px] font-medium uppercase tracking-wide text-dimmed">
+                  {{ withdrawal.status === 'completed' ? 'Total deducted from' : 'Withdrawal total in' }} {{ withdrawal.sourceCurrency }}{{ withdrawal.status === 'completed' ? ' balance' : '' }}
+                </p>
+                <p class="mt-0.5 font-medium tabular-nums text-highlighted">
+                  {{ formatMoney(withdrawal.totalDebitedCents, withdrawal.sourceCurrency) }}
+                </p>
+                <p
+                  v-if="withdrawal.status !== 'completed'"
+                  class="mt-1 text-xs text-muted"
+                >
+                  Not proof of payment to your bank.
+                </p>
+              </div>
+            </li>
+          </ul>
+        </div>
+        <p
+          v-else
+          class="text-sm text-muted"
+        >
+          Withdrawals you request will appear here.
+        </p>
       </div>
-    </div>
+    </section>
 
     <UModal
       v-model:open="open"
@@ -386,7 +442,7 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
             </div>
             <div class="flex items-center justify-between gap-4 bg-elevated py-3">
               <dt class="text-sm font-medium text-highlighted">
-                Total deducted from balance
+                Total to deduct from balance
               </dt>
               <dd class="font-semibold tabular-nums text-highlighted">
                 {{ formatMoney(preview.totalDebitedCents, preview.sourceCurrency) }}
@@ -406,7 +462,7 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
             </div>
             <div class="flex items-center justify-between gap-4 py-3">
               <dt class="text-sm text-muted">
-                Paid to bank
+                Bank will receive
               </dt>
               <dd class="font-semibold tabular-nums text-highlighted">
                 {{ formatMoney(preview.deliveredAmountCents, preview.destinationCurrency) }}
@@ -532,5 +588,5 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
         </ModalFooter>
       </template>
     </UModal>
-  </section>
+  </div>
 </template>

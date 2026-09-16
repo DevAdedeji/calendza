@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatMoney } from '#shared/payments'
+import { formatMoney, type PaymentCurrency } from '#shared/payments'
 import { apiErrorMessage } from '@/services/api/http'
 import { paymentsApi, type PaymentAccountSummary, type PaymentMoneyTotal, type PaymentSummary } from '@/services/api/payments'
 
@@ -21,15 +21,28 @@ const {
 const starting = ref(false)
 const checking = ref(false)
 
-function money(totals: PaymentMoneyTotal[]) {
-  return totals.map(total => formatMoney(total.amountCents, total.currency))
-}
+const selectedCurrency = ref<PaymentCurrency | undefined>()
+const currencyOptions = computed(() => [...new Set([
+  ...(summary.value?.available ?? []),
+  ...(summary.value?.pending ?? []),
+  ...(summary.value?.collected ?? [])
+].filter(total => total.amountCents !== 0).map(total => total.currency))])
+const hasNegativeBalance = computed(() => summary.value?.available.some(total => total.amountCents < 0))
+const payoutTotals = computed(() => summary.value?.withdrawn.filter(total => total.amountCents !== 0) ?? [])
 
-function providerMoney(totals: PaymentMoneyTotal[]) {
-  const values = money(totals)
-  if (values.length) return values
-  const currencies = new Set(summary.value?.collected.map(total => total.currency) ?? [])
-  return [...currencies].sort().map(currency => formatMoney(0, currency))
+watch(currencyOptions, (currencies) => {
+  if (!selectedCurrency.value || !currencies.includes(selectedCurrency.value)) {
+    selectedCurrency.value = currencies[0]
+  }
+}, { immediate: true })
+
+watch(() => props.teamSlug, () => {
+  selectedCurrency.value = undefined
+})
+
+function amount(totals: PaymentMoneyTotal[] | undefined, empty: string) {
+  const total = totals?.find(total => total.currency === selectedCurrency.value)
+  return total?.amountCents ? formatMoney(total.amountCents, total.currency) : empty
 }
 
 const statusCopy = computed(() => ({
@@ -233,7 +246,7 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
       class="overflow-hidden rounded-2xl border border-default bg-default"
       aria-labelledby="payment-summary-title"
     >
-      <div class="flex flex-col gap-2 border-b border-default p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+      <header class="flex flex-col gap-3 border-b border-default p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div>
           <h2
             id="payment-summary-title"
@@ -242,40 +255,63 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
             Payment summary
           </h2>
           <p class="mt-1 text-sm text-muted">
-            Follow paid bookings from collection through settlement and delivery to your bank.
+            View your collections and Bachs balance in one currency at a time.
           </p>
-          <p class="mt-1 max-w-3xl text-xs leading-relaxed text-dimmed">
-            Collection and balance amounts use the currency held in Bachs. “Paid to your bank” uses the destination currency after conversion.
+          <p
+            v-if="currencyOptions.length > 1"
+            class="mt-1 text-xs text-muted"
+          >
+            Switch currency to see your other balances and past payments.
           </p>
         </div>
-        <UButton
-          v-if="summary?.providerStatus === 'unavailable'"
-          label="Try again"
-          icon="i-lucide-refresh-cw"
-          color="neutral"
-          variant="outline"
-          :loading="summaryStatus === 'pending'"
-          @click="() => refreshSummary()"
-        />
-      </div>
-
+        <div class="flex shrink-0 items-center gap-2">
+          <USelect
+            v-if="currencyOptions.length > 1"
+            v-model="selectedCurrency"
+            :items="currencyOptions"
+            aria-label="Balance currency"
+            class="w-28"
+          />
+          <UBadge
+            v-else-if="selectedCurrency"
+            color="neutral"
+            variant="subtle"
+          >
+            {{ selectedCurrency }}
+          </UBadge>
+          <UButton
+            icon="i-lucide-refresh-cw"
+            aria-label="Refresh payment summary"
+            color="neutral"
+            variant="ghost"
+            :loading="summaryStatus === 'pending'"
+            @click="() => refreshSummary()"
+          />
+        </div>
+      </header>
+      <p
+        v-if="hasNegativeBalance"
+        role="alert"
+        class="border-b border-error/30 bg-error/5 px-5 py-3 text-sm text-error sm:px-6"
+      >
+        One of your currency balances is negative. Withdrawals are unavailable until it is resolved.
+      </p>
       <div
         v-if="summaryStatus === 'pending' && !summary"
-        class="grid gap-px surface-secondary sm:grid-cols-2 lg:grid-cols-4"
+        class="grid gap-px surface-secondary sm:grid-cols-3"
         aria-label="Loading payment summary"
       >
         <div
-          v-for="index in 4"
+          v-for="index in 3"
           :key="index"
           class="space-y-3 bg-default p-5 sm:p-6"
         >
           <USkeleton class="h-3 w-24" />
           <USkeleton class="h-7 w-32" />
-          <USkeleton class="h-3 w-40 max-w-full" />
         </div>
       </div>
       <AsyncErrorState
-        v-else-if="summaryError && !summary"
+        v-else-if="summaryError"
         title="Could not load payment totals"
         description="Your payment records are safe. Try loading the summary again."
         :retrying="summaryStatus === 'pending'"
@@ -283,121 +319,39 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
       />
       <div
         v-else
-        class="grid gap-px surface-secondary sm:grid-cols-2 lg:grid-cols-4"
+        class="grid gap-px surface-secondary sm:grid-cols-3"
       >
         <div class="bg-default p-5 sm:p-6">
-          <div class="flex items-center gap-2 text-muted">
-            <UIcon
-              name="i-lucide-circle-dollar-sign"
-              class="size-4"
-            />
-            <p class="text-xs font-medium uppercase tracking-wide">
-              Total collected
-            </p>
-          </div>
-          <div class="mt-3 space-y-1 text-xl font-semibold tabular-nums text-highlighted">
-            <p
-              v-for="value in money(summary?.collected ?? [])"
-              :key="value"
-            >
-              {{ value }}
-            </p>
-            <p v-if="!summary?.collected.length">
-              —
-            </p>
-          </div>
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">
+            Available balance
+          </p>
+          <p class="mt-3 text-xl font-semibold tabular-nums text-highlighted">
+            {{ summary?.providerStatus === 'available' ? amount(summary.available, 'No settled funds') : 'Unavailable' }}
+          </p>
           <p class="mt-2 text-xs text-muted">
-            Successful paid bookings at their listed price.
+            Funds held in Bachs, ready to withdraw when your payout account is approved.
           </p>
         </div>
         <div class="bg-default p-5 sm:p-6">
-          <div class="flex items-center gap-2 text-muted">
-            <UIcon
-              name="i-lucide-clock-3"
-              class="size-4"
-            />
-            <p class="text-xs font-medium uppercase tracking-wide">
-              Pending settlement
-            </p>
-          </div>
-          <div class="mt-3 space-y-1 text-xl font-semibold tabular-nums text-highlighted">
-            <template v-if="summary?.providerStatus === 'available'">
-              <p
-                v-for="value in providerMoney(summary.pending)"
-                :key="value"
-              >
-                {{ value }}
-              </p>
-              <p v-if="!providerMoney(summary.pending).length">
-                —
-              </p>
-            </template>
-            <p v-else>
-              Unavailable
-            </p>
-          </div>
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">
+            Pending settlement
+          </p>
+          <p class="mt-3 text-xl font-semibold tabular-nums text-highlighted">
+            {{ summary?.providerStatus === 'available' ? amount(summary.pending, 'None pending') : 'Unavailable' }}
+          </p>
           <p class="mt-2 text-xs text-muted">
-            {{ summary?.providerStatus === 'available' ? 'Customer payments Bachs is still settling.' : 'Reconnect or retry the Bachs balance check.' }}
+            Payments still settling into this currency's balance.
           </p>
         </div>
         <div class="bg-default p-5 sm:p-6">
-          <div class="flex items-center gap-2 text-muted">
-            <UIcon
-              name="i-lucide-wallet"
-              class="size-4"
-            />
-            <p class="text-xs font-medium uppercase tracking-wide">
-              Awaiting bank payout
-            </p>
-          </div>
-          <div class="mt-3 space-y-1 text-xl font-semibold tabular-nums text-highlighted">
-            <template v-if="summary?.providerStatus === 'available'">
-              <p
-                v-for="value in providerMoney(summary.available)"
-                :key="value"
-              >
-                {{ value }}
-              </p>
-              <p v-if="!providerMoney(summary.available).length">
-                —
-              </p>
-            </template>
-            <p v-else>
-              Unavailable
-            </p>
-          </div>
-          <p class="mt-2 text-xs text-muted">
-            {{ data?.ready ? 'Settled funds held in Bachs. A withdrawal must be created before they reach your bank.' : 'Funds remain with Bachs until the payout account and bank destination are approved.' }}
+          <p class="text-xs font-medium uppercase tracking-wide text-muted">
+            Total collected
           </p>
-        </div>
-        <div class="bg-default p-5 sm:p-6">
-          <div class="flex items-center gap-2 text-muted">
-            <UIcon
-              name="i-lucide-banknote-arrow-up"
-              class="size-4"
-            />
-            <p class="text-xs font-medium uppercase tracking-wide">
-              Paid to your bank
-            </p>
-          </div>
-          <div class="mt-3 space-y-1 text-xl font-semibold tabular-nums text-highlighted">
-            <template v-if="summary?.providerStatus === 'available'">
-              <p
-                v-for="value in providerMoney(summary.withdrawn)"
-                :key="value"
-              >
-                {{ value }}
-              </p>
-              <p v-if="!providerMoney(summary.withdrawn).length">
-                —
-              </p>
-            </template>
-            <p v-else>
-              Unavailable
-            </p>
-          </div>
+          <p class="mt-3 text-xl font-semibold tabular-nums text-highlighted">
+            {{ amount(summary?.collected, 'No payments yet') }}
+          </p>
           <p class="mt-2 text-xs text-muted">
-            The amount that reached the bank, shown in the bank destination’s currency after conversion.
+            Successful bookings priced in this currency, before fees. Not your available balance.
           </p>
         </div>
       </div>
@@ -405,9 +359,46 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
 
     <PaymentWithdrawalManager
       v-if="data?.configured"
+      :key="teamSlug || 'personal'"
       :team-slug="teamSlug"
+      :balance-currency="selectedCurrency"
       @updated="refreshSummary"
-    />
+    >
+      <template #payout-summary>
+        <USkeleton
+          v-if="summaryStatus === 'pending' && !summary"
+          class="h-10 w-48"
+        />
+        <p
+          v-else-if="summaryError || summary?.providerStatus !== 'available'"
+          class="text-sm text-muted"
+        >
+          Bank payout totals unavailable. Refresh the payment summary to try again.
+        </p>
+        <div
+          v-else-if="payoutTotals.length"
+          class="flex flex-wrap gap-4"
+        >
+          <div
+            v-for="total in payoutTotals"
+            :key="total.currency"
+          >
+            <p class="text-xs text-muted">
+              Total paid to your bank · {{ total.currency }}
+            </p>
+            <p class="mt-1 font-semibold tabular-nums text-highlighted">
+              {{ formatMoney(total.amountCents, total.currency) }}
+            </p>
+          </div>
+        </div>
+        <p
+          v-else
+          class="text-sm text-muted"
+        >
+          No payouts yet
+        </p>
+      </template>
+    </PaymentWithdrawalManager>
 
     <PaymentActivityList :team-slug="teamSlug" />
   </div>
