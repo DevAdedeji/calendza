@@ -6,6 +6,12 @@ const origin = useRuntimeConfig().public.siteUrl || useRequestURL().origin
 const canonical = `${origin.replace(/\/$/, '')}${props.page.path}`
 const { isSignedIn, accountDestination } = await useLandingNavigation()
 const sectionName = props.page.path.startsWith('/features/') ? 'Features' : props.page.path.startsWith('/compare/') ? 'Compare' : 'Use cases'
+const sectionPath = sectionName === 'Features' ? '/features' : sectionName === 'Use cases' ? '/#use-cases' : null
+const breadcrumbs = [
+  { name: 'Home', item: origin },
+  ...(sectionPath ? [{ name: sectionName, item: new URL(sectionPath, origin).href }] : []),
+  { name: props.page.eyebrow, item: canonical }
+]
 
 useSeoMeta({
   title: props.page.metaTitle,
@@ -40,11 +46,11 @@ useHead({
         },
         {
           '@type': 'BreadcrumbList',
-          'itemListElement': [
-            { '@type': 'ListItem', 'position': 1, 'name': 'Home', 'item': origin },
-            { '@type': 'ListItem', 'position': 2, 'name': sectionName },
-            { '@type': 'ListItem', 'position': 3, 'name': props.page.eyebrow, 'item': canonical }
-          ]
+          'itemListElement': breadcrumbs.map((item, index) => ({
+            '@type': 'ListItem',
+            'position': index + 1,
+            ...item
+          }))
         },
         {
           '@type': 'FAQPage',
@@ -77,8 +83,8 @@ useHead({
             class="size-3.5"
           />
           <NuxtLink
-            v-if="sectionName === 'Use cases'"
-            to="/#use-cases"
+            v-if="sectionPath"
+            :to="sectionPath"
             class="transition-colors hover:text-highlighted"
           >{{ sectionName }}</NuxtLink>
           <span v-else>{{ sectionName }}</span>

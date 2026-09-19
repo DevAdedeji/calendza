@@ -98,6 +98,26 @@ for (const route of routes) {
     if (!html.includes('"@type":"FAQPage"') || !html.includes('"@type":"BreadcrumbList"')) {
       throw new Error(`${route} is missing FAQ or breadcrumb structured data.`)
     }
+    const structuredData = [...html.matchAll(/<script\b[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/gi)]
+      .flatMap((match) => {
+        const data = JSON.parse(match[1])
+        return data['@graph'] ?? [data]
+      })
+    const breadcrumbs = structuredData.filter(item => item['@type'] === 'BreadcrumbList')
+    if (!breadcrumbs.length) throw new Error(`${route} is missing a breadcrumb list.`)
+    for (const breadcrumb of breadcrumbs) {
+      const items = breadcrumb.itemListElement
+      if (!Array.isArray(items) || items.length < 2) {
+        throw new Error(`${route} must contain at least two breadcrumb items.`)
+      }
+      for (const [index, item] of items.entries()) {
+        if (item['@type'] !== 'ListItem' || item.position !== index + 1 || !item.name?.trim()
+          || typeof item.item !== 'string' || !URL.canParse(item.item)
+          || new URL(item.item).origin !== siteUrl) {
+          throw new Error(`${route} has an invalid breadcrumb at position ${index + 1}: each item needs a name, sequential position and absolute site URL.`)
+        }
+      }
+    }
   }
 }
 
