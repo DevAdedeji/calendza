@@ -167,7 +167,7 @@ describe.skipIf(!url)('Zoom integration', () => {
   })
 
   it('keeps Zoom error codes and messages available for private diagnostics', async () => {
-    const { hostId } = await createHostAndBooking()
+    const { hostId, bookingId } = await createHostAndBooking()
     await connect(hostId)
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(json({
       code: 3161,
@@ -176,6 +176,7 @@ describe.skipIf(!url)('Zoom integration', () => {
 
     const { upsertZoomMeeting } = await import('@@/server/integrations/video/zoom')
     await expect(upsertZoomMeeting(hostId, null, {
+      bookingId,
       uid: 'failed-zoom-booking',
       title: 'Zoom call',
       description: null,
@@ -186,7 +187,7 @@ describe.skipIf(!url)('Zoom integration', () => {
   })
 
   it('rotates refresh tokens and retries an unauthorized Zoom request once', async () => {
-    const { hostId } = await createHostAndBooking()
+    const { hostId, bookingId } = await createHostAndBooking()
     await connect(hostId)
     await sql`update video_conference_connections set access_token_expires_at = now() - interval '1 minute' where user_id = ${hostId}`
 
@@ -209,6 +210,7 @@ describe.skipIf(!url)('Zoom integration', () => {
     vi.stubGlobal('fetch', fetchMock)
     const { upsertZoomMeeting } = await import('@@/server/integrations/video/zoom')
     const remote = await upsertZoomMeeting(hostId, null, {
+      bookingId,
       uid: 'refresh-token-booking',
       title: 'Zoom call',
       description: null,
@@ -281,7 +283,7 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(await sql`select id from booking_conference_meetings where booking_id = ${bookingId}`).toHaveLength(0)
   })
 
-  async function rescheduleFixture(initialSync: 'complete' | 'pending' | 'failed' = 'complete') {
+  async function rescheduleFixture(initialSync: 'complete' | 'pending' | 'failed' = 'complete', group = false) {
     const fixture = await createHostAndBooking()
     await sql`update bookings set starts_at = '2030-09-09T09:00Z', ends_at = '2030-09-09T09:30Z' where id = ${fixture.bookingId}`
     await sql`update schedules set time_zone = 'UTC' where user_id = ${fixture.hostId}`
@@ -289,6 +291,13 @@ describe.skipIf(!url)('Zoom integration', () => {
       select id, day, '09:00'::time, '17:00'::time from schedules cross join generate_series(1, 7) day
       where user_id = ${fixture.hostId}`
     await sql`update event_types set minimum_notice_minutes = 0, booking_window_days = null where user_id = ${fixture.hostId}`
+    if (group) {
+      const [event] = await sql`update event_types set capacity = 3 where user_id = ${fixture.hostId} returning id`
+      const [session] = await sql`insert into group_event_sessions (event_type_id, starts_at, ends_at, capacity)
+        values (${event!.id}, '2030-09-09T09:00Z', '2030-09-09T09:30Z', 3) returning id`
+      await sql`update bookings set group_session_id = ${session!.id} where id = ${fixture.bookingId}`
+      await sql`update booking_hosts set group_session_id = ${session!.id} where booking_id = ${fixture.bookingId}`
+    }
     await connect(fixture.hostId)
     const requests: Array<{ url: string, method: string, body: string }> = []
     let patchFailure = 0
@@ -328,8 +337,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     }
   }
 
-  it('keeps the Zoom ID and join link through real personal reschedules, including consecutive unsynced moves', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('keeps the Zoom ID through consecutive unsynced moves (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     const first = await fixture.move()
     const second = await fixture.move(first.uid, '2030-09-09T14:00:00Z')
     expect(await fixture.processCalendarSyncJobs()).toBe(3)
@@ -350,8 +359,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(await sql`select id from booking_conference_meetings`).toHaveLength(0)
   })
 
-  it('retries a failed update against the same Zoom ID without creating a replacement', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('retries a failed update against the same Zoom ID (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     await fixture.move()
     fixture.failPatch(503)
     await fixture.processCalendarSyncJobs()
@@ -366,8 +375,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
   })
 
-  it('rolls a reschedule back while a Zoom worker is in flight, then allows retry safely', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('rolls back while a Zoom worker is in flight, then retries safely (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     let release!: () => void
     let entered!: () => void
     const waiting = new Promise<void>((resolve) => {
@@ -397,8 +406,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
   })
 
-  it('retains the Zoom ID while a reschedule awaits approval and updates it after approval', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('retains the Zoom ID while awaiting approval (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     await sql`update event_types set requires_confirmation = true where user_id = ${fixture.hostId}`
     const moved = await fixture.move()
     expect(moved.status).toBe('pending')
@@ -411,8 +420,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
   })
 
-  it('keeps the Zoom ID through the real team booking reschedule flow', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('keeps the Zoom ID through the team reschedule flow (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     const [team] = await sql`insert into organizations (name, slug) values ('Zoom team', 'zoom-team') returning id`
     await sql`insert into organization_subscriptions (organization_id, status) values (${team!.id}, 'active')`
     const [member] = await sql`insert into members (organization_id, user_id, role) values (${team!.id}, ${fixture.hostId}, 'owner') returning id`
@@ -453,6 +462,161 @@ describe.skipIf(!url)('Zoom integration', () => {
       .toBe('987654322')
   })
 
+  it.each([false, true])('reuses a historical session when moving back (sync between moves: %s)', async (sync) => {
+    const fixture = await rescheduleFixture('complete', true)
+    const moved = await fixture.move()
+    if (sync) await fixture.processCalendarSyncJobs()
+    const returned = await fixture.move(moved.uid, '2030-09-09T09:00:00Z')
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect((await sql`select meeting_id, booking_id from booking_conference_meetings`)[0])
+      .toMatchObject({ meeting_id: '987654321', booking_id: fixture.bookingId })
+    expect((await sql`select meeting_url from bookings where uid = ${returned.uid}`)[0]!.meeting_url)
+      .toBe('https://zoom.us/j/987654321?pwd=safe')
+  })
+
+  it('preserves the destination session meeting when joining an occupied group', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
+    const destination = await createPersonalBooking({
+      username: 'zoom-host', slug: 'zoom-call', start: '2030-09-09T12:00:00Z',
+      name: 'Other Guest', email: 'other@example.com', timeZone: 'UTC', source: 'hosted'
+    })
+    await fixture.processCalendarSyncJobs()
+    const moved = await fixture.move()
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(2)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toEqual([
+      expect.objectContaining({ url: 'https://api.zoom.us/v2/meetings/987654321' })
+    ])
+    expect((await sql`select meeting_id from booking_conference_meetings`)[0]!.meeting_id).toBe('987654322')
+    const seats = await sql`select meeting_url from bookings where uid in (${destination.uid}, ${moved.uid})`
+    expect(seats).toHaveLength(2)
+    expect(seats.every(seat => seat.meeting_url === 'https://zoom.us/j/987654322?pwd=safe')).toBe(true)
+  })
+
+  it.each(['pending', 'awaiting_payment'])('does not transfer a session with another %s reservation', async (status) => {
+    const fixture = await rescheduleFixture('complete', true)
+    await sql`insert into bookings (event_type_id, host_id, uid, starts_at, ends_at, attendee_name, attendee_email,
+      attendee_time_zone, location_type, group_session_id, status)
+      select event_type_id, host_id, 'reserved-group-seat', starts_at, ends_at, 'Reserved guest',
+        'reserved@example.com', 'UTC', 'zoom', group_session_id, ${status}::booking_status
+      from bookings where id = ${fixture.bookingId}`
+    const moved = await fixture.move()
+    const [mapping] = await sql`select booking_id from booking_conference_meetings where meeting_id = '987654321'`
+    expect(mapping!.booking_id).toBe(fixture.bookingId)
+    expect((await sql`select meeting_url from bookings where uid = ${moved.uid}`)[0]!.meeting_url).toBeNull()
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect((await sql`select booking_id from booking_conference_meetings where meeting_id = '987654321'`)[0]!.booking_id)
+      .toBe(fixture.bookingId)
+  })
+
+  it('transfers from the canonical seat even if that older seat was cancelled', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    await sql`update bookings set status = 'cancelled' where id = ${fixture.bookingId}`
+    await sql`insert into bookings (event_type_id, host_id, uid, starts_at, ends_at, attendee_name, attendee_email,
+      attendee_time_zone, location_type, group_session_id)
+      select event_type_id, host_id, 'remaining-seat', starts_at, ends_at, 'Guest Person',
+        'guest@example.com', 'UTC', 'zoom', group_session_id from bookings where id = ${fixture.bookingId}`
+    const moved = await fixture.move('remaining-seat')
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect((await sql`select b.uid from booking_conference_meetings m join bookings b on b.id = m.booking_id`)[0]!.uid)
+      .toBe(moved.uid)
+  })
+
+  it('does not reclaim a transferred meeting when someone books the old session before its marker updates', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const moved = await fixture.move()
+    fixture.recoverInitialCreate()
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
+    await createPersonalBooking({
+      username: 'zoom-host', slug: 'zoom-call', start: '2030-09-09T09:00:00Z',
+      name: 'New Guest', email: 'new@example.com', timeZone: 'UTC', source: 'hosted'
+    })
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(2)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect(await sql`select id from calendar_sync_jobs where status != 'completed'`).toHaveLength(0)
+    expect((await sql`select b.uid from booking_conference_meetings m join bookings b on b.id = m.booking_id
+      where m.meeting_id = '987654321'`)[0]!.uid).toBe(moved.uid)
+    expect((await sql`select meeting_id from booking_conference_meetings where booking_id = ${fixture.bookingId}`)[0]!.meeting_id)
+      .toBe('987654322')
+  })
+
+  it('allows only one concurrent reschedule to claim the same group meeting', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const results = await Promise.allSettled([
+      fixture.move(), fixture.move('zoom-booking-uid', '2030-09-09T14:00:00Z')
+    ])
+    expect(results.filter(result => result.status === 'fulfilled')).toHaveLength(1)
+    const rejected = results.find(result => result.status === 'rejected') as PromiseRejectedResult
+    expect(rejected.reason).toMatchObject({ statusCode: 409 })
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect(await sql`select id from bookings where status = 'confirmed'`).toHaveLength(1)
+  })
+
+  it('keeps a transferred meeting awaiting approval in a reused session with an older delete job', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const first = await fixture.move()
+    await sql`update event_types set requires_confirmation = true where user_id = ${fixture.hostId}`
+    const returned = await fixture.move(first.uid, '2030-09-09T09:00:00Z')
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => ['PATCH', 'DELETE'].includes(request.method))).toHaveLength(0)
+    expect((await sql`select meeting_id from booking_conference_meetings`)[0]!.meeting_id).toBe('987654321')
+    const [approved] = await sql`update bookings set status = 'confirmed' where uid = ${returned.uid} returning id`
+    await fixture.enqueueCalendarSync(approved!.id, 'upsert')
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'PATCH')).toHaveLength(1)
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
+  })
+
+  it('keeps both reservations safe when a new guest claims the source session during a reschedule', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const { createPersonalBooking } = await import('@@/server/services/personal-booking-creation')
+    await Promise.all([
+      fixture.move(),
+      createPersonalBooking({
+        username: 'zoom-host', slug: 'zoom-call', start: '2030-09-09T09:00:00Z',
+        name: 'New Guest', email: 'new@example.com', timeZone: 'UTC', source: 'hosted'
+      })
+    ])
+    await fixture.processCalendarSyncJobs()
+    const seats = await sql`select meeting_url from bookings where status = 'confirmed'`
+    expect(seats).toHaveLength(2)
+    expect(seats.every(seat => seat.meeting_url)).toBe(true)
+    expect(new Set(seats.map(seat => seat.meeting_url)).size).toBe(2)
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(2)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+  })
+
+  it('rolls back when the empty destination session has a worker in flight', async () => {
+    const fixture = await rescheduleFixture('complete', true)
+    const moved = await fixture.move()
+    await fixture.processCalendarSyncJobs()
+    await sql`update calendar_sync_jobs set status = 'processing', locked_at = now() where booking_id = ${fixture.bookingId}`
+    await expect(fixture.move(moved.uid, '2030-09-09T09:00:00Z')).rejects.toMatchObject({ statusCode: 409 })
+    expect((await sql`select status from bookings where uid = ${moved.uid}`)[0]!.status).toBe('confirmed')
+    expect(await sql`select id from bookings`).toHaveLength(2)
+    expect((await sql`select b.uid from booking_conference_meetings m join bookings b on b.id = m.booking_id`)[0]!.uid)
+      .toBe(moved.uid)
+  })
+
+  it.each([false, true])('preserves the meeting when the event changes between individual and group (original group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
+    await sql`update event_types set capacity = ${group ? 1 : 3} where user_id = ${fixture.hostId}`
+    await fixture.move()
+    await fixture.processCalendarSyncJobs()
+    expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)
+    expect(fixture.requests.filter(request => request.method === 'DELETE')).toHaveLength(0)
+    expect((await sql`select meeting_id from booking_conference_meetings`)[0]!.meeting_id).toBe('987654321')
+  })
+
   it('updates a recovered remote meeting before reusing its ID after a missing local mapping', async () => {
     const fixture = await rescheduleFixture()
     const requests: Array<{ method: string, body: string }> = []
@@ -463,6 +627,7 @@ describe.skipIf(!url)('Zoom integration', () => {
     }))
     const { upsertZoomMeeting } = await import('@@/server/integrations/video/zoom')
     await expect(upsertZoomMeeting(fixture.hostId, null, {
+      bookingId: fixture.bookingId,
       uid: 'recovered-booking', title: 'Recovered', description: null, attendeeName: 'Guest',
       startsAt: new Date('2030-09-09T13:00Z'), endsAt: new Date('2030-09-09T14:00Z')
     })).resolves.toEqual({ id: '987654321', joinUrl: 'https://zoom.us/j/987654321' })
@@ -470,8 +635,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect(JSON.parse(requests[1]!.body)).toMatchObject({ start_time: '2030-09-09T13:00:00.000Z', duration: 60 })
   })
 
-  it('does not replace a meeting when Zoom denies the update permission', async () => {
-    const fixture = await rescheduleFixture()
+  it.each([false, true])('does not replace a meeting when Zoom denies permission (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('complete', group)
     await fixture.move()
     fixture.failPatch(403)
     await fixture.processCalendarSyncJobs()
@@ -481,8 +646,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect((await sql`select meeting_id from booking_conference_meetings`)[0]!.meeting_id).toBe('987654321')
   })
 
-  it('waits for an ambiguous initial create to recover before rescheduling its meeting', async () => {
-    const fixture = await rescheduleFixture('failed')
+  it.each([false, true])('waits for an ambiguous initial create before rescheduling (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('failed', group)
     await expect(fixture.move()).rejects.toMatchObject({ statusCode: 409 })
     expect(await sql`select id from bookings`).toHaveLength(1)
     expect((await sql`select status from bookings where id = ${fixture.bookingId}`)[0]!.status).toBe('confirmed')
@@ -497,8 +662,8 @@ describe.skipIf(!url)('Zoom integration', () => {
     expect((await sql`select meeting_id from booking_conference_meetings`)[0]!.meeting_id).toBe('987654321')
   })
 
-  it('allows rescheduling a clean queued booking before any Zoom create was attempted', async () => {
-    const fixture = await rescheduleFixture('pending')
+  it.each([false, true])('allows moving a clean queued booking before Zoom creation (group: %s)', async (group) => {
+    const fixture = await rescheduleFixture('pending', group)
     await fixture.move()
     await fixture.processCalendarSyncJobs()
     expect(fixture.requests.filter(request => request.method === 'POST')).toHaveLength(1)

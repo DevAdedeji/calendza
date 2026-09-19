@@ -1,5 +1,5 @@
 import { and, eq, sql } from 'drizzle-orm'
-import { videoConferenceConnections } from '@@/server/database/schema'
+import { bookingConferenceMeetings, videoConferenceConnections } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
 import { useEnv } from '@@/server/config/env'
 import { fetchWithTimeout } from '@@/server/integrations/fetch'
@@ -33,6 +33,7 @@ interface ZoomMeetingPage {
 }
 
 export interface ZoomMeetingInput {
+  bookingId: string
   uid: string
   title: string
   description: string | null
@@ -351,14 +352,23 @@ function meetingBody(input: ZoomMeetingInput) {
   }
 }
 
-async function findZoomMeeting(userId: string, uid: string) {
+async function findZoomMeeting(userId: string, input: ZoomMeetingInput) {
   let next = ''
   do {
     const query = new URLSearchParams({ type: 'scheduled', page_size: '100' })
     if (next) query.set('next_page_token', next)
     const page = await zoomRequest<ZoomMeetingPage>(userId, `/users/me/meetings?${query}`)
-    const existing = page.meetings?.find(meeting => meeting.agenda?.startsWith(marker(uid)))
-    if (existing) return existing
+    for (const meeting of page.meetings ?? []) {
+      if (!meeting.agenda?.startsWith(marker(input.uid))) continue
+      const [owner] = await useDatabase().select({ bookingId: bookingConferenceMeetings.bookingId })
+        .from(bookingConferenceMeetings).where(and(
+          eq(bookingConferenceMeetings.provider, 'zoom'),
+          eq(bookingConferenceMeetings.meetingId, String(meeting.id))
+        )).limit(1)
+      // A moved meeting may still carry its old marker until PATCH succeeds.
+      // The old session must not reclaim a meeting now owned by the new one.
+      if (!owner || owner.bookingId === input.bookingId) return meeting
+    }
     next = page.next_page_token ?? ''
   } while (next)
   return null
@@ -376,7 +386,7 @@ export async function upsertZoomMeeting(userId: string, meetingId: string | null
 
   // If a worker stopped after Zoom accepted the request but before Calendza
   // saved its mapping, recover the remote meeting instead of duplicating it.
-  const existing = await findZoomMeeting(userId, input.uid)
+  const existing = await findZoomMeeting(userId, input)
   if (existing) {
     await zoomRequest(userId, `/meetings/${encodeURIComponent(existing.id)}`, { method: 'PATCH', body })
     return { id: String(existing.id), joinUrl: existing.join_url }

@@ -184,7 +184,7 @@ export async function createPersonalBooking(input: CreateBookingInput): Promise<
     // either both happen or neither, or a guest can lose their time and get
     // nothing back.
     await useDatabase().transaction(async (tx) => {
-      if (eventType.maxPerDay || eventType.maxPerWeek || eventType.maxPerMonth) {
+      if (eventType.capacity > 1 || previous?.groupSessionId || eventType.maxPerDay || eventType.maxPerWeek || eventType.maxPerMonth) {
         await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${eventType.id}, 0))`)
       }
       if (inviteToken) {

@@ -182,7 +182,7 @@ async function syncBooking(bookingId: string, action: CalendarSyncAction) {
 
   if (!booking) return
 
-  const [hosts, mappings, conferenceMappings, groupSeats] = await Promise.all([
+  const [hosts, mappings, conferenceMappings, groupSeats, groupReservations] = await Promise.all([
     db.select({
       userId: bookingHosts.userId,
       isOrganizer: bookingHosts.isOrganizer
@@ -193,8 +193,18 @@ async function syncBooking(bookingId: string, action: CalendarSyncAction) {
       .where(eq(bookingCalendarEvents.bookingId, booking.id)),
     db.select().from(bookingConferenceMeetings)
       .where(eq(bookingConferenceMeetings.bookingId, booking.id)),
-    booking.groupSessionId ? confirmedGroupSeats(booking.groupSessionId, db) : Promise.resolve([])
+    booking.groupSessionId ? confirmedGroupSeats(booking.groupSessionId, db) : Promise.resolve([]),
+    booking.groupSessionId && booking.locationType === 'zoom'
+      ? db.select({ id: bookings.id }).from(bookings).where(and(
+          eq(bookings.groupSessionId, booking.groupSessionId),
+          inArray(bookings.status, ['pending', 'awaiting_payment'])
+        )).limit(1)
+      : Promise.resolve([])
   ])
+
+  // Keep a transferred meeting unchanged while its sole reservation awaits
+  // approval/payment, including an older queued delete for a reused session.
+  if (booking.groupSessionId && !groupSeats.length && groupReservations.length) return
 
   const primarySeat = groupSeats[0]
   const attendeeName = primarySeat?.attendeeName ?? booking.attendeeName
@@ -234,6 +244,7 @@ async function syncBooking(bookingId: string, action: CalendarSyncAction) {
         organizer.userId,
         conferenceMapping?.meetingId ?? null,
         {
+          bookingId: booking.id,
           uid: booking.uid,
           title: booking.eventTitle,
           description: booking.eventDescription,
@@ -245,7 +256,7 @@ async function syncBooking(bookingId: string, action: CalendarSyncAction) {
       const joinUrl = remote.joinUrl ?? conferenceMapping?.joinUrl
       if (!joinUrl) throw new Error('Zoom did not return a join link for this meeting.')
       sharedMeetingUrl = joinUrl
-      if (joinUrl !== booking.meetingUrl) {
+      if (booking.groupSessionId || joinUrl !== booking.meetingUrl) {
         await db.update(bookings).set({ meetingUrl: joinUrl, updatedAt: sql`now()` })
           .where(booking.groupSessionId
             ? and(eq(bookings.groupSessionId, booking.groupSessionId), eq(bookings.status, 'confirmed'))

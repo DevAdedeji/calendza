@@ -25,6 +25,9 @@ useSeoMeta({
       </p>
       <p>
         Moving one guest to a different group session does not move the other guests’ meeting.
+        When a group session has only one booking, moving it to an empty session with the same
+        organizer keeps the Zoom meeting ID and join link too. Joining an existing session uses
+        that session’s shared meeting instead.
         A different organizer or a new unpaid reservation receives a separate meeting. If the new
         time needs host approval, the existing meeting is updated after approval.
       </p>
