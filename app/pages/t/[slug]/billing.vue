@@ -8,7 +8,7 @@ import {
   invoiceTotalCents,
   type BillingInterval
 } from '#shared/billing'
-import { formatInvoiceAmount, formatSubscriptionMoney } from '#shared/regional-pricing'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 import { billingApi, type TeamBillingResponse } from '@/services/api/billing'
@@ -20,6 +20,7 @@ useSeoMeta({ title: 'Team billing', robots: 'noindex, nofollow' })
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 const feedback = useFeedback()
+const { invoiceAmount: formatInvoiceAmount, money: formatSubscriptionMoney } = useAccountMoneyDisplay()
 
 const { data, refresh, status, error: loadFailure }
   = await useLazyFetch<TeamBillingResponse>(() => billingApi.summaryEndpoint(slug.value))
@@ -66,8 +67,8 @@ const seats = computed(() => entitlement.value?.seatsUsed ?? 0)
 // What the picker currently adds up to, used for the checkout button.
 const total = computed(() => invoiceTotalCents(seats.value, interval.value))
 
-// The headline is what will actually be charged on the current subscription, not
-// what the picker says — changing the picker must not rewrite the plan summary.
+// Keep the subscription amount intact; the UI may show its estimated equivalent
+// without changing what the existing subscription will actually charge.
 const headlineCents = computed(() => entitlement.value?.nextInvoiceCents ?? total.value)
 const headlinePeriod = computed(() => (hasBillingHistory.value ? entitlement.value?.interval : interval.value) === 'monthly' ? 'month' : 'year')
 const perSeatCents = computed(() => seatPriceCents(entitlement.value?.interval ?? 'yearly'))
@@ -343,8 +344,8 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
               v-if="hasBillingHistory"
               class="mt-2 text-sm text-muted"
             >
-              Your existing subscription and past invoices keep their original currency.
-              Changing the billing region only changes a new checkout.
+              ≈ is a display estimate at Bachs’ rate. Your existing subscription is still charged in {{ seatBilling?.collectionCurrency }}; past invoices are unchanged.
+              Your preferred currency is used for the display and new checkouts, not to change an existing subscription.
             </p>
 
             <p

@@ -3,7 +3,7 @@ import { apiErrorMessage } from '@/services/api/http'
 import { eventTypesApi, type EventTypesResponse } from '@/services/api/event-types'
 import type { EventTypeRecord } from '@/types/event-type'
 import { compactActionMenuUi } from '@/utils/action-menu'
-import { formatMoney } from '#shared/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
 definePageMeta({ layout: 'app', middleware: 'auth' })
@@ -14,6 +14,7 @@ const { query, search, page, resetPage } = useListQueryState()
 const apiQuery = computed(() => ({ filter: filter.value, search: search.value, page: page.value, pageSize: DEFAULT_LIST_PAGE_SIZE }))
 const { data, refresh, status, error: loadFailure } = await useLazyFetch<EventTypesResponse>(eventTypesApi.listEndpoint, { query: apiQuery })
 const { data: currentUser } = await useCurrentUser()
+const { money } = useAccountMoneyDisplay()
 const { host, url: siteUrl } = useSiteUrl()
 const { copy, isCopied } = useCopy()
 const feedback = useFeedback()
@@ -330,7 +331,7 @@ function locationIcon(item: EventTypeRecord) {
                     ><UIcon
                       name="i-lucide-credit-card"
                       class="size-3.5 text-dimmed"
-                    />{{ formatMoney(item.priceCents, item.paymentCurrency) }}</span>
+                    />{{ money(item.priceCents, item.paymentCurrency) }}</span>
                     <span class="flex items-center gap-1.5"><UIcon
                       name="i-lucide-timer"
                       class="size-3.5 text-dimmed"

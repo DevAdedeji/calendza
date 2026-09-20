@@ -33,6 +33,7 @@ test.afterAll(async () => {
 })
 
 test.beforeEach(async ({ context }) => {
+  await sql`update users set preferred_currency = 'NGN' where email = ${email}`
   // Match the isolated Playwright server's secret without consuming sign-in rate limits.
   const signature = await makeSignature(token, 'playwright-only-secret-with-at-least-thirty-two-characters')
   await context.addCookies([{
@@ -61,6 +62,10 @@ function summary(): PaymentSummary {
 }
 
 async function openPayments(page: Page, totals: PaymentSummary, withdrawals: PaymentWithdrawalRecord[] = [], team = false) {
+  await page.route('**/api/payment-display-rates', route => route.fulfill({ json: [
+    { from: 'USD', to: 'NGN', rate: '1500', quotedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 600_000).toISOString() },
+    { from: 'NGN', to: 'USD', rate: '0.00065', quotedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 600_000).toISOString() }
+  ] }))
   const prefix = team ? `/api/teams/${teamSlug}` : '/api'
   await page.route(`**${prefix}/payment-account`, route => route.fulfill({ json: {
     configured: true, status: 'active', ready: true, nextAction: 'none', lastError: null,
@@ -88,24 +93,30 @@ async function openPayments(page: Page, totals: PaymentSummary, withdrawals: Pay
   await expect(page.getByText('Paid bookings enabled', { exact: true })).toBeVisible()
 }
 
-test('keeps USD balances and NGN payouts accurate without empty currency rows', async ({ page }) => {
+test('converts USD balances into the selected display currency without changing payouts', async ({ page }) => {
   test.setTimeout(90_000)
   const statuses: PaymentWithdrawalRecord['status'][] = ['completed', 'failed', 'unknown', 'creating', 'pending', 'processing']
   await openPayments(page, summary(), statuses.map(withdrawal))
   const totals = page.getByRole('region', { name: 'Payment summary' })
+  await expect(totals.getByText('≈ NGN 1,275.00', { exact: true })).toBeVisible()
+  await expect(totals.getByText('≈ NGN 4,500.00', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Withdraw', exact: true })).toBeEnabled()
+  await page.getByRole('button', { name: 'Withdraw', exact: true }).click()
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Show popup' }).first()).toHaveText('$0.85 available')
+  await page.getByRole('dialog').getByRole('button', { name: 'Cancel', exact: true }).click()
+  await chooseCurrency(page, 'USD')
   await expect(totals.getByText('$3.00', { exact: true })).toBeVisible()
-  await expect(totals.getByText('$0.85', { exact: true })).toBeVisible()
-  await expect(totals.getByText(/NGN/)).toHaveCount(0)
-  await expect(page.getByRole('combobox', { name: 'Balance currency' })).toHaveCount(0)
-  await expect(page.getByRole('region', { name: 'Payout history' }).getByText('NGN 1,375.29', { exact: true })).toBeVisible()
+  await expect(totals.getByText('$0.85', { exact: true }).filter({ visible: true })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Display currency' })).toHaveText('USD')
+  await expect(page.getByRole('region', { name: 'Payout history' }).getByText('≈ $0.89', { exact: true }).first()).toBeVisible()
   await expect(totals.getByText('None pending', { exact: true })).toBeVisible()
   await expect(page.getByText('NGN 0.00', { exact: true })).toHaveCount(0)
   await expect(page.getByText('$0.00', { exact: true })).toHaveCount(0)
   const failed = page.getByRole('listitem').filter({ has: page.getByText('Failed', { exact: true }) })
   await expect(failed.getByText('Quoted bank amount:', { exact: true })).toBeVisible()
-  await expect(failed.getByText('Withdrawal total in USD', { exact: true })).toBeVisible()
+  await expect(failed.getByText('Withdrawal total · USD', { exact: true })).toBeVisible()
   await expect(failed.getByText(/deducted|Expected at bank/)).toHaveCount(0)
-  await expect(page.getByText('Total deducted from USD balance', { exact: true })).toHaveCount(1)
+  await expect(page.getByText('Total deducted · USD', { exact: true })).toHaveCount(1)
   await expect(page.getByText('Quoted bank amount:', { exact: true })).toHaveCount(3)
   await expect(page.getByText('Expected at bank:', { exact: true })).toHaveCount(2)
   for (const width of [1280, 768, 360]) {
@@ -122,11 +133,9 @@ test('preserves real balances in both currencies and never labels an unknown ban
   totals.withdrawn = []
   await openPayments(page, totals, [{ ...withdrawal('completed'), deliveredAmountCents: null }])
   const panel = page.getByRole('region', { name: 'Payment summary' })
-  await expect(panel.getByText('NGN 7,500.00', { exact: true })).toBeVisible()
-  await expect(panel.getByText('$0.85', { exact: true })).toHaveCount(0)
+  await expect(panel.getByText('≈ NGN 8,775.00', { exact: true })).toBeVisible()
   await chooseCurrency(page, 'USD')
-  await expect(panel.getByText('NGN 7,500.00', { exact: true })).toHaveCount(0)
-  await expect(panel.getByText('$0.85', { exact: true })).toBeVisible()
+  await expect(panel.getByText('≈ $5.73', { exact: true })).toBeVisible()
   await expect(panel.getByText('-$1.00', { exact: true })).toBeVisible()
   await expect(page.getByRole('region', { name: 'Payout history' }).getByText('No payouts yet', { exact: true })).toBeVisible()
   await expect(page.getByText('Requested withdrawal:', { exact: true })).toBeVisible()
@@ -144,7 +153,7 @@ test('shows an empty account without guessing its currency', async ({ page }) =>
   totals.available = [{ currency: 'NGN', amountCents: 0 }, { currency: 'USD', amountCents: 0 }]
   totals.withdrawn = []
   await openPayments(page, totals)
-  for (const label of ['No payments yet', 'None pending', 'No settled funds', 'No payouts yet', 'No settled balance yet']) {
+  for (const label of ['No payments yet', 'None pending', 'No payouts yet', 'No settled balance yet']) {
     await expect(page.getByText(label, { exact: true })).toBeVisible()
   }
   await expect(page.getByRole('button', { name: 'Withdraw', exact: true })).toBeDisabled()
@@ -161,11 +170,11 @@ test('does not present unavailable provider totals as zero', async ({ page }) =>
 })
 
 async function chooseCurrency(page: Page, currency: 'USD' | 'NGN') {
-  await page.getByRole('combobox', { name: 'Balance currency' }).click()
+  await page.getByRole('combobox', { name: 'Display currency' }).click()
   await page.getByRole('option', { name: currency, exact: true }).click()
 }
 
-test('keeps the selected currency on refresh and handles a disappearing currency', async ({ page }) => {
+test('keeps the selected display currency even when funds are held in another currency', async ({ page }) => {
   const totals = summary()
   totals.available = [{ currency: 'NGN', amountCents: 750000 }, { currency: 'USD', amountCents: 85 }]
   await openPayments(page, totals)
@@ -173,13 +182,13 @@ test('keeps the selected currency on refresh and handles a disappearing currency
   const panel = page.getByRole('region', { name: 'Payment summary' })
   totals.available[1]!.amountCents = 99
   await page.getByRole('button', { name: 'Refresh payment summary' }).click()
-  await expect(panel.getByText('$0.99', { exact: true })).toBeVisible()
-  await expect(page.getByRole('combobox', { name: 'Balance currency' })).toHaveText('USD')
+  await expect(panel.getByText('≈ $5.87', { exact: true })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Display currency' })).toHaveText('USD')
   totals.available[1]!.amountCents = 0
   totals.collected = []
   await page.getByRole('button', { name: 'Refresh payment summary' }).click()
-  await expect(panel.getByText('NGN 7,500.00', { exact: true })).toBeVisible()
-  await expect(page.getByRole('combobox', { name: 'Balance currency' })).toHaveCount(0)
+  await expect(panel.getByText('≈ $4.88', { exact: true })).toBeVisible()
+  await expect(page.getByRole('combobox', { name: 'Display currency' })).toHaveText('USD')
 })
 
 test('keeps a negative balance discoverable and blocks withdrawing from another currency', async ({ page }) => {
@@ -189,7 +198,7 @@ test('keeps a negative balance discoverable and blocks withdrawing from another 
   await expect(page.getByRole('alert').filter({ hasText: 'One of your currency balances is negative' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Withdraw', exact: true })).toBeDisabled()
   await chooseCurrency(page, 'USD')
-  await expect(page.getByRole('region', { name: 'Payment summary' }).getByText('-$0.85', { exact: true })).toBeVisible()
+  await expect(page.getByRole('region', { name: 'Payment summary' }).getByText('≈ $4.03', { exact: true })).toBeVisible()
 })
 
 test('shows the team amounts and currency on its payments page', async ({ page }) => {
@@ -198,9 +207,10 @@ test('shows the team amounts and currency on its payments page', async ({ page }
   totals.available = [{ currency: 'NGN', amountCents: 750000 }]
   await openPayments(page, totals, [], true)
   const panel = page.getByRole('region', { name: 'Payment summary' })
-  await expect(panel.getByText('NGN 7,500.00', { exact: true })).toBeVisible()
+  await expect(panel.getByText('NGN 7,500.00', { exact: true }).filter({ visible: true })).toBeVisible()
   await expect(panel.getByText('NGN 8,000.00', { exact: true })).toBeVisible()
-  await expect(page.getByRole('combobox', { name: 'Balance currency' })).toHaveCount(0)
+  await chooseCurrency(page, 'USD')
+  await expect(panel.getByText('≈ $4.88', { exact: true })).toBeVisible()
 })
 
 test('does not show stale money as current after a failed refresh', async ({ page }) => {

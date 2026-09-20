@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { apiErrorMessage } from '@/services/api/http'
 import { bookingsApi, type BookingDetail } from '@/services/api/bookings'
-import { formatMoney } from '#shared/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { formatInstant, isPast, localTimeZone } from '@/utils/date-time'
 
 definePageMeta({ layout: 'bare', middleware: 'booking-shell' })
@@ -13,6 +13,7 @@ const uid = String(route.params.uid)
 // their bookings list. Only the signed-in one should get the app shell.
 const { data: viewer } = await useCurrentUser()
 const signedIn = computed(() => Boolean(viewer.value?.user))
+const { money } = useAccountMoneyDisplay()
 
 const { data: booking, error, status, refresh } = await useFetch<BookingDetail>(bookingsApi.detailEndpoint(uid))
 if (error.value) setResponseStatus(error.value.statusCode === 404 ? 404 : 503)
@@ -340,7 +341,7 @@ useSeoMeta({
                   class="mt-0.5 size-4 shrink-0 text-dimmed"
                 />
                 <dd class="text-toned">
-                  {{ formatMoney(booking.payment.amountCents, booking.payment.currency) }}
+                  {{ money(booking.payment.amountCents, booking.payment.currency) }}
                   <span class="ml-1 text-[14px] text-muted">· {{ booking.payment.status.replace('_', ' ') }}</span>
                 </dd>
               </div>

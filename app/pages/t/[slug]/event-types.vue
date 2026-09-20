@@ -2,7 +2,7 @@
 import { apiErrorMessage } from '@/services/api/http'
 import { teamEventTypesApi, type TeamEventTypeRecord, type TeamEventTypesResponse } from '@/services/api/event-types'
 import { teamsApi, type TeamDetail, type TeamMembersResponse } from '@/services/api/teams'
-import { formatMoney } from '#shared/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { compactActionMenuUi } from '@/utils/action-menu'
 import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 
@@ -11,6 +11,7 @@ definePageMeta({ layout: 'app', middleware: 'auth' })
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 const feedback = useFeedback()
+const { money } = useAccountMoneyDisplay()
 const { host, url: siteUrl } = useSiteUrl()
 const { copy, isCopied } = useCopy()
 
@@ -278,7 +279,7 @@ function bookingLimitLabel(eventType: TeamEventTypeRecord) {
                 variant="subtle"
                 size="sm"
               >
-                {{ formatMoney(eventType.priceCents, eventType.paymentCurrency) }}
+                {{ money(eventType.priceCents, eventType.paymentCurrency) }}
               </UBadge>
               <UBadge
                 v-if="bookingLimitLabel(eventType)"

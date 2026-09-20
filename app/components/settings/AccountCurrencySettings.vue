@@ -52,7 +52,7 @@ async function save() {
         />
       </UFormField>
       <p class="text-sm text-muted">
-        Existing event prices, subscriptions and past payments keep their original currency. This does not convert balances.
+        Balances are displayed in this currency using Bachs’ exchange rate. Converted totals are estimates; your funds, existing event prices, subscriptions and payment records stay unchanged.
       </p>
       <p
         v-if="error"

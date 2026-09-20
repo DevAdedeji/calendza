@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatMoney } from '#shared/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { apiErrorMessage } from '@/services/api/http'
 import { operationsApi } from '@/services/api/operations'
 import { paymentsApi, type PaymentActivityRecord, type PaymentActivityResponse } from '@/services/api/payments'
@@ -7,6 +7,7 @@ import { DEFAULT_LIST_PAGE_SIZE } from '@/constants/lists'
 import { formatCalendarDate, formatDateTime } from '@/utils/date-time'
 
 const props = withDefaults(defineProps<{ teamSlug?: string, operations?: boolean }>(), { operations: false })
+const { money } = useAccountMoneyDisplay()
 const feedback = useFeedback()
 const hydrated = ref(false)
 const retryingRefundId = ref<string | null>(null)
@@ -121,7 +122,7 @@ function clearFilters() {
 function amount(item: PaymentActivityRecord) {
   if (item.amountCents == null) return 'Amount unavailable'
   const sign = item.direction === 'in' ? '+' : item.direction === 'out' ? '−' : ''
-  return `${sign}${formatMoney(item.amountCents, item.currency)}`
+  return `${sign}${money(item.amountCents, item.currency)}`
 }
 
 function timestamp(value: string) {

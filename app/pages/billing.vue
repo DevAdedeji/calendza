@@ -4,7 +4,7 @@ import {
   TEAM_PLAN,
   type BillingInterval
 } from '#shared/billing'
-import { formatInvoiceAmount } from '#shared/regional-pricing'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 import { personalBillingApi } from '@/services/api/billing'
@@ -13,6 +13,7 @@ definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Plan & billing', robots: 'noindex, nofollow' })
 
 const feedback = useFeedback()
+const { invoiceAmount: formatInvoiceAmount } = useAccountMoneyDisplay()
 const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
 const { currency, ready: pricingReady, price } = useSubscriptionPricing()
 const checkingOut = ref(false)

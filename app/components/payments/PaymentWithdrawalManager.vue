@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { formatMoney, type PaymentCurrency } from '#shared/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { apiErrorMessage } from '@/services/api/http'
 import { paymentsApi, type PaymentWithdrawalOptions, type PaymentWithdrawalPreview, type PaymentWithdrawalRecord } from '@/services/api/payments'
 import { formatDateTime } from '@/utils/date-time'
 
-const props = defineProps<{ teamSlug?: string, balanceCurrency?: PaymentCurrency }>()
+const props = defineProps<{ teamSlug?: string }>()
 const emit = defineEmits<{ updated: [] }>()
 const toast = useToast()
 const endpoint = computed(() => paymentsApi.withdrawalsEndpoint(props.teamSlug))
@@ -24,7 +25,7 @@ const submissionRequests = useRequestGuard()
 
 const withdrawableBalances = computed(() => (data.value?.available ?? [])
   .filter(balance => balance.amountCents > 0))
-const displayBalance = computed(() => data.value?.available.find(balance => balance.currency === props.balanceCurrency))
+const { total: displayAmount, money, currency } = useAccountMoneyDisplay()
 const hasNegativeBalance = computed(() => data.value?.available.some(balance => balance.amountCents < 0))
 const availableOptions = computed(() => withdrawableBalances.value
   .map(balance => ({
@@ -43,7 +44,7 @@ const crossCurrency = computed(() => Boolean(
   selectedDestination.value && selectedDestination.value.currency !== sourceCurrency.value
 ))
 const canStart = computed(() => Boolean(data.value?.ready && !error.value && !hasNegativeBalance.value
-  && displayBalance.value && displayBalance.value.amountCents > 0 && destinationOptions.value.length))
+  && withdrawableBalances.value.length && destinationOptions.value.length))
 
 watch(data, (value) => {
   if (!availableOptions.value.some(option => option.value === sourceCurrency.value)) {
@@ -87,7 +88,8 @@ function resetForm() {
   requestId.value = null
   amount.value = ''
   formError.value = ''
-  sourceCurrency.value = props.balanceCurrency ?? availableOptions.value[0]?.value ?? 'NGN'
+  sourceCurrency.value = availableOptions.value.find(option => option.value === currency.value)?.value
+    ?? availableOptions.value[0]?.value ?? 'NGN'
   destinationId.value = data.value?.destinations.find(destination => destination.isDefault)?.id
     ?? data.value?.destinations[0]?.id
     ?? ''
@@ -182,7 +184,7 @@ function withdrawalAmount(withdrawal: PaymentWithdrawalRecord) {
   const currency = withdrawal.deliveredAmountCents == null
     ? withdrawal.sourceCurrency
     : withdrawal.destinationCurrency
-  return formatMoney(cents, currency)
+  return money(cents, currency)
 }
 
 function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
@@ -264,18 +266,21 @@ function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
             </p>
             <div class="mt-2 flex flex-wrap gap-2">
               <UBadge
-                v-if="displayBalance && displayBalance.amountCents > 0"
+                v-if="data?.available.some(balance => balance.amountCents !== 0)"
                 color="neutral"
                 variant="subtle"
                 size="lg"
               >
-                {{ formatMoney(displayBalance.amountCents, displayBalance.currency) }}
+                {{ displayAmount(data?.available) }}
               </UBadge>
               <span
                 v-else
                 class="text-sm text-muted"
               >No settled balance yet</span>
             </div>
+            <p class="mt-2 text-xs text-muted">
+              Converted values are estimates. Review the actual source balance, fees and bank amount before confirming a withdrawal.
+            </p>
           </div>
           <div class="rounded-xl border border-default p-4">
             <p class="text-xs font-medium uppercase tracking-wide text-dimmed">
@@ -315,7 +320,7 @@ function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
             Payout history
           </h2>
           <p class="mt-1 text-sm text-muted">
-            Past bank receipts, not your current balance. Amounts use the destination currency after any conversion.
+            Past bank receipts, not your current balance. Converted values use today’s Bachs estimate, not the historical exchange rate.
           </p>
         </div>
         <slot name="payout-summary" />
@@ -367,9 +372,9 @@ function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
                   {{ withdrawal.destinationName }} · {{ formatDateTime(withdrawal.createdAt, 'en') }}
                 </p>
                 <p class="mt-1 text-xs leading-relaxed text-muted">
-                  Withdrawal amount: {{ formatMoney(withdrawal.requestedAmountCents, withdrawal.sourceCurrency) }}
+                  Withdrawal amount: {{ money(withdrawal.requestedAmountCents, withdrawal.sourceCurrency) }}
                   <template v-if="withdrawal.feeCents != null">
-                    · Bachs fee: {{ formatMoney(withdrawal.feeCents, withdrawal.sourceCurrency) }}
+                    · Bachs fee: {{ money(withdrawal.feeCents, withdrawal.sourceCurrency) }}
                   </template>
                 </p>
                 <p
@@ -384,10 +389,10 @@ function withdrawalAmountLabel(withdrawal: PaymentWithdrawalRecord) {
                 class="rounded-lg bg-elevated px-3 py-2 sm:w-56 sm:shrink-0 sm:text-right"
               >
                 <p class="text-[11px] font-medium uppercase tracking-wide text-dimmed">
-                  {{ withdrawal.status === 'completed' ? 'Total deducted from' : 'Withdrawal total in' }} {{ withdrawal.sourceCurrency }}{{ withdrawal.status === 'completed' ? ' balance' : '' }}
+                  {{ withdrawal.status === 'completed' ? 'Total deducted' : 'Withdrawal total' }} · {{ currency }}
                 </p>
                 <p class="mt-0.5 font-medium tabular-nums text-highlighted">
-                  {{ formatMoney(withdrawal.totalDebitedCents, withdrawal.sourceCurrency) }}
+                  {{ money(withdrawal.totalDebitedCents, withdrawal.sourceCurrency) }}
                 </p>
                 <p
                   v-if="withdrawal.status !== 'completed'"

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { formatMoney, type PaymentCurrency } from '#shared/payments'
 import { apiErrorMessage } from '@/services/api/http'
-import { paymentsApi, type PaymentAccountSummary, type PaymentMoneyTotal, type PaymentSummary } from '@/services/api/payments'
+import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
+import { paymentsApi, type PaymentAccountSummary, type PaymentSummary } from '@/services/api/payments'
 
 const props = defineProps<{ teamSlug?: string }>()
 const endpoint = computed(() => props.teamSlug
@@ -21,32 +22,31 @@ const {
 const starting = ref(false)
 const checking = ref(false)
 
-const { currency: preferredCurrency } = useAccountCurrency()
-const selectedCurrency = ref<PaymentCurrency>(preferredCurrency.value)
-const currencyOptions = computed(() => [...new Set([
-  preferredCurrency.value,
-  ...[
-    ...(summary.value?.available ?? []),
-    ...(summary.value?.pending ?? []),
-    ...(summary.value?.collected ?? [])
-  ].filter(total => total.amountCents !== 0).map(total => total.currency)
-])])
+const { currency: selectedCurrency, saveCurrency, total: amount, activeRates, refreshRates } = useAccountMoneyDisplay()
+const currencyOptions: PaymentCurrency[] = ['NGN', 'USD']
+const savingCurrency = ref(false)
+const currencyError = ref('')
+const needsConversion = computed(() => [
+  ...(summary.value?.available ?? []), ...(summary.value?.pending ?? []), ...(summary.value?.collected ?? []), ...(summary.value?.withdrawn ?? [])
+].some(total => total.amountCents !== 0 && total.currency !== selectedCurrency.value))
+const currentRate = computed(() => activeRates.value.find(rate => rate.to === selectedCurrency.value))
+const rateTime = computed(() => currentRate.value ? new Date(currentRate.value.quotedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '')
 const hasNegativeBalance = computed(() => summary.value?.available.some(total => total.amountCents < 0))
-const payoutTotals = computed(() => summary.value?.withdrawn.filter(total => total.amountCents !== 0) ?? [])
-
-watch(currencyOptions, (currencies) => {
-  if (!currencies.includes(selectedCurrency.value)) {
-    selectedCurrency.value = preferredCurrency.value
+async function changeCurrency(value: string) {
+  if (savingCurrency.value || (value !== 'NGN' && value !== 'USD')) return
+  savingCurrency.value = true
+  currencyError.value = ''
+  try {
+    await saveCurrency(value)
+  } catch (error) {
+    currencyError.value = apiErrorMessage(error, 'Could not save your currency. Try again.')
+  } finally {
+    savingCurrency.value = false
   }
-}, { immediate: true })
+}
 
-watch([preferredCurrency, () => props.teamSlug], () => {
-  selectedCurrency.value = preferredCurrency.value
-})
-
-function amount(totals: PaymentMoneyTotal[] | undefined, empty: string) {
-  const total = totals?.find(total => total.currency === selectedCurrency.value)
-  return total?.amountCents ? formatMoney(total.amountCents, total.currency) : empty
+async function refreshMoney() {
+  await Promise.all([refreshSummary(), refreshRates()])
 }
 
 const statusCopy = computed(() => ({
@@ -259,40 +259,48 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
             Payment summary
           </h2>
           <p class="mt-1 text-sm text-muted">
-            View your collections and Bachs balance in one currency at a time.
+            Your full balance and collections, displayed in your chosen currency.
           </p>
           <p
-            v-if="currencyOptions.length > 1"
+            v-if="needsConversion && currentRate"
             class="mt-1 text-xs text-muted"
           >
-            Switch currency to see your other balances and past payments.
+            ≈ Bachs estimate at {{ rateTime }}: 1 {{ currentRate.inverse ? currentRate.to : currentRate.from }} = {{ currentRate.rate }} {{ currentRate.inverse ? currentRate.from : currentRate.to }}. Withdrawal fees and final payout rates may differ.
+          </p>
+          <p
+            v-else-if="needsConversion"
+            role="status"
+            class="mt-1 text-xs text-warning"
+          >
+            Bachs’ exchange rate is unavailable or expired. Refresh to retry; your original balances are unchanged.
           </p>
         </div>
         <div class="flex shrink-0 items-center gap-2">
           <USelect
-            v-if="currencyOptions.length > 1"
-            v-model="selectedCurrency"
+            :model-value="selectedCurrency"
+            :disabled="savingCurrency"
             :items="currencyOptions"
-            aria-label="Balance currency"
+            aria-label="Display currency"
             class="w-28"
+            @update:model-value="changeCurrency"
           />
-          <UBadge
-            v-else-if="selectedCurrency"
-            color="neutral"
-            variant="subtle"
-          >
-            {{ selectedCurrency }}
-          </UBadge>
           <UButton
             icon="i-lucide-refresh-cw"
             aria-label="Refresh payment summary"
             color="neutral"
             variant="ghost"
             :loading="summaryStatus === 'pending'"
-            @click="() => refreshSummary()"
+            @click="refreshMoney"
           />
         </div>
       </header>
+      <p
+        v-if="currencyError"
+        role="alert"
+        class="px-6 py-3 text-sm text-error"
+      >
+        {{ currencyError }}
+      </p>
       <p
         v-if="hasNegativeBalance"
         role="alert"
@@ -344,7 +352,7 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
             {{ summary?.providerStatus === 'available' ? amount(summary.pending, 'None pending') : 'Unavailable' }}
           </p>
           <p class="mt-2 text-xs text-muted">
-            Payments still settling into this currency's balance.
+            Payments still settling, shown in {{ selectedCurrency }}.
           </p>
         </div>
         <div class="bg-default p-5 sm:p-6">
@@ -355,17 +363,40 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
             {{ amount(summary?.collected, 'No payments yet') }}
           </p>
           <p class="mt-2 text-xs text-muted">
-            Successful bookings priced in this currency, before fees. Not your available balance.
+            All successful bookings, before fees, shown in {{ selectedCurrency }}. Not your available balance.
           </p>
         </div>
       </div>
+      <details
+        v-if="summary?.providerStatus === 'available' && !summaryError"
+        class="border-t border-default px-5 py-4 text-sm sm:px-6"
+      >
+        <summary class="cursor-pointer text-muted">
+          Original balances held in Bachs
+        </summary>
+        <div class="mt-3 flex flex-wrap gap-4">
+          <span
+            v-for="total in summary.available.filter(total => total.amountCents !== 0)"
+            :key="total.currency"
+            class="tabular-nums"
+          >
+            {{ formatMoney(total.amountCents, total.currency) }}
+          </span>
+          <span
+            v-if="!summary.available.some(total => total.amountCents !== 0)"
+            class="text-muted"
+          >No settled funds</span>
+        </div>
+        <p class="mt-2 text-xs text-muted">
+          Changing the display currency does not exchange or move your money.
+        </p>
+      </details>
     </section>
 
     <PaymentWithdrawalManager
       v-if="data?.configured"
       :key="teamSlug || 'personal'"
       :team-slug="teamSlug"
-      :balance-currency="selectedCurrency"
       @updated="refreshSummary"
     >
       <template #payout-summary>
@@ -380,18 +411,14 @@ onBeforeUnmount(() => document.removeEventListener('visibilitychange', checkSetu
           Bank payout totals unavailable. Refresh the payment summary to try again.
         </p>
         <div
-          v-else-if="payoutTotals.length"
-          class="flex flex-wrap gap-4"
+          v-else-if="summary?.withdrawn.some(total => total.amountCents !== 0)"
         >
-          <div
-            v-for="total in payoutTotals"
-            :key="total.currency"
-          >
+          <div>
             <p class="text-xs text-muted">
-              Total paid to your bank · {{ total.currency }}
+              Total paid to your bank · {{ selectedCurrency }}
             </p>
             <p class="mt-1 font-semibold tabular-nums text-highlighted">
-              {{ formatMoney(total.amountCents, total.currency) }}
+              {{ amount(summary?.withdrawn, 'No payouts yet') }}
             </p>
           </div>
         </div>
