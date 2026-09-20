@@ -268,6 +268,8 @@ const initials = computed(() => getInitials(profile.name))
           </dl>
         </section>
 
+        <AccountCurrencySettings />
+
         <AccountSecuritySettings />
 
         <section class="overflow-hidden rounded-xl border border-default bg-default">

@@ -42,6 +42,7 @@ const error = ref('')
 
 const isOpen = computed({ get: () => props.open, set: value => emit('update:open', value) })
 const username = computed(() => currentUser.value?.user?.username ?? '')
+const { currency: defaultCurrency } = useAccountCurrency()
 const {
   form, slugTouched, scheduleOptions, selectedSchedule, valid, dirty, locationOptions,
   locationField, selectedGeneratedProvider, breaksEnabled,
@@ -50,6 +51,7 @@ const {
   allSectionsOpen, sectionSummaries, sectionOpen, toggleSection, toggleAllSections,
   loadForm, reminderEnabled, toggleReminder, slugify
 } = useEventTypeForm({
+  defaultCurrency,
   eventType: () => props.eventType,
   schedules: () => schedules.value?.items,
   googleConnection,

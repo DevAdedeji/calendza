@@ -1,6 +1,6 @@
 import { computed, reactive, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { useEventBookingMode } from '@/composables/event-types/useEventBookingMode'
-import { formatMoney } from '#shared/payments'
+import { formatMoney, type PaymentCurrency } from '#shared/payments'
 import {
   eventTypeSchema,
   type EventTypeInput
@@ -37,6 +37,7 @@ function shortDuration(minutes: number) {
 }
 
 export function useEventTypeForm(options: {
+  defaultCurrency?: MaybeRefOrGetter<PaymentCurrency>
   eventType: MaybeRefOrGetter<EventTypeRecord | null | undefined>
   schedules: MaybeRefOrGetter<ScheduleRecord[] | null | undefined>
   googleConnection: MaybeRefOrGetter<CalendarConnection | null | undefined>
@@ -56,7 +57,7 @@ export function useEventTypeForm(options: {
       bookingWindowDays: 60, maxPerDay: undefined, maxPerWeek: undefined, maxPerMonth: undefined,
       locationType: 'custom', locationDetails: 'The host will share meeting details before the meeting.',
       reminderMinutes: [1440, 60], bookingQuestions: [], requiresConfirmation: false,
-      capacity: 1, paymentEnabled: false, priceCents: null, paymentCurrency: 'USD',
+      capacity: 1, paymentEnabled: false, priceCents: null, paymentCurrency: toValue(options.defaultCurrency) ?? 'USD',
       scheduleId, hidden: false
     }
   }

@@ -28,6 +28,7 @@ const emit = defineEmits<{
 
 const { host } = useSiteUrl()
 const feedback = useFeedback()
+const { currency: defaultCurrency } = useAccountCurrency()
 const paymentEndpoint = computed(() => paymentsApi.teamEndpoint(props.teamSlug))
 const { data: paymentAccount, refresh: refreshPaymentAccount } = await useFetch<PaymentAccountSummary>(paymentEndpoint, { immediate: false })
 const templatesEndpoint = computed(() => teamEventTemplatesApi.listEndpoint(props.teamSlug))
@@ -47,6 +48,7 @@ const {
   zoomReady, locationOptions, selectedIds, valid, validationMessage,
   resetForm, toggleHost
 } = useTeamEventTypeForm({
+  defaultCurrency,
   members: () => props.members,
   teamKey: () => props.teamSlug
 })

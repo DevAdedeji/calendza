@@ -83,6 +83,27 @@ describe.skipIf(!url)('profile persistence', () => {
     await expect(profileForUser(user!.id)).resolves.toMatchObject({ hasPassword: true })
   })
 
+  it('persists currency per account without changing event prices or other profile fields', async () => {
+    const [owner, other] = await sql<{ id: string }[]>`
+      insert into users (email, name, username, time_zone)
+      values ('currency@example.com', 'Currency Owner', 'currency-owner', 'Africa/Lagos'),
+        ('other-currency@example.com', 'Other Owner', 'other-currency', 'UTC')
+      returning id
+    `
+    await sql`insert into event_types (user_id, title, slug, duration_minutes, location_type, price_cents, payment_currency, payment_enabled)
+      values (${owner!.id}, 'Existing paid call', 'paid-call', 30, 'custom', 2500, 'USD', true)`
+    const { profileForUser, updatePreferredCurrency } = await import('@@/server/repositories/profile')
+    expect((await profileForUser(owner!.id))?.preferredCurrency).toBeNull()
+    await expect(updatePreferredCurrency(owner!.id, 'NGN')).resolves.toEqual({ preferredCurrency: 'NGN' })
+    expect(await profileForUser(owner!.id)).toMatchObject({ preferredCurrency: 'NGN', name: 'Currency Owner', timeZone: 'Africa/Lagos' })
+    expect((await profileForUser(other!.id))?.preferredCurrency).toBeNull()
+    const [event] = await sql`select price_cents, payment_currency from event_types where user_id = ${owner!.id}`
+    expect(event).toMatchObject({ price_cents: 2500, payment_currency: 'USD' })
+    await updatePreferredCurrency(owner!.id, 'USD')
+    expect((await profileForUser(owner!.id))?.preferredCurrency).toBe('USD')
+    await expect(sql`update users set preferred_currency = 'EUR' where id = ${owner!.id}`).rejects.toMatchObject({ code: '23514' })
+  })
+
   it('stores verified avatar bytes and removes them with the owning account', async () => {
     const [user] = await sql<{ id: string }[]>`
       insert into users (email, name, username, time_zone)

@@ -74,6 +74,28 @@ describe.each(['personal', 'team'] as const)('%s booking mode controls', (kind) 
 })
 
 describe('team event form drafts', () => {
+  it('defaults new drafts to account currency without repricing existing events', () => {
+    const currency = ref<'USD' | 'NGN'>('NGN')
+    const editor = useTeamEventTypeForm({ members: [], teamKey: 'team', defaultCurrency: currency })
+    expect(editor.form.paymentCurrency).toBe('NGN')
+    editor.resetForm({ paymentCurrency: 'USD', priceCents: 2500 })
+    expect(editor.form.paymentCurrency).toBe('USD')
+    expect(editor.form.priceCents).toBe(2500)
+    editor.resetForm()
+    expect(editor.form.paymentCurrency).toBe('NGN')
+  })
+
+  it('uses the latest preference when opening a new personal draft, not while editing it', () => {
+    const currency = ref<'USD' | 'NGN'>('NGN')
+    const editor = useEventTypeForm({ eventType: null, schedules: [], googleConnection: null, microsoftConnection: null, zoomConnection: null, defaultCurrency: currency })
+    editor.loadForm()
+    expect(editor.form.paymentCurrency).toBe('NGN')
+    currency.value = 'USD'
+    expect(editor.form.paymentCurrency).toBe('NGN')
+    editor.loadForm()
+    expect(editor.form.paymentCurrency).toBe('USD')
+  })
+
   it('does not mutate a loaded event or template before saving', () => {
     const scope = effectScope()
     cleanups.push(() => scope.stop())

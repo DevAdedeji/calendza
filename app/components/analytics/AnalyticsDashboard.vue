@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { formatMoney } from '#shared/payments'
+import { formatMoney, type PaymentCurrency } from '#shared/payments'
 import { analyticsApi, type AnalyticsResponse } from '@/services/api/analytics'
 import { formatCalendarDate } from '@/utils/date-time'
 
@@ -25,6 +25,16 @@ const teamExportUrl = computed(() => props.teamSlug
   ? `/api/teams/${encodeURIComponent(props.teamSlug)}/analytics/export?days=${days.value}${eventTypeId.value ? `&eventTypeId=${encodeURIComponent(eventTypeId.value)}` : ''}`
   : '')
 const canUseAdvancedAnalytics = computed(() => Boolean(props.teamSlug || props.personalPro))
+const { currency: preferredCurrency } = useAccountCurrency()
+const revenueCurrency = ref<PaymentCurrency>(preferredCurrency.value)
+const revenueCurrencies = computed(() => [...new Set([preferredCurrency.value, ...(data.value?.revenue.map(amount => amount.currency) ?? [])])])
+const revenueTotal = computed(() => data.value?.revenue.find(amount => amount.currency === revenueCurrency.value)?.amountCents ?? 0)
+watch([preferredCurrency, () => props.teamSlug], () => {
+  revenueCurrency.value = preferredCurrency.value
+})
+watch(revenueCurrencies, (currencies) => {
+  if (!currencies.includes(revenueCurrency.value)) revenueCurrency.value = preferredCurrency.value
+})
 
 function changeLabel(value: number | null) {
   if (value === null) return 'New activity'
@@ -363,23 +373,23 @@ async function exportTeamCsv() {
             <p class="text-[13px] font-medium text-muted">
               Gross revenue
             </p>
-            <div
-              v-if="data.revenue.length"
-              class="mt-2 flex flex-wrap gap-x-5 gap-y-1"
-            >
-              <p
-                v-for="amount in data.revenue"
-                :key="amount.currency"
-                class="text-xl font-semibold text-highlighted"
-              >
-                {{ formatMoney(amount.amountCents, amount.currency) }}
+            <div class="mt-2 flex flex-wrap items-center gap-3">
+              <p class="text-xl font-semibold text-highlighted">
+                {{ formatMoney(revenueTotal, revenueCurrency) }}
               </p>
+              <USelect
+                v-if="revenueCurrencies.length > 1"
+                v-model="revenueCurrency"
+                :items="revenueCurrencies"
+                aria-label="Revenue currency"
+                class="w-28"
+              />
             </div>
             <p
-              v-else
-              class="mt-2 text-xl font-semibold text-highlighted"
+              v-if="revenueCurrencies.length > 1"
+              class="mt-1 text-xs text-muted"
             >
-              —
+              Other currencies are available in the selector. Totals are not converted.
             </p>
             <p class="mt-1 text-[12px] text-dimmed">
               Paid bookings before Calendza, Bachs processing and withdrawal fees. Refunds are excluded.

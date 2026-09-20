@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
       emailVerified: users.emailVerified,
       username: users.username,
       timeZone: users.timeZone,
+      preferredCurrency: users.preferredCurrency,
       bio: users.bio,
       avatarUrl: users.avatarUrl,
       twoFactorEnabled: users.twoFactorEnabled

@@ -94,12 +94,14 @@ export const users = pgTable('users', {
   hideCalendzaBranding: boolean('hide_schedra_branding').notNull().default(false),
   bookingEmailTemplates: jsonb('booking_email_templates').$type<BookingEmailTemplateSettings>(),
   timeZone: text('time_zone').notNull().default('UTC'),
+  preferredCurrency: text('preferred_currency').$type<'USD' | 'NGN'>(),
   twoFactorEnabled: boolean('two_factor_enabled').notNull().default(false),
 
   ...timestamps
 }, table => [
   uniqueIndex('users_email_key').on(sql`lower(${table.email})`),
-  uniqueIndex('users_username_key').on(sql`lower(${table.username})`)
+  uniqueIndex('users_username_key').on(sql`lower(${table.username})`),
+  check('users_preferred_currency_allowed', sql`${table.preferredCurrency} in ('USD', 'NGN')`)
 ])
 
 export const emailNotificationPreferences = pgTable('email_notification_preferences', {

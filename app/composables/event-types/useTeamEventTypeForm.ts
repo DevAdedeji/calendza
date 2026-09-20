@@ -1,5 +1,6 @@
 import { computed, reactive, ref, shallowRef, toValue, watch, type MaybeRefOrGetter } from 'vue'
 import { useEventBookingMode } from '@/composables/event-types/useEventBookingMode'
+import type { PaymentCurrency } from '#shared/payments'
 import {
   meetingLocationTypeSchema,
   teamEventTypeSchema,
@@ -8,7 +9,7 @@ import {
 } from '#shared/validation'
 import type { TeamMemberRecord } from '@/services/api/teams'
 
-function emptyTeamEventTypeForm(): TeamEventTypeInput {
+function emptyTeamEventTypeForm(currency: PaymentCurrency = 'USD'): TeamEventTypeInput {
   return {
     title: '', slug: '', description: undefined, durationMinutes: 30, additionalDurationMinutes: [],
     recurringBookingEnabled: false, recurringBookingMaxOccurrences: 8, incrementMinutes: null,
@@ -16,16 +17,17 @@ function emptyTeamEventTypeForm(): TeamEventTypeInput {
     bookingWindowDays: 60, maxPerDay: null, maxPerWeek: null, maxPerMonth: null, locationType: 'custom',
     locationDetails: 'The host will share meeting details before the meeting.',
     reminderMinutes: [1440, 60], bookingQuestions: [], requiresConfirmation: false,
-    capacity: 1, paymentEnabled: false, priceCents: null, paymentCurrency: 'USD',
+    capacity: 1, paymentEnabled: false, priceCents: null, paymentCurrency: currency,
     hidden: false, assignmentMode: 'round_robin', hosts: []
   }
 }
 
 export function useTeamEventTypeForm(options: {
+  defaultCurrency?: MaybeRefOrGetter<PaymentCurrency>
   members: MaybeRefOrGetter<TeamMemberRecord[]>
   teamKey: MaybeRefOrGetter<string>
 }) {
-  const form = reactive<TeamEventTypeInput>(emptyTeamEventTypeForm())
+  const form = reactive<TeamEventTypeInput>(emptyTeamEventTypeForm(toValue(options.defaultCurrency)))
   const slugTouched = ref(false)
   const knownMembers = shallowRef(new Map<string, TeamMemberRecord>())
 
@@ -83,7 +85,7 @@ export function useTeamEventTypeForm(options: {
 
   function resetForm(value?: Partial<TeamEventTypeInput> | null) {
     Object.assign(form, {
-      ...emptyTeamEventTypeForm(),
+      ...emptyTeamEventTypeForm(toValue(options.defaultCurrency)),
       ...value,
       additionalDurationMinutes: [...(value?.additionalDurationMinutes ?? [])],
       reminderMinutes: [...(value?.reminderMinutes ?? [1440, 60])],

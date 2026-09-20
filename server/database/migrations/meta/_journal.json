@@ -379,6 +379,13 @@
       "when": 1788563184383,
       "tag": "0053_booking_buffer_reservations",
       "breakpoints": true
+    },
+    {
+      "idx": 54,
+      "version": "7",
+      "when": 1789901876578,
+      "tag": "0054_account_currency_preference",
+      "breakpoints": true
     }
   ]
 }

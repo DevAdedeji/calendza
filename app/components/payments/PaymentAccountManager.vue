@@ -21,23 +21,27 @@ const {
 const starting = ref(false)
 const checking = ref(false)
 
-const selectedCurrency = ref<PaymentCurrency | undefined>()
+const { currency: preferredCurrency } = useAccountCurrency()
+const selectedCurrency = ref<PaymentCurrency>(preferredCurrency.value)
 const currencyOptions = computed(() => [...new Set([
-  ...(summary.value?.available ?? []),
-  ...(summary.value?.pending ?? []),
-  ...(summary.value?.collected ?? [])
-].filter(total => total.amountCents !== 0).map(total => total.currency))])
+  preferredCurrency.value,
+  ...[
+    ...(summary.value?.available ?? []),
+    ...(summary.value?.pending ?? []),
+    ...(summary.value?.collected ?? [])
+  ].filter(total => total.amountCents !== 0).map(total => total.currency)
+])])
 const hasNegativeBalance = computed(() => summary.value?.available.some(total => total.amountCents < 0))
 const payoutTotals = computed(() => summary.value?.withdrawn.filter(total => total.amountCents !== 0) ?? [])
 
 watch(currencyOptions, (currencies) => {
-  if (!selectedCurrency.value || !currencies.includes(selectedCurrency.value)) {
-    selectedCurrency.value = currencies[0]
+  if (!currencies.includes(selectedCurrency.value)) {
+    selectedCurrency.value = preferredCurrency.value
   }
 }, { immediate: true })
 
-watch(() => props.teamSlug, () => {
-  selectedCurrency.value = undefined
+watch([preferredCurrency, () => props.teamSlug], () => {
+  selectedCurrency.value = preferredCurrency.value
 })
 
 function amount(totals: PaymentMoneyTotal[] | undefined, empty: string) {

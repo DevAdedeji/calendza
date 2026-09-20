@@ -1,4 +1,5 @@
 import type { PublicPersonalBranding } from '#shared/branding'
+import type { PaymentCurrency } from '#shared/payments'
 
 export interface PublicProfile {
   name: string
@@ -27,11 +28,15 @@ export interface CurrentProfile {
   bio: string | null
   avatarUrl: string | null
   timeZone: string
+  preferredCurrency: PaymentCurrency | null
   twoFactorEnabled: boolean
   hasPassword: boolean
 }
 
 export const profileApi = {
+  updateCurrency: (preferredCurrency: PaymentCurrency) => $fetch<{ preferredCurrency: PaymentCurrency }>('/api/profile/currency', {
+    method: 'PATCH', body: { preferredCurrency }
+  }),
   update: (body: { name: string, bio?: string }) => $fetch<{ user: CurrentProfile }>('/api/profile', { method: 'PATCH', body }),
   uploadAvatar: (file: File) => {
     const body = new FormData()

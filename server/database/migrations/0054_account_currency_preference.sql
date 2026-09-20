@@ -1,0 +1,2 @@
+ALTER TABLE "users" ADD COLUMN "preferred_currency" text;--> statement-breakpoint
+ALTER TABLE "users" ADD CONSTRAINT "users_preferred_currency_allowed" CHECK ("users"."preferred_currency" in ('USD', 'NGN'));
