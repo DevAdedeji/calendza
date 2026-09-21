@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { createRenderer, defineComponent, ref, type App } from 'vue'
+import { createRenderer, defineComponent, nextTick, ref, type App } from 'vue'
 import { createBachs, type BachsCheckoutEvent } from 'bachs-vue'
 import { useBillingCheckout } from '@/composables/billing/useBillingCheckout'
 import { trustedCheckoutUrl } from '#shared/bachs-checkout'
@@ -14,21 +14,26 @@ const renderer = createRenderer<object, object>({
 })
 const apps: App[] = []
 const url = 'https://sandbox-checkout.bachs.io/c/test-session'
+const reference = 'billing-test-reference'
 let sendEvent: (event: BachsCheckoutEvent) => void
 
-function setup(createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url })), refresh = vi.fn(async () => {})) {
+function setup(createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url, reference })), refresh = vi.fn(async () => {})) {
   const selection = ref('personal:USD:monthly')
+  const paidReferences = ref<string[]>([])
   let billing!: ReturnType<typeof useBillingCheckout>
   const app = renderer.createApp(defineComponent({
     setup() {
-      billing = useBillingCheckout({ selection, createSession, refresh })
+      billing = useBillingCheckout({
+        selection, createSession, refresh,
+        isConfirmed: reference => paidReferences.value.includes(reference)
+      })
       return () => null
     }
   }))
   app.use(createBachs())
   app.mount({})
   apps.push(app)
-  return { billing, selection, createSession, refresh, app }
+  return { billing, selection, createSession, refresh, paidReferences, app }
 }
 
 beforeEach(() => {
@@ -77,7 +82,7 @@ describe('billing checkout with bachs-vue', () => {
   })
 
   it('rejects an unsafe fallback before the SDK is loaded', async () => {
-    const { billing } = setup(vi.fn(async () => ({ checkoutUrl: 'https://attacker.example/pay' })))
+    const { billing } = setup(vi.fn(async () => ({ checkoutUrl: 'https://attacker.example/pay', reference })))
     await billing.open()
     expect(billing.fallbackUrl.value).toBeNull()
     expect(sdk.load).not.toHaveBeenCalled()
@@ -86,7 +91,7 @@ describe('billing checkout with bachs-vue', () => {
   })
 
   it('uses a stable personal request ID after an uncertain server response', async () => {
-    const createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url }))
+    const createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url, reference }))
     createSession.mockRejectedValueOnce(new Error('Network timeout'))
     const { billing } = setup(createSession)
     await billing.open()
@@ -117,6 +122,53 @@ describe('billing checkout with bachs-vue', () => {
     expect(billing.disabled.value).toBe(true)
   })
 
+  it('clears the notice and unlocks controls when the matching invoice is confirmed', async () => {
+    const { billing, paidReferences } = setup()
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    paidReferences.value = ['older-invoice']
+    await nextTick()
+    expect(billing.message.value).toContain('once Bachs confirms')
+    expect(billing.disabled.value).toBe(true)
+
+    paidReferences.value.push(reference)
+    await nextTick()
+    expect(billing.message.value).toBe('')
+    expect(billing.error.value).toBe('')
+    expect(billing.disabled.value).toBe(false)
+    expect(billing.fallbackUrl.value).toBeNull()
+    sendEvent({ type: 'checkout.closed', data: {} })
+    expect(billing.message.value).toBe('')
+  })
+
+  it('clears a delayed confirmation when the user checks payment status', async () => {
+    const refresh = vi.fn(async () => {})
+    const { billing, paidReferences } = setup(undefined, refresh)
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    await vi.waitFor(() => expect(billing.refreshing.value).toBe(false))
+    expect(billing.message.value).toContain('once Bachs confirms')
+
+    refresh.mockImplementationOnce(async () => {
+      paidReferences.value = [reference]
+    })
+    await billing.refreshStatus()
+    expect(billing.message.value).toBe('')
+    expect(billing.disabled.value).toBe(false)
+    expect(billing.refreshing.value).toBe(false)
+  })
+
+  it('ignores late SDK completion after the server has confirmed the invoice', async () => {
+    const { billing, paidReferences } = setup()
+    await billing.open()
+    paidReferences.value = [reference]
+    await nextTick()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    expect(billing.message.value).toBe('')
+    expect(billing.disabled.value).toBe(false)
+    expect(billing.fallbackUrl.value).toBeNull()
+  })
+
   it('invalidates the session when currency, interval or team changes', async () => {
     const { billing, selection, createSession } = setup()
     await billing.open()
@@ -128,14 +180,14 @@ describe('billing checkout with bachs-vue', () => {
   })
 
   it('does not open a late session after leaving the page', async () => {
-    let resolve!: (value: { checkoutUrl: string }) => void
-    const { billing, app } = setup(vi.fn(() => new Promise<{ checkoutUrl: string }>((done) => {
+    let resolve!: (value: { checkoutUrl: string, reference: string }) => void
+    const { billing, app } = setup(vi.fn(() => new Promise<{ checkoutUrl: string, reference: string }>((done) => {
       resolve = done
     })))
     const pending = billing.open()
     app.unmount()
     apps.splice(apps.indexOf(app), 1)
-    resolve({ checkoutUrl: url })
+    resolve({ checkoutUrl: url, reference })
     await pending
     expect(sdk.open).not.toHaveBeenCalled()
     expect(billing.fallbackUrl.value).toBeNull()

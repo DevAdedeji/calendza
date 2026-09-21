@@ -5,10 +5,12 @@ import { apiErrorMessage } from '@/services/api/http'
 
 export function useBillingCheckout(options: {
   selection: MaybeRefOrGetter<string>
-  createSession: (requestId: string) => Promise<{ checkoutUrl: string }>
+  createSession: (requestId: string) => Promise<{ checkoutUrl: string, reference: string }>
+  isConfirmed: (reference: string) => boolean
   refresh: () => Promise<unknown>
 }) {
   const sessionUrl = ref<string | null>(null)
+  const sessionReference = ref<string | null>(null)
   const message = ref('')
   const error = ref('')
   const refreshing = ref(false)
@@ -60,6 +62,7 @@ export function useBillingCheckout(options: {
     ownsCheckout = false
     if (shouldClose) checkout.close()
     sessionUrl.value = null
+    sessionReference.value = null
     requestId = undefined
     message.value = ''
     error.value = ''
@@ -79,7 +82,10 @@ export function useBillingCheckout(options: {
         requestId ??= crypto.randomUUID()
         const session = await options.createSession(requestId)
         const url = trustedCheckoutUrl(session.checkoutUrl)
-        if (!disposed && attempt === generation) sessionUrl.value = url
+        if (!disposed && attempt === generation) {
+          sessionUrl.value = url
+          sessionReference.value = session.reference
+        }
         return url
       })
     } catch (failure) {
@@ -92,6 +98,10 @@ export function useBillingCheckout(options: {
   }
 
   watch(() => toValue(options.selection), reset, { flush: 'sync' })
+  // Only the server's matching paid invoice confirms this checkout.
+  watch(() => sessionReference.value !== null && options.isConfirmed(sessionReference.value), (confirmed) => {
+    if (confirmed) reset()
+  })
   onScopeDispose(() => {
     disposed = true
     reset()

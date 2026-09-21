@@ -59,6 +59,7 @@ const {
 } = useBillingCheckout({
   selection: () => `${slug.value}:${currency.value}:${interval.value}:${entitlement.value?.seatsUsed}`,
   createSession: () => billingApi.checkout(slug.value, { interval: interval.value, currency: currency.value }),
+  isConfirmed: reference => invoices.value.some(invoice => invoice.reference === reference && invoice.status === 'paid'),
   refresh: async () => {
     await refresh()
     if (loadFailure.value) throw loadFailure.value

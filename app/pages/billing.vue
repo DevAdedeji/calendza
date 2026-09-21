@@ -29,6 +29,7 @@ const {
   createSession: requestId => personalBillingApi.checkout({
     interval: interval.value, currency: currency.value, requestId
   }),
+  isConfirmed: reference => data.value?.invoices.some(invoice => invoice.reference === reference && invoice.status === 'paid') ?? false,
   refresh: async () => {
     await refresh()
     if (error.value) throw error.value
