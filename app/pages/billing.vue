@@ -23,17 +23,19 @@ const { data, status, error, refresh } = await useLazyFetch(personalBillingApi.s
 const { data: teamList } = await useTeams()
 const {
   open: openCheckout, close: closeCheckout, isLoading: checkingOut, disabled: checkoutDisabled,
-  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus
+  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus,
+  confirming, stopChecking
 } = useBillingCheckout({
   selection: () => `${currency.value}:${interval.value}`,
   createSession: requestId => personalBillingApi.checkout({
     interval: interval.value, currency: currency.value, requestId
   }),
   isConfirmed: reference => data.value?.invoices.some(invoice => invoice.reference === reference && invoice.status === 'paid') ?? false,
-  refresh: async () => {
-    await refresh()
+  refresh: async (signal) => {
+    await refresh({ signal })
+    if (signal?.aborted) return
     if (error.value) throw error.value
-    await refreshNuxtData('current-user')
+    if (data.value?.entitlement.isPro) await refreshNuxtData('current-user')
   }
 })
 
@@ -92,7 +94,9 @@ function formatDate(value: string | null | undefined) {
       :error="checkoutError"
       :fallback-url="fallbackUrl"
       :refreshing="checkingPayment"
+      :confirming="confirming"
       @refresh="refreshStatus"
+      @stop="stopChecking"
       @leave="closeCheckout"
     />
 

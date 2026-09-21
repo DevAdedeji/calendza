@@ -4,8 +4,9 @@ defineProps<{
   error: string
   fallbackUrl: string | null
   refreshing: boolean
+  confirming: boolean
 }>()
-defineEmits<{ refresh: [], leave: [] }>()
+defineEmits<{ refresh: [], leave: [], stop: [] }>()
 </script>
 
 <template>
@@ -42,7 +43,16 @@ defineEmits<{ refresh: [], leave: [] }>()
         :loading="refreshing"
         @click="$emit('refresh')"
       >
-        Check payment status
+        Check again
+      </UButton>
+      <UButton
+        v-if="confirming"
+        size="sm"
+        color="neutral"
+        variant="ghost"
+        @click="$emit('stop')"
+      >
+        Stop checking
       </UButton>
     </div>
   </div>

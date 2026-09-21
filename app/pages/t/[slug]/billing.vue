@@ -55,15 +55,17 @@ const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
 const { currency, ready: pricingReady, price } = useSubscriptionPricing()
 const {
   open: openCheckout, close: closeCheckout, isLoading: starting, disabled: checkoutDisabled,
-  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus
+  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus,
+  confirming, stopChecking
 } = useBillingCheckout({
   selection: () => `${slug.value}:${currency.value}:${interval.value}:${entitlement.value?.seatsUsed}`,
   createSession: () => billingApi.checkout(slug.value, { interval: interval.value, currency: currency.value }),
   isConfirmed: reference => invoices.value.some(invoice => invoice.reference === reference && invoice.status === 'paid'),
-  refresh: async () => {
-    await refresh()
+  refresh: async (signal) => {
+    await refresh({ signal })
+    if (signal?.aborted) return
     if (loadFailure.value) throw loadFailure.value
-    await refreshNuxtData('current-user')
+    if (entitlement.value?.status === 'active') await refreshNuxtData('current-user')
   }
 })
 const retryingSeatSync = ref(false)
@@ -199,7 +201,9 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
       :error="checkoutError"
       :fallback-url="fallbackUrl"
       :refreshing="checkingPayment"
+      :confirming="confirming"
       @refresh="refreshStatus"
+      @stop="stopChecking"
       @leave="closeCheckout"
     />
 

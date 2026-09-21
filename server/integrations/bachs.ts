@@ -1,4 +1,6 @@
 import { createHmac, timingSafeEqual } from 'node:crypto'
+import { BachsApiError, createBachsServer } from 'bachs-vue/server'
+import { z } from 'zod'
 import type { BillingInterval } from '#shared/billing'
 import {
   PERSONAL_PRO_PLAN,
@@ -103,7 +105,7 @@ export async function bachsFetch<T>(path: string, options: BachsRequest = {}): P
     const payload = text ? safeJson(text) : null
     if (response.ok) return payload as T
 
-    const retryAfterMs = retryAfterMilliseconds(response)
+    const retryAfterMs = retryAfterMilliseconds(response.headers.get('retry-after'))
     if (
       attempt < attempts
       && isTransientStatus(response.status)
@@ -150,8 +152,8 @@ function isTransientStatus(status: number) {
   return status === 408 || status === 425 || status === 429 || status >= 500
 }
 
-function retryAfterMilliseconds(response: Response) {
-  const value = response.headers.get('retry-after')?.trim()
+function retryAfterMilliseconds(header: string | null | undefined) {
+  const value = header?.trim()
   if (!value) return undefined
   const seconds = Number(value)
   if (Number.isFinite(seconds) && seconds >= 0) return Math.ceil(seconds * 1000)
@@ -186,14 +188,14 @@ function safeJson(text: string) {
 export interface BachsCheckoutSession {
   checkout_id: string
   checkout_url?: string
-  status: 'open' | 'completed' | 'expired' | 'cancelled'
-  payment_status?: 'requires_payment_method' | 'requires_confirmation' | 'requires_action' | 'processing' | 'succeeded' | 'failed' | 'canceled' | null
+  status: string
+  payment_status?: string | null
   amount: string
   currency: string
   reference: string | null
   charge?: {
     payment_id: string
-    status: 'created' | 'processing' | 'succeeded' | 'accepted' | 'failed' | 'expired' | 'cancelled' | 'refunded' | 'partially_refunded' | 'underpaid' | 'overpaid'
+    status: string
     amount: string
     amount_paid?: string | null
     currency: string
@@ -611,11 +613,54 @@ export function quoteConversion(from: string, to: string, amount: string) {
   })
 }
 
-export function getCheckoutSession(checkoutId: string) {
-  return bachsFetch<BachsCheckoutSession>(
-    `/checkout-sessions/${encodeURIComponent(checkoutId)}`,
-    { retryTransient: true }
-  )
+// These additive provider fields are used by Calendza's reconciliation rules.
+const checkoutReconciliationFields = z.object({
+  payment_method: z.string().nullish(),
+  charge: z.object({
+    amount_paid: z.string().nullish(),
+    fee_usd: z.string().nullish()
+  }).nullish()
+})
+
+export async function getCheckoutSession(checkoutId: string): Promise<BachsCheckoutSession> {
+  const client = createBachsServer({ apiKey: secretKey(), timeoutMs: 15_000 })
+  for (let attempt = 1; attempt <= SAFE_REQUEST_ATTEMPTS; attempt += 1) {
+    try {
+      const session = await client.getCheckoutSession(checkoutId)
+      const fields = checkoutReconciliationFields.parse(session)
+      return {
+        ...session,
+        reference: session.reference ?? null,
+        payment_method: fields.payment_method,
+        charge: session.charge ? { ...session.charge, ...fields.charge } : session.charge
+      }
+    } catch (error) {
+      const providerError = error instanceof BachsApiError ? error : null
+      const retryAfterMs = retryAfterMilliseconds(providerError?.retryAfter)
+      const transient = providerError && (
+        isTransientStatus(providerError.status)
+        || ['NETWORK_ERROR', 'TIMEOUT'].includes(providerError.code)
+      )
+      if (transient && attempt < SAFE_REQUEST_ATTEMPTS
+        && (retryAfterMs === undefined || retryAfterMs <= MAX_INLINE_RETRY_AFTER_MS)) {
+        logRetry('GET', '/checkout-sessions/:id', attempt, providerError.status)
+        await waitForRetry(attempt, retryAfterMs)
+        continue
+      }
+      logEvent('error', 'bachs_request_failed', {
+        method: 'GET', path: '/checkout-sessions/:id', attempt,
+        status: providerError?.status ?? null,
+        errorCode: providerError?.code ?? 'INVALID_RESPONSE'
+      })
+      throw createError({
+        statusCode: !providerError || providerError.code === 'INVALID_RESPONSE' || providerError.status === 422
+          ? 502
+          : providerError.status || 503,
+        statusMessage: 'Could not verify payment with Bachs. Please try again shortly.'
+      })
+    }
+  }
+  throw createError({ statusCode: 503, statusMessage: 'Bachs is temporarily unavailable.' })
 }
 
 /**

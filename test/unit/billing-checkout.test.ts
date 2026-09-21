@@ -17,7 +17,7 @@ const url = 'https://sandbox-checkout.bachs.io/c/test-session'
 const reference = 'billing-test-reference'
 let sendEvent: (event: BachsCheckoutEvent) => void
 
-function setup(createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url, reference })), refresh = vi.fn(async () => {})) {
+function setup(createSession = vi.fn(async (_requestId: string) => ({ checkoutUrl: url, reference })), refresh = vi.fn(async (_signal?: AbortSignal) => {})) {
   const selection = ref('personal:USD:monthly')
   const paidReferences = ref<string[]>([])
   let billing!: ReturnType<typeof useBillingCheckout>
@@ -54,6 +54,7 @@ beforeEach(() => {
 })
 afterEach(() => {
   for (const app of apps.splice(0)) app.unmount()
+  vi.useRealTimers()
   vi.unstubAllGlobals()
 })
 
@@ -123,6 +124,7 @@ describe('billing checkout with bachs-vue', () => {
   })
 
   it('clears the notice and unlocks controls when the matching invoice is confirmed', async () => {
+    vi.useFakeTimers()
     const { billing, paidReferences } = setup()
     await billing.open()
     sendEvent({ type: 'checkout.completed', data: {} })
@@ -132,7 +134,7 @@ describe('billing checkout with bachs-vue', () => {
     expect(billing.disabled.value).toBe(true)
 
     paidReferences.value.push(reference)
-    await nextTick()
+    await vi.advanceTimersByTimeAsync(2_000)
     expect(billing.message.value).toBe('')
     expect(billing.error.value).toBe('')
     expect(billing.disabled.value).toBe(false)
@@ -146,8 +148,9 @@ describe('billing checkout with bachs-vue', () => {
     const { billing, paidReferences } = setup(undefined, refresh)
     await billing.open()
     sendEvent({ type: 'checkout.completed', data: {} })
-    await vi.waitFor(() => expect(billing.refreshing.value).toBe(false))
-    expect(billing.message.value).toContain('once Bachs confirms')
+    billing.stopChecking()
+    expect(billing.refreshing.value).toBe(false)
+    expect(billing.message.value).toContain('Automatic checks stopped')
 
     refresh.mockImplementationOnce(async () => {
       paidReferences.value = [reference]
@@ -156,6 +159,90 @@ describe('billing checkout with bachs-vue', () => {
     expect(billing.message.value).toBe('')
     expect(billing.disabled.value).toBe(false)
     expect(billing.refreshing.value).toBe(false)
+  })
+
+  it('polls until the backend confirms the current invoice', async () => {
+    vi.useFakeTimers()
+    const refresh = vi.fn(async () => {})
+    const { billing, paidReferences } = setup(undefined, refresh)
+    refresh.mockImplementation(async () => {
+      if (refresh.mock.calls.length === 3) paidReferences.value = [reference]
+    })
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    await vi.advanceTimersByTimeAsync(4_000)
+    expect(refresh).toHaveBeenCalledTimes(3)
+    expect(billing.message.value).toBe('')
+    expect(billing.confirming.value).toBe(false)
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(refresh).toHaveBeenCalledTimes(3)
+  })
+
+  it('lets the authenticated refresh finish before clearing confirmed checkout state', async () => {
+    let finish!: () => void
+    const refresh = vi.fn((_signal?: AbortSignal) => new Promise<void>((resolve) => {
+      finish = resolve
+    }))
+    const { billing, paidReferences } = setup(undefined, refresh)
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    paidReferences.value = [reference]
+    await nextTick()
+    expect(refresh.mock.calls[0]![0]!.aborted).toBe(false)
+    expect(billing.confirming.value).toBe(true)
+    finish()
+    await vi.waitFor(() => expect(billing.message.value).toBe(''))
+    expect(billing.disabled.value).toBe(false)
+  })
+
+  it('stops after six checks without claiming failure or permitting a duplicate payment', async () => {
+    vi.useFakeTimers()
+    const { billing, refresh } = setup()
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(refresh).toHaveBeenCalledTimes(6)
+    expect(billing.message.value).toContain('still awaiting confirmation')
+    expect(billing.confirming.value).toBe(false)
+    expect(billing.disabled.value).toBe(true)
+    expect(billing.fallbackUrl.value).toBeNull()
+  })
+
+  it('cancels a stalled check at the deadline and ignores its late result', async () => {
+    vi.useFakeTimers()
+    let finish!: () => void
+    const refresh = vi.fn((_signal?: AbortSignal) => new Promise<void>((resolve) => {
+      finish = resolve
+    }))
+    const { billing } = setup(undefined, refresh)
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    const signal = refresh.mock.calls[0]![0]!
+    await vi.advanceTimersByTimeAsync(20_000)
+    expect(signal.aborted).toBe(true)
+    expect(billing.message.value).toContain('still awaiting confirmation')
+    finish()
+    await nextTick()
+    expect(billing.message.value).toContain('still awaiting confirmation')
+    expect(billing.disabled.value).toBe(true)
+  })
+
+  it.each(['selection', 'unmount'] as const)('aborts confirmation on %s changes', async (change) => {
+    vi.useFakeTimers()
+    const refresh = vi.fn((_signal?: AbortSignal) => new Promise<void>(() => {}))
+    const { billing, selection, app } = setup(undefined, refresh)
+    await billing.open()
+    sendEvent({ type: 'checkout.completed', data: {} })
+    const signal = refresh.mock.calls[0]![0]!
+    if (change === 'selection') selection.value = 'team:other:USD:monthly'
+    else {
+      app.unmount()
+      apps.splice(apps.indexOf(app), 1)
+    }
+    expect(signal.aborted).toBe(true)
+    await vi.advanceTimersByTimeAsync(30_000)
+    expect(refresh).toHaveBeenCalledTimes(1)
+    expect(billing.message.value).toBe('')
   })
 
   it('ignores late SDK completion after the server has confirmed the invoice', async () => {

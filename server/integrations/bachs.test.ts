@@ -230,11 +230,15 @@ describe('bachs checkout payment methods', () => {
       amount: '5.00',
       currency: 'USD',
       reference: 'booking-reference',
+      customer: null,
+      created_at: '2026-09-21T12:00:00Z',
+      updated_at: '2026-09-21T12:01:00Z',
       charge: {
         payment_id: 'pay_123',
         status: 'succeeded',
         amount: '5.00',
         amount_paid: '5.00',
+        fee_usd: '0.30',
         currency: 'USD'
       }
     }
@@ -256,7 +260,10 @@ describe('bachs checkout payment methods', () => {
       payment_status: 'succeeded',
       amount: '5.00',
       currency: 'USD',
-      reference: 'booking-reference'
+      reference: 'booking-reference',
+      customer: null,
+      created_at: '2026-09-21T12:00:00Z',
+      updated_at: '2026-09-21T12:01:00Z'
     }
     const fetchMock = vi.fn()
       .mockResolvedValueOnce(new Response(null, { status: 502 }))
@@ -277,6 +284,47 @@ describe('bachs checkout payment methods', () => {
     const { getCheckoutSession } = await import('@@/server/integrations/bachs')
     await expect(getCheckoutSession('chk_missing')).rejects.toMatchObject({ statusCode: 404 })
     expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it.each([
+    { checkout_id: 'chk_someone_else' },
+    { amount: 'invalid' },
+    { charge: { payment_id: 'pay_123', status: 'succeeded', amount: '5.00', currency: 'USD', amount_paid: 500 } }
+  ])('rejects mismatched or malformed checkout data: %j', async (override) => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      checkout_id: 'chk_expected', status: 'completed', amount: '5.00', currency: 'USD',
+      reference: 'booking-reference', customer: null,
+      created_at: '2026-09-21T12:00:00Z', updated_at: '2026-09-21T12:01:00Z',
+      ...override
+    }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
+    await expect(getCheckoutSession('chk_expected')).rejects.toMatchObject({ statusCode: 502 })
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('preserves an unknown provider status without interpreting it as success', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      checkout_id: 'chk_unknown', status: 'future_status', amount: '5.00', currency: 'USD',
+      reference: 'booking-reference', customer: null, charge: null,
+      created_at: '2026-09-21T12:00:00Z', updated_at: '2026-09-21T12:01:00Z'
+    }), { status: 200 }))
+    vi.stubGlobal('fetch', fetchMock)
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
+    await expect(getCheckoutSession('chk_unknown')).resolves.toMatchObject({ status: 'future_status', charge: null })
+    expect(fetchMock.mock.calls[0]?.[1]).toMatchObject({ method: 'GET', body: undefined, redirect: 'error' })
+  })
+
+  it('does not retry permission errors or a long provider rate-limit delay', async () => {
+    const { getCheckoutSession } = await import('@@/server/integrations/bachs')
+    for (const status of [403, 429]) {
+      const fetchMock = vi.fn().mockResolvedValue(new Response('{}', {
+        status, headers: { 'retry-after': '60' }
+      }))
+      vi.stubGlobal('fetch', fetchMock)
+      await expect(getCheckoutSession('chk_expected')).rejects.toMatchObject({ statusCode: status })
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    }
   })
 
   it('never retries a write that has no idempotency key', async () => {

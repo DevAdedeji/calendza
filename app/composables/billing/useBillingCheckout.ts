@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, ref, toValue, watch, type MaybeRefOrGetter } from 'vue'
-import { useBachsCheckout } from 'bachs-vue'
+import { useBachsCheckout, useBachsPaymentConfirmation } from 'bachs-vue'
 import { trustedCheckoutUrl } from '#shared/bachs-checkout'
 import { apiErrorMessage } from '@/services/api/http'
 
@@ -7,7 +7,7 @@ export function useBillingCheckout(options: {
   selection: MaybeRefOrGetter<string>
   createSession: (requestId: string) => Promise<{ checkoutUrl: string, reference: string }>
   isConfirmed: (reference: string) => boolean
-  refresh: () => Promise<unknown>
+  refresh: (signal?: AbortSignal) => Promise<unknown>
 }) {
   const sessionUrl = ref<string | null>(null)
   const sessionReference = ref<string | null>(null)
@@ -19,6 +19,24 @@ export function useBillingCheckout(options: {
   let generation = 0
   let disposed = false
   let ownsCheckout = false
+
+  const confirmation = useBachsPaymentConfirmation({
+    intervalMs: 2_000,
+    maxAttempts: 6,
+    timeoutMs: 20_000,
+    async check(reference, { signal }) {
+      await options.refresh(signal)
+      return { status: options.isConfirmed(reference) ? 'confirmed' : 'pending' }
+    }
+  })
+
+  watch(confirmation.status, (status) => {
+    if (status === 'timeout') {
+      message.value = 'Payment is still awaiting confirmation. Check again before starting another payment.'
+    } else if (status === 'error') {
+      error.value = 'Could not refresh billing. Check again before starting another payment.'
+    }
+  })
 
   const checkout = useBachsCheckout({
     onEvent(event) {
@@ -43,7 +61,13 @@ export function useBillingCheckout(options: {
   })
 
   async function refreshStatus() {
-    if (disposed || refreshing.value) return
+    if (disposed || refreshing.value || confirmation.isChecking.value) return
+    if (awaitingConfirmation.value && sessionReference.value) {
+      error.value = ''
+      message.value = 'Checkout finished. Your plan updates once Bachs confirms payment.'
+      await confirmation.start(sessionReference.value)
+      return
+    }
     const attempt = generation
     refreshing.value = true
     error.value = ''
@@ -58,6 +82,7 @@ export function useBillingCheckout(options: {
 
   function reset() {
     generation++
+    confirmation.stop()
     const shouldClose = ownsCheckout
     ownsCheckout = false
     if (shouldClose) checkout.close()
@@ -68,6 +93,11 @@ export function useBillingCheckout(options: {
     error.value = ''
     awaitingConfirmation.value = false
     refreshing.value = false
+  }
+
+  function stopChecking() {
+    confirmation.stop()
+    message.value = 'Automatic checks stopped. Payment may still complete. Check again before starting another payment.'
   }
 
   async function open() {
@@ -99,7 +129,9 @@ export function useBillingCheckout(options: {
 
   watch(() => toValue(options.selection), reset, { flush: 'sync' })
   // Only the server's matching paid invoice confirms this checkout.
-  watch(() => sessionReference.value !== null && options.isConfirmed(sessionReference.value), (confirmed) => {
+  watch(() => !confirmation.isChecking.value
+    && sessionReference.value !== null
+    && options.isConfirmed(sessionReference.value), (confirmed) => {
     if (confirmed) reset()
   })
   onScopeDispose(() => {
@@ -110,6 +142,8 @@ export function useBillingCheckout(options: {
   return {
     open,
     refreshStatus,
+    stopChecking,
+    confirming: confirmation.isChecking,
     close: checkout.close,
     isLoading: checkout.isLoading,
     isBusy: checkout.isBusy,
@@ -117,6 +151,6 @@ export function useBillingCheckout(options: {
     fallbackUrl: computed(() => awaitingConfirmation.value ? null : sessionUrl.value),
     message,
     error,
-    refreshing
+    refreshing: computed(() => refreshing.value || confirmation.isChecking.value)
   }
 }
