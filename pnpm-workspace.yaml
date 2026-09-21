@@ -17,3 +17,6 @@ overrides:
   'nanoid@>=3.0.0 <4': 3.3.18
   'svgo@>=4.0.0 <5': 4.0.2
   'tar@>=7.0.0 <7.5.21': 7.5.22
+
+patchedDependencies:
+  bachs-vue@0.2.0: patches/bachs-vue@0.2.0.patch

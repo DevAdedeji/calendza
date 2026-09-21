@@ -222,7 +222,7 @@ describe('bachs checkout payment methods', () => {
     })
   })
 
-  it('reads a checkout from Bachs before confirming a paid booking', async () => {
+  it.each(['pay_123', 'ch_123'])('reads a checkout without rewriting payment ID %s', async (paymentId) => {
     const providerCheckout = {
       checkout_id: 'chk_paid_booking',
       status: 'completed',
@@ -234,7 +234,7 @@ describe('bachs checkout payment methods', () => {
       created_at: '2026-09-21T12:00:00Z',
       updated_at: '2026-09-21T12:01:00Z',
       charge: {
-        payment_id: 'pay_123',
+        payment_id: paymentId,
         status: 'succeeded',
         amount: '5.00',
         amount_paid: '5.00',
@@ -289,6 +289,8 @@ describe('bachs checkout payment methods', () => {
   it.each([
     { checkout_id: 'chk_someone_else' },
     { amount: 'invalid' },
+    { charge: { payment_id: 'unexpected_123', status: 'succeeded', amount: '5.00', currency: 'USD' } },
+    { charge: { payment_id: 'ch_', status: 'succeeded', amount: '5.00', currency: 'USD' } },
     { charge: { payment_id: 'pay_123', status: 'succeeded', amount: '5.00', currency: 'USD', amount_paid: 500 } }
   ])('rejects mismatched or malformed checkout data: %j', async (override) => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({

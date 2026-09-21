@@ -14,6 +14,9 @@ overrides:
   svgo@>=4.0.0 <5: 4.0.2
   tar@>=7.0.0 <7.5.21: 7.5.22
 
+patchedDependencies:
+  bachs-vue@0.2.0: 1cbdf852edd0b37358edbf737ce74a4f36c4174dc37021a0d68fec73abc9aa17
+
 importers:
 
   .:
@@ -32,7 +35,7 @@ importers:
         version: 4.10.0(93a5ac5678cd1d52d827859e89cee0e5)
       bachs-vue:
         specifier: 0.2.0
-        version: 0.2.0(h3@1.15.11)(magic-string@1.1.0)(magicast@0.5.4)(nuxt@4.5.2(e07525f73a9a38f82c0af66281f7a56d))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.1)(rollup@4.60.4)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
+        version: 0.2.0(patch_hash=1cbdf852edd0b37358edbf737ce74a4f36c4174dc37021a0d68fec73abc9aa17)(h3@1.15.11)(magic-string@1.1.0)(magicast@0.5.4)(nuxt@4.5.2(e07525f73a9a38f82c0af66281f7a56d))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.1)(rollup@4.60.4)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3))
       better-auth:
         specifier: ^1.6.29
         version: 1.6.29(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(kysely@0.29.5)(postgres@3.4.9))(vitest@4.1.10)(vue@3.5.40(typescript@6.0.3))
@@ -8667,7 +8670,7 @@ snapshots:
 
   b4a@1.8.1: {}
 
-  bachs-vue@0.2.0(h3@1.15.11)(magic-string@1.1.0)(magicast@0.5.4)(nuxt@4.5.2(e07525f73a9a38f82c0af66281f7a56d))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.1)(rollup@4.60.4)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3)):
+  bachs-vue@0.2.0(patch_hash=1cbdf852edd0b37358edbf737ce74a4f36c4174dc37021a0d68fec73abc9aa17)(h3@1.15.11)(magic-string@1.1.0)(magicast@0.5.4)(nuxt@4.5.2(e07525f73a9a38f82c0af66281f7a56d))(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.1)(rollup@4.60.4)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))(vue@3.5.40(typescript@6.0.3)):
     dependencies:
       '@bachs/js': 0.2.0
       '@nuxt/kit': 4.5.2(magic-string@1.1.0)(magicast@0.5.4)(oxc-parser@0.140.0)(rolldown@1.2.1)(unplugin@3.3.0(esbuild@0.28.2)(rolldown@1.2.1)(rollup@4.60.4)(vite@8.2.1(@types/node@26.2.0)(esbuild@0.28.2)(jiti@2.7.0)(terser@5.47.1)(tsx@4.23.12)(yaml@2.9.0)))

@@ -10,6 +10,7 @@ RUN npm install -g pnpm@11.20.0
 # `nuxt prepare`, which needs devDependencies that are deliberately absent here.
 FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY patches ./patches
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 FROM base AS builder
