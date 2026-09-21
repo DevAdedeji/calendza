@@ -6,6 +6,7 @@ import {
 } from '#shared/billing'
 import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
+import { useBillingCheckout } from '@/composables/billing/useBillingCheckout'
 import { apiErrorMessage } from '@/services/api/http'
 import { personalBillingApi } from '@/services/api/billing'
 
@@ -16,11 +17,24 @@ const feedback = useFeedback()
 const { invoiceAmount: formatInvoiceAmount } = useAccountMoneyDisplay()
 const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
 const { currency, ready: pricingReady, price } = useSubscriptionPricing()
-const checkingOut = ref(false)
 const cancelling = ref(false)
 const cancelOpen = ref(false)
 const { data, status, error, refresh } = await useLazyFetch(personalBillingApi.summaryEndpoint)
 const { data: teamList } = await useTeams()
+const {
+  open: openCheckout, close: closeCheckout, isLoading: checkingOut, disabled: checkoutDisabled,
+  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus
+} = useBillingCheckout({
+  selection: () => `${currency.value}:${interval.value}`,
+  createSession: requestId => personalBillingApi.checkout({
+    interval: interval.value, currency: currency.value, requestId
+  }),
+  refresh: async () => {
+    await refresh()
+    if (error.value) throw error.value
+    await refreshNuxtData('current-user')
+  }
+})
 
 const entitlement = computed(() => data.value?.entitlement)
 const periodLabel = computed(() => interval.value === 'yearly' ? 'year' : 'month')
@@ -41,20 +55,8 @@ const teamActionLabel = computed(() => {
 })
 
 async function checkout() {
-  if (checkingOut.value || !pricingReady.value) return
-  checkingOut.value = true
-  try {
-    const result = await personalBillingApi.checkout({
-      interval: interval.value,
-      currency: currency.value,
-      requestId: crypto.randomUUID()
-    })
-    await navigateTo(result.checkoutUrl, { external: true })
-  } catch (failure) {
-    feedback.error({ title: 'Could not open checkout', description: apiErrorMessage(failure, 'Please try again.') })
-  } finally {
-    checkingOut.value = false
-  }
+  if (!data.value?.configured || !pricingReady.value) return
+  await openCheckout()
 }
 
 async function cancelPlan() {
@@ -84,6 +86,14 @@ function formatDate(value: string | null | undefined) {
       description="Compare your personal and Team options. A paid Team seat already includes Personal Pro."
     />
     <SandboxPaymentNotice />
+    <BillingCheckoutNotice
+      :message="checkoutMessage"
+      :error="checkoutError"
+      :fallback-url="fallbackUrl"
+      :refreshing="checkingPayment"
+      @refresh="refreshStatus"
+      @leave="closeCheckout"
+    />
 
     <AsyncErrorState
       v-if="error && !data"
@@ -97,7 +107,7 @@ function formatDate(value: string | null | undefined) {
       label="Loading plan and billing"
     />
     <template v-else>
-      <BillingRegionControl />
+      <BillingRegionControl :disabled="checkoutDisabled" />
       <div class="flex justify-start sm:justify-end">
         <div
           class="inline-flex rounded-full border border-default bg-muted p-1"
@@ -109,6 +119,7 @@ function formatDate(value: string | null | undefined) {
             type="button"
             class="rounded-full px-3 py-1.5 text-sm font-medium"
             :class="interval === option ? 'bg-primary text-inverted' : 'text-muted'"
+            :disabled="checkoutDisabled"
             @click="interval = option"
           >
             {{ option === 'yearly' ? 'Yearly' : 'Monthly' }}
@@ -198,7 +209,7 @@ function formatDate(value: string | null | undefined) {
               class="mt-7 justify-center"
               size="lg"
               :loading="checkingOut"
-              :disabled="!data?.configured || !pricingReady"
+              :disabled="!data?.configured || !pricingReady || checkoutDisabled"
               @click="checkout"
             >
               Upgrade to Personal Pro

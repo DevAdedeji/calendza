@@ -2,13 +2,14 @@
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { apiErrorMessage } from '@/services/api/http'
 
+const props = defineProps<{ disabled?: boolean }>()
 const { currency, setCurrency, signedIn, initialized } = useSubscriptionPricing()
 const saving = ref(false)
 const error = ref('')
 
 async function changeCurrency(value: string) {
   if (value !== 'NGN' && value !== 'USD') return
-  if (saving.value) return
+  if (props.disabled || saving.value) return
   saving.value = true
   error.value = ''
   try {
@@ -30,7 +31,7 @@ async function changeCurrency(value: string) {
       <USelect
         :model-value="currency"
         :items="[{ label: 'Nigerian naira (NGN)', value: 'NGN' }, { label: 'US dollar (USD)', value: 'USD' }]"
-        :disabled="!initialized || saving"
+        :disabled="disabled || !initialized || saving"
         value-key="value"
         class="w-full"
         @update:model-value="changeCurrency"

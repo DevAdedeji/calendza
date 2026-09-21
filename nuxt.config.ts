@@ -14,7 +14,8 @@ if (process.env.npm_lifecycle_event === 'build' && !buildSiteUrl) {
 export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
-    '@nuxt/ui'
+    '@nuxt/ui',
+    'bachs-vue/nuxt'
   ],
   components: [
     { path: '~/components', pathPrefix: false }
@@ -91,6 +92,7 @@ export default defineNuxtConfig({
       crawlLinks: false
     }
   },
+  bachs: { components: false },
   eslint: {
     config: {
       stylistic: {

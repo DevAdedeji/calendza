@@ -1,5 +1,6 @@
 import { removeResponseHeader, setResponseHeaders } from 'h3'
 import { useEnv } from '@@/server/config/env'
+import { BACHS_CHECKOUT_ORIGINS } from '#shared/bachs-checkout'
 
 export default defineNitroPlugin((nitro) => {
   if (import.meta.prerender) return
@@ -35,6 +36,7 @@ export default defineNitroPlugin((nitro) => {
           `default-src 'self'`,
           `base-uri 'self'`,
           `connect-src 'self'`,
+          `frame-src 'self' ${BACHS_CHECKOUT_ORIGINS.join(' ')}`,
           `font-src 'self' data:`,
           `form-action 'self'`,
           embedDocument ? `frame-ancestors http: https:` : `frame-ancestors 'none'`,
@@ -42,7 +44,7 @@ export default defineNitroPlugin((nitro) => {
           `manifest-src 'self'`,
           `media-src 'none'`,
           `object-src 'none'`,
-          `script-src 'self' 'unsafe-inline'`,
+          `script-src 'self' 'unsafe-inline' ${BACHS_CHECKOUT_ORIGINS.join(' ')}`,
           `script-src-attr 'none'`,
           `style-src 'self' 'unsafe-inline'`,
           `worker-src 'self' blob:`,

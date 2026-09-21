@@ -25,6 +25,7 @@
     "@iconify-json/simple-icons": "^1.2.93",
     "@js-temporal/polyfill": "^0.5.1",
     "@nuxt/ui": "^4.10.0",
+    "bachs-vue": "0.1.0",
     "better-auth": "^1.6.29",
     "drizzle-orm": "^0.45.2",
     "nodemailer": "^9.0.5",

@@ -15,12 +15,15 @@ export default defineConfig({
       '#shared': fileURLToPath(new URL('./shared', import.meta.url)),
       '@': fileURLToPath(new URL('./app', import.meta.url)),
       '@@': fileURLToPath(new URL('.', import.meta.url)),
+      '@bachs/js': createRequire(import.meta.resolve('bachs-vue')).resolve('@bachs/js'),
       'vue': createRequire(import.meta.resolve('nuxt/package.json')).resolve('vue')
     }
   },
 
   test: {
     environment: 'node',
+    // Exercise the real Vue integration while mocking only its browser SDK.
+    server: { deps: { inline: ['bachs-vue'] } },
     include: ['server/**/*.test.ts', 'test/unit/**/*.test.ts'],
 
     fileParallelism: false,

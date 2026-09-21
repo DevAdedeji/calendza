@@ -10,6 +10,7 @@ import {
 } from '#shared/billing'
 import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
+import { useBillingCheckout } from '@/composables/billing/useBillingCheckout'
 import { apiErrorMessage } from '@/services/api/http'
 import { billingApi, type TeamBillingResponse } from '@/services/api/billing'
 import { formatInstant } from '@/utils/date-time'
@@ -52,7 +53,18 @@ const checkoutLabel = computed(() => {
 
 const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
 const { currency, ready: pricingReady, price } = useSubscriptionPricing()
-const starting = ref(false)
+const {
+  open: openCheckout, close: closeCheckout, isLoading: starting, disabled: checkoutDisabled,
+  message: checkoutMessage, error: checkoutError, fallbackUrl, refreshing: checkingPayment, refreshStatus
+} = useBillingCheckout({
+  selection: () => `${slug.value}:${currency.value}:${interval.value}:${entitlement.value?.seatsUsed}`,
+  createSession: () => billingApi.checkout(slug.value, { interval: interval.value, currency: currency.value }),
+  refresh: async () => {
+    await refresh()
+    if (loadFailure.value) throw loadFailure.value
+    await refreshNuxtData('current-user')
+  }
+})
 const retryingSeatSync = ref(false)
 
 watch(entitlement, (value) => {
@@ -137,23 +149,8 @@ watch(paidJustNow, async (paid) => {
 }, { immediate: true })
 
 async function startCheckout() {
-  if (starting.value || !checkoutReason.value || !pricingReady.value) return
-  starting.value = true
-
-  try {
-    const session = await billingApi.checkout(slug.value, {
-      interval: interval.value,
-      currency: currency.value
-    })
-    // Leaving the app entirely, so a full navigation rather than a route push.
-    window.location.href = session.checkoutUrl
-  } catch (failure) {
-    feedback.error({
-      title: 'Could not start checkout',
-      description: apiErrorMessage(failure, 'Please try again.')
-    })
-    starting.value = false
-  }
+  if (!checkoutReason.value || !pricingReady.value || !data.value?.configured) return
+  await openCheckout()
 }
 
 async function retrySeatSync() {
@@ -196,6 +193,14 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
       description="Plan, payment method and invoice history for this team."
     />
     <SandboxPaymentNotice />
+    <BillingCheckoutNotice
+      :message="checkoutMessage"
+      :error="checkoutError"
+      :fallback-url="fallbackUrl"
+      :refreshing="checkingPayment"
+      @refresh="refreshStatus"
+      @leave="closeCheckout"
+    />
 
     <div
       v-if="paidJustNow"
@@ -424,18 +429,19 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
                 <USelectMenu
                   v-model="interval"
                   :items="intervalOptions"
+                  :disabled="checkoutDisabled"
                   value-key="value"
                   size="lg"
                   class="w-full"
                 />
               </UFormField>
-              <BillingRegionControl />
+              <BillingRegionControl :disabled="checkoutDisabled" />
             </div>
             <UButton
               size="lg"
               block
               :loading="starting"
-              :disabled="!data?.configured || !pricingReady"
+              :disabled="!data?.configured || !pricingReady || checkoutDisabled"
               @click="startCheckout"
             >
               {{ checkoutLabel }} · {{ price('team', interval, billedSeats) }}
