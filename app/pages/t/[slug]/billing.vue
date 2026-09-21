@@ -65,7 +65,7 @@ const {
     await refresh({ signal })
     if (signal?.aborted) return
     if (loadFailure.value) throw loadFailure.value
-    if (entitlement.value?.status === 'active') await refreshNuxtData('current-user')
+    if (entitlement.value?.status === 'active') await refreshNuxtData(['current-user', 'teams'])
   }
 })
 const retryingSeatSync = ref(false)
