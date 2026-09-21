@@ -109,7 +109,7 @@ function formatDate(value: string | null | undefined) {
     />
     <template v-else>
       <BillingRegionControl :disabled="checkoutDisabled" />
-      <div class="flex justify-start sm:justify-end">
+      <div class="flex justify-start">
         <div
           class="inline-flex rounded-full border border-default bg-muted p-1"
           aria-label="Billing period"
