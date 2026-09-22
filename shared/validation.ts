@@ -4,7 +4,7 @@ import { paymentCurrencySchema } from '@@/shared/payments'
 
 export const RESERVED_USERNAMES = new Set([
   'admin', 'api', 'app', 'auth', 'billing', 'blog', 'dashboard', 'designs',
-  'docs', 'help', 'integrations', 'invite', 'login', 'logout', 'me', 'new', 'pricing',
+  'docs', 'help', 'integrations', 'invite', 'login', 'logout', 'me', 'new', 'onboarding', 'pricing',
   'privacy', 'route', 'routing-forms', 'calendza', 'settings', 'signin', 'signup', 'support', 'team', 'terms',
   't', 'teams', 'w', 'workspaces', 'www'
 ])
@@ -235,7 +235,7 @@ export const eventTypeSlugSchema = z
   .string()
   .trim()
   .toLowerCase()
-  .min(1, 'Required')
+  .min(1, 'Choose a booking link address, such as discovery-call.')
   .max(64, 'At most 64 characters')
   .regex(/^[a-z0-9][a-z0-9-]*$/, 'Letters, numbers and hyphens only')
   .refine(value => !value.endsWith('-'), 'Cannot end with a hyphen')
@@ -305,7 +305,7 @@ function isHttpUrl(value: string) {
 }
 
 const eventTypeBaseSchema = z.object({
-  title: z.string().trim().min(1, 'Required').max(100, 'At most 100 characters'),
+  title: z.string().trim().min(1, 'Give your meeting a name.').max(100, 'At most 100 characters'),
   slug: eventTypeSlugSchema,
   description: z.string().trim().max(1000, 'At most 1000 characters').optional(),
   durationMinutes: z.number().int().min(5).max(720),
@@ -391,6 +391,10 @@ function refineEventType(value: EventTypeShape, context: z.RefinementCtx) {
       message: 'Each booking question must have a unique identifier.'
     })
   }
+  refineMeetingLocation(value, context)
+}
+
+export function refineMeetingLocation(value: { locationType: MeetingLocationType, locationDetails: string }, context: z.RefinementCtx) {
   if (['google_meet', 'microsoft_teams', 'zoom'].includes(value.locationType)) return
   if (!value.locationDetails) {
     context.addIssue({

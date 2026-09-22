@@ -1,6 +1,6 @@
 import { and, eq, isNotNull, sql } from 'drizzle-orm'
 import type { PaymentCurrency } from '#shared/payments'
-import { accounts, users } from '@@/server/database/schema'
+import { accounts, bookingSetups, users } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
 
 export async function profileForUser(userId: string) {
@@ -15,8 +15,9 @@ export async function profileForUser(userId: string) {
     preferredCurrency: users.preferredCurrency,
     bio: users.bio,
     avatarUrl: users.avatarUrl,
-    twoFactorEnabled: users.twoFactorEnabled
-  }).from(users).where(eq(users.id, userId)).limit(1)
+    twoFactorEnabled: users.twoFactorEnabled,
+    bookingSetupStatus: bookingSetups.status
+  }).from(users).leftJoin(bookingSetups, eq(bookingSetups.userId, users.id)).where(eq(users.id, userId)).limit(1)
 
   if (!profile) return null
 

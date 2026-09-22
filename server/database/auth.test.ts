@@ -1,5 +1,5 @@
 import postgres from 'postgres'
-import { afterAll, beforeEach, describe, expect, it } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { configureAppTestEnvironment, getTestDatabaseUrl } from '@@/test/helpers/database'
 
 const url = getTestDatabaseUrl()
@@ -30,9 +30,11 @@ describe.skipIf(!url)('authentication', () => {
   afterAll(async () => {
     await sql`truncate table email_outbox, api_rate_limits, rate_limits, sessions, accounts, verifications, bookings, event_types, date_overrides, availability_rules, schedules, users, organizations restart identity cascade`
     await sql.end()
+    vi.unstubAllGlobals()
   })
 
   beforeEach(async () => {
+    vi.stubGlobal('createError', (details: { statusCode: number, statusMessage: string }) => Object.assign(new Error(details.statusMessage), details))
     await sql`truncate table email_outbox, api_rate_limits, rate_limits, sessions, accounts, verifications, bookings, event_types, schedules, users, organizations restart identity cascade`
   })
 
@@ -52,6 +54,99 @@ describe.skipIf(!url)('authentication', () => {
     expect(accounts).toHaveLength(1)
     expect(accounts[0]!.provider_id).toBe('credential')
     expect(accounts[0]!.password).not.toContain(credentials.password)
+  })
+
+  it('prepares availability and a pending setup without creating an event', async () => {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
+    const { firstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(result.user.id)
+    expect(setup).toMatchObject({ status: 'pending', event: { title: '', slug: '', durationMinutes: 30 }, schedule: { timeZone: 'Africa/Lagos' } })
+    expect(setup?.schedule.rules).toHaveLength(5)
+    expect(setup?.availableLocations).not.toContain('zoom')
+    const events = await sql`select id from event_types where user_id = ${result.user.id}`
+    expect(events).toHaveLength(0)
+  })
+
+  it('creates nothing on skip, then creates one event on completion without losing schedule exceptions', async () => {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
+    const { firstBookingSetup, skipFirstBookingSetup, completeFirstBookingSetup, ensureAvailabilitySchedule } = await import('@@/server/services/onboarding')
+    const { profileForUser } = await import('@@/server/repositories/profile')
+    const [schedule] = await sql`select id from schedules where user_id = ${result.user.id}`
+    await sql`insert into date_overrides (schedule_id, date) values (${schedule!.id}, '2026-12-25')`
+    await skipFirstBookingSetup(result.user.id)
+    expect(await profileForUser(result.user.id)).toMatchObject({ bookingSetupStatus: 'skipped' })
+    await ensureAvailabilitySchedule(result.user.id, 'Africa/Lagos')
+    expect(await sql`select id from event_types where user_id = ${result.user.id}`).toHaveLength(0)
+    const setup = await firstBookingSetup(result.user.id)
+    const input = {
+      event: { ...setup!.event, title: 'Discovery call', slug: 'discovery', durationMinutes: 45 },
+      schedule: { timeZone: 'Europe/London', rules: [{ weekday: 2, start: '10:00', end: '14:00' }] }
+    }
+    await expect(completeFirstBookingSetup(result.user.id, input)).resolves.toEqual({ slug: 'discovery' })
+    expect(await profileForUser(result.user.id)).toMatchObject({ bookingSetupStatus: 'completed', timeZone: 'Europe/London' })
+    const events = await sql`select id, slug, buffer_after_minutes from event_types where user_id = ${result.user.id}`
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ slug: 'discovery', buffer_after_minutes: 0 })
+    expect((await firstBookingSetup(result.user.id))?.schedule).toEqual(input.schedule)
+    expect(await sql`select id from date_overrides where schedule_id = ${schedule!.id}`).toHaveLength(1)
+
+    await skipFirstBookingSetup(result.user.id)
+    await completeFirstBookingSetup(result.user.id, { ...input, event: { ...input.event, title: 'Stale form', slug: 'stale' } })
+    expect(await firstBookingSetup(result.user.id)).toMatchObject({ status: 'completed', event: { title: 'Discovery call', slug: 'discovery' } })
+  })
+
+  it('does not enrol existing accounts when repairing their starter setup', async () => {
+    await auth()
+    const [user] = await sql`insert into users (name, username, email) values ('Existing', 'existing', 'existing@example.com') returning id`
+    const { ensureAvailabilitySchedule, firstBookingSetup } = await import('@@/server/services/onboarding')
+    await ensureAvailabilitySchedule(user!.id, 'UTC')
+    expect(await firstBookingSetup(user!.id)).toBeNull()
+    expect(await sql`select id from event_types where user_id = ${user!.id}`).toHaveLength(0)
+  })
+
+  it('requires a connected video integration before finishing with Zoom', async () => {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
+    const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(result.user.id)
+    await expect(completeFirstBookingSetup(result.user.id, {
+      event: { ...setup!.event, title: 'Intro', slug: 'intro', locationType: 'zoom' }, schedule: setup!.schedule
+    })).rejects.toMatchObject({ statusCode: 409 })
+    expect(await firstBookingSetup(result.user.id)).toEqual(setup)
+  })
+
+  it('rolls back availability and status if the requested link already exists', async () => {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
+    const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(result.user.id)
+    await sql`insert into event_types (user_id, slug, title, duration_minutes) values (${result.user.id}, 'taken', 'Another event', 30)`
+    await expect(completeFirstBookingSetup(result.user.id, {
+      event: { ...setup!.event, title: 'Intro', slug: 'taken' },
+      schedule: { timeZone: 'Europe/London', rules: [{ weekday: 7, start: '12:00', end: '16:00' }] }
+    })).rejects.toThrow()
+    expect(await firstBookingSetup(result.user.id)).toEqual(setup)
+  })
+
+  it('creates only the authenticated user’s event and does not recreate a deleted event on retry', async () => {
+    const instance = await auth()
+    const result = await instance.api.signUpEmail({ body: credentials })
+    const other = await instance.api.signUpEmail({ body: { ...credentials, username: 'other', email: 'other@example.com' } })
+    const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(result.user.id)
+    await completeFirstBookingSetup(other.user.id, { event: { ...setup!.event, title: 'Other account', slug: 'other' }, schedule: setup!.schedule })
+    expect(await firstBookingSetup(result.user.id)).toEqual(setup)
+    await completeFirstBookingSetup(result.user.id, { event: { ...setup!.event, title: 'Intro', slug: 'intro' }, schedule: setup!.schedule })
+    await sql`delete from event_types where user_id = ${result.user.id}`
+    await expect(completeFirstBookingSetup(result.user.id, setup!)).rejects.toMatchObject({ statusCode: 404 })
+    expect(await firstBookingSetup(result.user.id)).toBeNull()
+  })
+
+  it('creates exactly one event when completion requests arrive together', async () => {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
+    const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(result.user.id)
+    const input = { event: { ...setup!.event, title: 'Intro', slug: 'intro' }, schedule: setup!.schedule }
+    await Promise.all([completeFirstBookingSetup(result.user.id, input), completeFirstBookingSetup(result.user.id, input)])
+    expect(await sql`select id from event_types where user_id = ${result.user.id}`).toHaveLength(1)
   })
 
   it('refuses sign-in until the email is confirmed', async () => {
@@ -139,6 +234,7 @@ describe.skipIf(!url)('authentication', () => {
   it.each([
     ['slashes that would break the booking URL', 'ada/../admin'],
     ['a reserved word', 'dashboard'],
+    ['the onboarding route', 'onboarding'],
     ['far too long', 'a'.repeat(40)],
     ['a leading hyphen', '-ada']
   ])('rejects %s posted straight to the endpoint, bypassing the form', async (_label, username) => {

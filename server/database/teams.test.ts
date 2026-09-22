@@ -33,6 +33,13 @@ describe.skipIf(!url)('teams', () => {
     const cookie = response.headers.getSetCookie().join('; ')
     const [row] = await sql<{ id: string }[]>`select id from users where email = ${email}`
 
+    // These team tests exercise hosts who have explicitly created a personal event.
+    const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+    const setup = await firstBookingSetup(row!.id)
+    await completeFirstBookingSetup(row!.id, {
+      event: { ...setup!.event, title: '30 Minute Meeting', slug: '30min' }, schedule: setup!.schedule
+    })
+
     return { headers: new Headers({ cookie }), id: row!.id, email }
   }
 
@@ -503,7 +510,7 @@ describe.skipIf(!url)('teams', () => {
     const ada = await signUp('Ada Lovelace', 'ada', 'ada@example.com')
     const team = await createTeam(ada.headers)
 
-    // Ada already has a personal '30min' from onboarding; the team may reuse it.
+    // Ada created a personal '30min'; the team may reuse the same slug.
     await sql`
       insert into event_types (organization_id, created_by_user_id, slug, title, duration_minutes)
       values (${team!.id}, ${ada.id}, '30min', 'Team 30 min', 30)

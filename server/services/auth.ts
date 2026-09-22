@@ -9,7 +9,7 @@ import { TEAM_PLAN, createOrganizationSchema } from '@@/shared/billing'
 import { accessControl, organizationAccessRoles } from '@@/shared/organization-access'
 import * as schema from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
-import { createStarterSetup } from '@@/server/services/onboarding'
+import { createAccountSetup } from '@@/server/services/onboarding'
 import { emailDedupeKey, enqueueEmails } from '@@/server/services/email-outbox'
 import { queueVerificationEmail } from '@@/server/services/verification-email'
 import { useEnv } from '@@/server/config/env'
@@ -325,9 +325,8 @@ function createAuth() {
           after: async (user) => {
             const record = user as typeof user & { timeZone?: string | null }
 
-            // A booking link that resolves to nothing is worse than no link, so
-            // every account starts with hours and something to book.
-            await createStarterSetup(user.id, record.timeZone || 'UTC')
+            // Prepare editable hours, but only publish an event when the user creates one.
+            await createAccountSetup(user.id, record.timeZone || 'UTC', true)
           }
         }
       }

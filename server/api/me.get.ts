@@ -1,6 +1,6 @@
 import { getAuthSession, isPlatformAdminEmail } from '@@/server/services/session'
 import { useEnv } from '@@/server/config/env'
-import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { ensureAvailabilitySchedule } from '@@/server/services/onboarding'
 import { profileForUser } from '@@/server/repositories/profile'
 import { personalPlanEntitlement } from '@@/server/services/personal-entitlement'
 
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
   const profile = await profileForUser(session.user.id)
   if (!profile) return { user: null, google, isPlatformAdmin: false, personalPlan: null }
-  await ensureStarterSetup(profile.id, profile.timeZone || 'UTC')
+  await ensureAvailabilitySchedule(profile.id, profile.timeZone || 'UTC')
   const personalPlan = await personalPlanEntitlement(profile.id)
 
   return { user: profile, google, isPlatformAdmin: isPlatformAdminEmail(profile.email), personalPlan }

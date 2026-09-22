@@ -1,5 +1,6 @@
 import type { PublicPersonalBranding } from '#shared/branding'
 import type { PaymentCurrency } from '#shared/payments'
+import type { BookingSetupStatus } from '#shared/onboarding'
 
 export interface PublicProfile {
   name: string
@@ -31,6 +32,7 @@ export interface CurrentProfile {
   preferredCurrency: PaymentCurrency | null
   twoFactorEnabled: boolean
   hasPassword: boolean
+  bookingSetupStatus: BookingSetupStatus | null
 }
 
 export const profileApi = {

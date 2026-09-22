@@ -75,6 +75,7 @@ export default defineNuxtConfig({
     '/reset-password': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
     '/verify-email': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
     '/dashboard': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
+    '/onboarding': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
     '/event-types': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
     '/bookings': { prerender: false, headers: { 'cache-control': 'private, no-store' } },
     '/availability': { prerender: false, headers: { 'cache-control': 'private, no-store' } },

@@ -1,0 +1,1 @@
+ALTER TABLE "booking_setups" ALTER COLUMN "event_type_id" DROP NOT NULL;

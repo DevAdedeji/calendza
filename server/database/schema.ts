@@ -29,6 +29,7 @@ import type { WorkflowAction } from '#shared/workflows'
 import type { RoutingCondition } from '#shared/routing'
 import type { BookingEmailTemplateSettings } from '#shared/email-templates'
 import type { EmailBranding } from '@@/server/integrations/email'
+import type { BookingSetupStatus } from '#shared/onboarding'
 
 // PostgreSQL supplies creation time and migration 0041 maintains updated_at
 // with a trigger. Application writes may still use sql`now()` when several
@@ -756,6 +757,16 @@ export const eventTypes = pgTable('event_types', {
     sql`(${table.paymentEnabled} = false and ${table.priceCents} is null) or (${table.paymentEnabled} = true and ${table.priceCents} >= 100 and ${table.requiresConfirmation} = false)`
   ),
   check('event_types_payment_currency_allowed', sql`${table.paymentCurrency} in ('USD', 'NGN')`)
+])
+
+export const bookingSetups = pgTable('booking_setups', {
+  userId: uuid('user_id').primaryKey().references(() => users.id, { onDelete: 'cascade' }),
+  eventTypeId: uuid('event_type_id').references(() => eventTypes.id, { onDelete: 'cascade' }),
+  status: text('status').$type<BookingSetupStatus>().notNull().default('pending'),
+  ...timestamps
+}, table => [
+  uniqueIndex('booking_setups_event_type_key').on(table.eventTypeId),
+  check('booking_setups_status_allowed', sql`${table.status} in ('pending', 'skipped', 'completed')`)
 ])
 
 /**

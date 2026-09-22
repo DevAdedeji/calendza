@@ -2,13 +2,13 @@ import { and, asc, desc, eq, gte } from 'drizzle-orm'
 import { availabilityRules, dateOverrides, schedules } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database/index'
 import { requireAuthSession } from '@@/server/services/session'
-import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { ensureAvailabilitySchedule } from '@@/server/services/onboarding'
 
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
   const user = session.user as typeof session.user & { timeZone?: string }
 
-  await ensureStarterSetup(session.user.id, user.timeZone || 'UTC')
+  await ensureAvailabilitySchedule(session.user.id, user.timeZone || 'UTC')
 
   const db = useDatabase()
 

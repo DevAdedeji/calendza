@@ -129,7 +129,7 @@ async function confirmDelete() {
 }
 
 async function saved(action: 'created' | 'updated') {
-  await refresh()
+  await Promise.all([refresh(), refreshNuxtData('current-user')])
   feedback.success({ title: action === 'created' ? 'Event type created' : 'Event type updated' })
 }
 

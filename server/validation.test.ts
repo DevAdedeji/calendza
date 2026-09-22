@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { firstBookingDetailsSchema, firstBookingSetupSchema } from '#shared/onboarding'
 import {
   accountProfileSchema,
   createBookingSchema,
@@ -12,6 +13,26 @@ import {
 } from '@@/shared/validation'
 
 describe('authentication validation', () => {
+  it('validates first-link details, location, timezone and non-overlapping available hours', () => {
+    const input = {
+      event: { title: 'Intro call', slug: 'intro', durationMinutes: 30, locationType: 'custom', locationDetails: 'I will send you a link.' },
+      schedule: { timeZone: 'Africa/Lagos', rules: [{ weekday: 1, start: '09:00', end: '17:00' }] }
+    }
+    expect(firstBookingDetailsSchema.safeParse(input.event).success).toBe(true)
+    expect(firstBookingSetupSchema.safeParse(input).success).toBe(true)
+    for (const event of [{ ...input.event, slug: '../escape' }, { ...input.event, durationMinutes: 0 }, { ...input.event, locationDetails: '' }, { ...input.event, locationType: 'video_link', locationDetails: 'javascript:alert(1)' }]) {
+      expect(firstBookingSetupSchema.safeParse({ ...input, event }).success).toBe(false)
+    }
+    for (const schedule of [
+      { ...input.schedule, timeZone: 'Invented/Zone' },
+      { ...input.schedule, rules: [] },
+      { ...input.schedule, rules: [{ weekday: 1, start: '17:00', end: '09:00' }] },
+      { ...input.schedule, rules: [...input.schedule.rules, { weekday: 1, start: '12:00', end: '18:00' }] }
+    ]) {
+      expect(firstBookingSetupSchema.safeParse({ ...input, schedule }).success).toBe(false)
+    }
+  })
+
   it('normalizes email addresses', () => {
     expect(emailSchema.parse('  ADA@EXAMPLE.COM ')).toBe('ada@example.com')
   })

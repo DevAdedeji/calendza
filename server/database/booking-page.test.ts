@@ -23,9 +23,16 @@ describe.skipIf(!url)('public booking page', () => {
     return useAuth()
   }
 
-  async function signUp() {
-    await (await auth()).api.signUpEmail({ body: credentials })
+  async function signUp(createEvent = true) {
+    const result = await (await auth()).api.signUpEmail({ body: credentials })
     await sql`update users set email_verified = true where email = ${credentials.email}`
+    if (createEvent) {
+      const { firstBookingSetup, completeFirstBookingSetup } = await import('@@/server/services/onboarding')
+      const setup = await firstBookingSetup(result.user.id)
+      await completeFirstBookingSetup(result.user.id, {
+        event: { ...setup!.event, title: '30 Minute Meeting', slug: '30min' }, schedule: setup!.schedule
+      })
+    }
   }
 
   afterAll(async () => {
@@ -42,8 +49,8 @@ describe.skipIf(!url)('public booking page', () => {
     await sql`truncate table email_outbox, api_rate_limits, rate_limits, sessions, accounts, verifications, bookings, event_types, date_overrides, availability_rules, schedules, users, organizations restart identity cascade`
   })
 
-  it('gives a new account working hours and something to book', async () => {
-    await signUp()
+  it('gives a new account working hours without publishing an event', async () => {
+    await signUp(false)
 
     const [schedule] = await sql<{ id: string, time_zone: string, is_default: boolean }[]>`
       select id, time_zone, is_default from schedules
@@ -56,11 +63,7 @@ describe.skipIf(!url)('public booking page', () => {
     `
     expect(rules.map(r => r.weekday)).toEqual([1, 2, 3, 4, 5])
 
-    const [type] = await sql<{ slug: string, duration_minutes: number }[]>`
-      select slug, duration_minutes from event_types
-    `
-    expect(type?.slug).toBe('30min')
-    expect(type?.duration_minutes).toBe(30)
+    expect(await sql`select id from event_types`).toHaveLength(0)
   })
 
   it('keeps an unverified account off public booking pages', async () => {

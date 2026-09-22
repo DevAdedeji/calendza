@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { paginationMeta, paginationQuerySchema } from '#shared/pagination'
 import { availabilityRules, dateOverrides, eventTypes, schedules } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database/index'
-import { ensureStarterSetup } from '@@/server/services/onboarding'
+import { ensureAvailabilitySchedule } from '@@/server/services/onboarding'
 import { requireAuthSession } from '@@/server/services/session'
 
 const querySchema = paginationQuerySchema.extend({
@@ -14,7 +14,7 @@ const querySchema = paginationQuerySchema.extend({
 export default defineEventHandler(async (event) => {
   const session = await requireAuthSession(event)
   const user = session.user as typeof session.user & { timeZone?: string }
-  await ensureStarterSetup(session.user.id, user.timeZone || 'UTC')
+  await ensureAvailabilitySchedule(session.user.id, user.timeZone || 'UTC')
   const parsed = await getValidatedQuery(event, querySchema.safeParse)
   if (!parsed.success) throw createError({ statusCode: 400, statusMessage: 'Invalid schedule filters.' })
 

@@ -78,6 +78,7 @@ async function copyBookingPage() {
     >
       <template #actions>
         <UButton
+          v-if="activeEventTypeCount"
           :to="`/${user?.username}`"
           target="_blank"
           rel="noopener noreferrer"
@@ -90,6 +91,26 @@ async function copyBookingPage() {
         </UButton>
       </template>
     </PageHeader>
+
+    <section
+      v-if="eventTypes && eventTypes.counts.all === 0"
+      class="flex flex-col gap-4 rounded-xl border border-primary/20 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div>
+        <h2 class="font-semibold text-highlighted">
+          Create your first event type
+        </h2>
+        <p class="mt-1 text-sm text-muted">
+          Choose a meeting name, your available hours and where you’ll meet. Then share your booking link.
+        </p>
+      </div>
+      <UButton
+        :to="user?.bookingSetupStatus === 'skipped' ? '/onboarding' : '/event-types?create=1'"
+        class="shrink-0"
+      >
+        Create an event type
+      </UButton>
+    </section>
 
     <OverviewLoadingSkeleton v-if="overviewLoading" />
 
@@ -135,12 +156,13 @@ async function copyBookingPage() {
             Your booking link
           </p>
           <h2 class="mt-2 text-[18px] font-semibold text-highlighted">
-            Ready when you are.
+            {{ activeEventTypeCount ? 'Ready when you are.' : 'Your page is waiting for an event.' }}
           </h2>
           <p class="mt-1 max-w-xl text-[14px] leading-relaxed text-muted">
-            Share one link and let guests choose from every active event type.
+            {{ activeEventTypeCount ? 'Share one link and let guests choose from every active event type.' : 'Your page address is reserved. Add an active event type before sharing it with guests.' }}
           </p>
           <button
+            v-if="activeEventTypeCount"
             type="button"
             class="mt-5 grid w-full max-w-2xl grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 overflow-hidden rounded-xl border px-3 py-3.5 text-left transition-colors sm:px-4"
             :class="copied ? 'border-success/30 bg-success/10' : 'border-default bg-muted hover:border-primary'"
@@ -264,18 +286,18 @@ async function copyBookingPage() {
             v-else
             icon="i-lucide-calendar-plus"
             title="Your calendar is clear"
-            description="Share your booking link or preview the guest experience before you send it."
+            :description="activeEventTypeCount ? 'Share your booking link or preview the guest experience before you send it.' : 'Your upcoming bookings will appear here once guests book an event.'"
           >
             <template #action>
               <UButton
-                :to="`/${user?.username}`"
-                target="_blank"
+                :to="activeEventTypeCount ? `/${user?.username}` : '/event-types?create=1'"
+                :target="activeEventTypeCount ? '_blank' : undefined"
                 rel="noopener noreferrer"
                 color="neutral"
                 variant="outline"
                 trailing-icon="i-lucide-external-link"
               >
-                Preview your page
+                {{ activeEventTypeCount ? 'Preview your page' : 'Create an event type' }}
               </UButton>
             </template>
           </ListEmptyState>
