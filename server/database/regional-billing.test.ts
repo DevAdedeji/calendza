@@ -28,7 +28,9 @@ describe.skipIf(!url)('regional subscription billing persistence', () => {
         return json({
           items: [
             { id: 'prod_personal', metadata: { schedra_plan: 'personal_pro_monthly' } },
-            { id: 'prod_team', metadata: { schedra_plan: 'team_monthly_seats_2' } }
+            { id: 'prod_team', metadata: { schedra_plan: 'team_monthly_seats_2' } },
+            { id: 'prod_personal_yearly', metadata: { schedra_plan: 'personal_pro_yearly' } },
+            { id: 'prod_team_yearly', metadata: { schedra_plan: 'team_yearly_seats_2' } }
           ],
           pagination: { has_more: false, next_cursor: null }
         })
@@ -77,7 +79,7 @@ describe.skipIf(!url)('regional subscription billing persistence', () => {
       invoices: plan === 'personal' ? 'personal_invoices' : 'organization_invoices',
       subscriptions: plan === 'personal' ? 'personal_subscriptions' : 'organization_subscriptions',
       ownerColumn: plan === 'personal' ? 'user_id' : 'organization_id',
-      async checkout(currency: CollectionCurrency = 'NGN', interval: BillingInterval = 'monthly', requestId = crypto.randomUUID()) {
+      async checkout(currency: CollectionCurrency = 'USD', interval: BillingInterval = 'monthly', requestId = crypto.randomUUID()) {
         const customer = { email: 'regional-billing@example.com', name: 'Regional Test' }
         if (plan === 'personal') {
           const { startPersonalCheckout } = await import('@@/server/services/personal-billing')
@@ -127,62 +129,50 @@ describe.skipIf(!url)('regional subscription billing persistence', () => {
   })
 
   describe.each<Plan>(['personal', 'team'])('%s plan', (plan) => {
-    it.each<BillingInterval>(['monthly', 'yearly'])('stores and charges the fixed NGN price for %s checkout without FX', async (interval) => {
+    it.each<BillingInterval>(['monthly', 'yearly'])('rejects a new NGN %s checkout before writes or provider calls', async (interval) => {
       const account = await fixture(plan)
-      const result = await account.checkout('NGN', interval)
-      const [invoice] = await sql`select * from ${sql(account.invoices)} where reference = ${result.reference}`
-      const [subscription] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
-      const checkout = requests.find(request => request.path.endsWith('/checkout-sessions'))!
-      const expectedAmount = plan === 'personal'
-        ? interval === 'monthly' ? '7500.00' : '75000.00'
-        : interval === 'monthly' ? '20000.00' : '200000.00'
-      const baseCents = (plan === 'personal' ? 600 : 1600) * (interval === 'yearly' ? 10 : 1)
-
-      expect(requests.some(request => request.path.endsWith('/conversions/quotes'))).toBe(false)
-      expect(checkout.body.pricing).toEqual({ amount: expectedAmount, currency: 'NGN', price_type: 'fixed' })
-      expect(checkout.body.payment_method_options).toEqual({ bank_transfer: { currencies: ['NGN'] }, card: { currencies: ['NGN'] } })
-      expect(checkout.body).not.toHaveProperty('product_cart')
-      expect(checkout.body.metadata).not.toHaveProperty('rate')
-      expect(invoice).toMatchObject({
-        amount_cents: baseCents, collection_amount: expectedAmount, collection_currency: 'NGN',
-        exchange_rate: null, status: 'pending', bachs_checkout_id: 'checkout_regional_test'
-      })
-      expect(subscription).toMatchObject({ collection_currency: 'NGN', collection_method: 'invoice', interval })
-      expect(subscription?.status).not.toBe('active')
+      const before = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      await expect(account.checkout('NGN', interval)).rejects.toMatchObject({ statusCode: 400 })
+      expect(await sql`select * from ${sql(account.invoices)} where ${sql(account.ownerColumn)} = ${account.ownerId}`).toHaveLength(0)
+      expect(await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`).toEqual(before)
+      expect(requests).toEqual([])
     })
 
-    it('keeps the fixed price on a failed checkout without activating paid access', async () => {
+    it('records a failed USD checkout without activating paid access', async () => {
       const account = await fixture(plan)
       provider({ checkoutFailure: true })
       await expect(account.checkout()).rejects.toMatchObject({ statusCode: 503 })
       const [invoice] = await sql`select * from ${sql(account.invoices)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
-      expect(invoice).toMatchObject({ status: 'failed', collection_currency: 'NGN', exchange_rate: null, bachs_checkout_id: null })
-      expect(invoice?.collection_amount).toBe(plan === 'personal' ? '7500.00' : '20000.00')
+      expect(invoice).toMatchObject({ status: 'failed', collection_currency: 'USD', exchange_rate: null, bachs_checkout_id: null })
+      expect(invoice?.collection_amount).toBe(plan === 'personal' ? '6.00' : '16.00')
       const [subscription] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
       expect(subscription?.status).not.toBe('active')
     })
 
-    it('keeps USD checkout recurring and avoids requesting an exchange quote', async () => {
+    it.each<BillingInterval>(['monthly', 'yearly'])('creates a recurring USD %s checkout without an exchange quote', async (interval) => {
       const account = await fixture(plan)
-      const result = await account.checkout('USD')
+      const result = await account.checkout('USD', interval)
       const checkout = requests.find(request => request.path.endsWith('/checkout-sessions'))!
       expect(requests.some(request => request.path.endsWith('/conversions/quotes'))).toBe(false)
-      expect(checkout.body).toMatchObject({ billing_currency: 'USD', product_cart: [{ product_id: plan === 'personal' ? 'prod_personal' : 'prod_team', quantity: 1 }] })
+      const productId = `prod_${plan}${interval === 'yearly' ? '_yearly' : ''}`
+      expect(checkout.body).toMatchObject({ billing_currency: 'USD', product_cart: [{ product_id: productId, quantity: 1 }] })
+      expect(checkout.body).not.toHaveProperty('pricing')
       const [invoice] = await sql`select * from ${sql(account.invoices)} where reference = ${result.reference}`
-      expect(invoice).toMatchObject({ collection_currency: 'USD', collection_amount: plan === 'personal' ? '6.00' : '16.00', exchange_rate: null })
+      const amount = (plan === 'personal' ? 6 : 16) * (interval === 'yearly' ? 10 : 1)
+      expect(invoice).toMatchObject({ collection_currency: 'USD', collection_amount: amount.toFixed(2), exchange_rate: null })
     })
 
-    it('does not replace an active USD subscription with NGN billing', async () => {
+    it.each<CollectionCurrency>(['USD', 'NGN'])('does not replace an active %s paid term with a new subscription', async (currency) => {
       const account = await fixture(plan)
       if (plan === 'personal') {
         await sql`insert into personal_subscriptions (user_id, status) values (${account.userId}, 'canceled')`
       }
-      await sql`update ${sql(account.subscriptions)} set status = 'active', collection_currency = 'USD',
-        collection_method = 'charge_automatically', bachs_subscription_id = 'sub_existing_usd',
+      await sql`update ${sql(account.subscriptions)} set status = 'active', collection_currency = ${currency},
+        collection_method = ${currency === 'USD' ? 'charge_automatically' : 'invoice'},
         current_period_end = now() + interval '1 month'
         where ${sql(account.ownerColumn)} = ${account.ownerId}`
       if (plan === 'team') {
-        await sql`update organization_subscriptions set seats_at_last_invoice = 2 where organization_id = ${account.ownerId}`
+        await sql`update organization_subscriptions set seats_at_last_invoice = 1 where organization_id = ${account.ownerId}`
       }
       const [before] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
       await expect(account.checkout()).rejects.toMatchObject({ statusCode: 409 })
@@ -191,7 +181,47 @@ describe.skipIf(!url)('regional subscription billing persistence', () => {
       expect(requests).toEqual([])
     })
 
-    it.each<CollectionCurrency>(['USD', 'NGN'])('does not reprice an earlier paid %s invoice when opening a fixed NGN checkout', async (currency) => {
+    it('preserves an expired NGN term and its grace clock until USD payment succeeds', async () => {
+      const account = await fixture(plan)
+      if (plan === 'personal') {
+        await sql`insert into personal_subscriptions (user_id, status) values (${account.userId}, 'canceled')`
+      }
+      await sql`update ${sql(account.subscriptions)} set status = 'active', collection_currency = 'NGN',
+        collection_method = 'invoice', current_period_end = now() - interval '15 days',
+        updated_at = now() - interval '15 days' where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      const [before] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      const checkout = await account.checkout('USD')
+      const [pending] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      expect(pending).toEqual(before)
+      if (plan === 'personal') {
+        const { markPersonalInvoicePaid } = await import('@@/server/services/personal-billing')
+        await markPersonalInvoicePaid({ reference: checkout.reference })
+      } else {
+        const { markInvoicePaid } = await import('@@/server/services/billing')
+        await markInvoicePaid({ reference: checkout.reference })
+      }
+      const [paid] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      expect(paid).toMatchObject({ status: 'active', collection_currency: 'USD', collection_method: 'charge_automatically' })
+    })
+
+    it('still reconciles a legacy NGN checkout without converting its amount or renewing it automatically', async () => {
+      const account = await fixture(plan)
+      const checkout = await account.checkout('USD')
+      // Represent a checkout issued before the USD-only policy was deployed.
+      await sql`update ${sql(account.invoices)} set collection_currency = 'NGN', collection_amount = '7500.00'
+        where reference = ${checkout.reference}`
+      const markPaid = plan === 'personal'
+        ? (await import('@@/server/services/personal-billing')).markPersonalInvoicePaid
+        : (await import('@@/server/services/billing')).markInvoicePaid
+      expect(await markPaid({ reference: checkout.reference })).toMatchObject({ applied: true })
+      expect(await markPaid({ reference: checkout.reference })).toMatchObject({ applied: false, reason: 'already-paid' })
+      const [paid] = await sql`select * from ${sql(account.subscriptions)} where ${sql(account.ownerColumn)} = ${account.ownerId}`
+      expect(paid).toMatchObject({ status: 'active', collection_currency: 'NGN', collection_method: 'invoice' })
+      const [invoice] = await sql`select * from ${sql(account.invoices)} where reference = ${checkout.reference}`
+      expect(invoice).toMatchObject({ status: 'paid', collection_currency: 'NGN', collection_amount: '7500.00' })
+    })
+
+    it.each<CollectionCurrency>(['USD', 'NGN'])('does not reprice an earlier paid %s invoice when opening a USD checkout', async (currency) => {
       const account = await fixture(plan)
       const earlier = await account.checkout('USD')
       await sql`update ${sql(account.invoices)} set status = 'paid', paid_at = now(), bachs_charge_id = 'charge_historical'
@@ -202,22 +232,33 @@ describe.skipIf(!url)('regional subscription billing persistence', () => {
           exchange_rate = '1354.9437' where reference = ${earlier.reference}`
       }
       const [before] = await sql`select * from ${sql(account.invoices)} where reference = ${earlier.reference}`
-      await account.checkout('NGN')
+      await account.checkout('USD')
       const [after] = await sql`select * from ${sql(account.invoices)} where reference = ${earlier.reference}`
       expect(after).toEqual(before)
     })
   })
 
-  it('reuses a personal checkout with its original fixed NGN price on a retry', async () => {
+  it('reuses a personal USD checkout on a retry', async () => {
     const account = await fixture('personal')
     const requestId = crypto.randomUUID()
-    const first = await account.checkout('NGN', 'monthly', requestId)
+    const first = await account.checkout('USD', 'monthly', requestId)
     const requestCount = requests.length
-    const retry = await account.checkout('NGN', 'monthly', requestId)
+    const retry = await account.checkout('USD', 'monthly', requestId)
     expect(retry).toEqual(first)
     expect(requests).toHaveLength(requestCount)
     const invoices = await sql`select * from personal_invoices where user_id = ${account.userId}`
     expect(invoices).toHaveLength(1)
-    expect(invoices[0]?.collection_amount).toBe('7500.00')
+    expect(invoices[0]?.collection_amount).toBe('6.00')
+  })
+
+  it('does not reuse an old NGN session for a USD request with the same ID', async () => {
+    const account = await fixture('personal')
+    const requestId = crypto.randomUUID()
+    const checkout = await account.checkout('USD', 'monthly', requestId)
+    await sql`update personal_invoices set collection_currency = 'NGN', collection_amount = '7500.00'
+      where reference = ${checkout.reference}`
+    requests = []
+    await expect(account.checkout('USD', 'monthly', requestId)).rejects.toMatchObject({ statusCode: 409 })
+    expect(requests).toEqual([])
   })
 })

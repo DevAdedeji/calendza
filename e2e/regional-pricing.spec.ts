@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
 import postgres from 'postgres'
 
 const databaseUrl = process.env.TEST_DATABASE_URL
@@ -9,42 +9,25 @@ test.afterAll(async () => {
   await sql.end()
 })
 
-async function chooseRegion(page: Page, region: 'Nigeria (NGN)' | 'Other countries (USD)') {
-  await page.getByRole('combobox', { name: 'Billing region' }).click()
-  await page.getByRole('option', { name: region, exact: true }).click()
-}
-
 test.describe('Nigerian subscription pricing', () => {
   test.use({ timezoneId: 'Africa/Lagos' })
 
-  test('defaults to fixed monthly naira prices and preserves the region across navigation', async ({ page }) => {
+  test('uses USD even with a saved naira preference and Lagos time zone', async ({ page, context, baseURL }) => {
+    await context.addCookies([{ name: 'billing-currency', value: 'NGN', url: baseURL! }])
     await page.goto('/pricing')
-    await expect(page.getByRole('combobox', { name: 'Billing region' })).toContainText('Nigeria (NGN)')
+    await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Monthly', exact: true })).toHaveAttribute('aria-pressed', 'true')
-    await expect(page.getByText('₦7,500', { exact: true })).toBeVisible()
-    await expect(page.getByText('₦10,000', { exact: true })).toBeVisible()
-    const desktopRegion = await page.getByRole('combobox', { name: 'Billing region' }).boundingBox()
-    expect(desktopRegion).not.toBeNull()
-    expect(desktopRegion!.x).toBeGreaterThan(page.viewportSize()!.width / 2)
-    await expect(page.getByText('Suggested from your device time zone. Change it if needed.', { exact: true })).toHaveCount(0)
-    await expect(page.getByText('Fixed naira prices. Pay by bank transfer and renew manually each billing period.', { exact: true })).toHaveCount(0)
-    await page.getByRole('button', { name: 'Yearly', exact: true }).click()
-    await expect(page.getByText('₦75,000', { exact: true })).toBeVisible()
-    await expect(page.getByText('₦100,000', { exact: true })).toBeVisible()
-
-    await chooseRegion(page, 'Other countries (USD)')
-    await expect(page.getByText('$60', { exact: true })).toBeVisible()
-    await page.reload()
-    await expect(page.getByRole('combobox', { name: 'Billing region' })).toContainText('Other countries (USD)')
     await expect(page.getByText('$6', { exact: true })).toBeVisible()
-    await chooseRegion(page, 'Nigeria (NGN)')
+    await expect(page.getByText('$8', { exact: true })).toBeVisible()
+    await expect(page.getByText('Plans are billed in USD. Auto-renews until cancelled.', { exact: true })).toHaveCount(0)
+    await page.getByRole('button', { name: 'Yearly', exact: true }).click()
+    await expect(page.getByText('$60', { exact: true })).toBeVisible()
+    await expect(page.getByText('$80', { exact: true })).toBeVisible()
+    await page.reload()
+    await expect(page.getByText('$6', { exact: true })).toBeVisible()
     await page.setViewportSize({ width: 360, height: 800 })
-    await expect(page.getByText('₦7,500', { exact: true })).toBeVisible()
+    await expect(page.getByText('$6', { exact: true })).toBeVisible()
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
-    const mobileRegion = await page.getByRole('combobox', { name: 'Billing region' }).boundingBox()
-    expect(mobileRegion).not.toBeNull()
-    expect(Math.round(mobileRegion!.x + mobileRegion!.width)).toBe(336)
-    await page.locator('section').nth(1).screenshot({ path: '/tmp/calendza-regional-pricing-mobile.png' })
   })
 
   test('does not depend on exchange-rate requests and keeps base-price metadata stable', async ({ page }) => {
@@ -54,14 +37,13 @@ test.describe('Nigerian subscription pricing', () => {
       return route.abort()
     })
     await page.goto('/pricing')
-    await expect(page.getByText('₦7,500', { exact: true })).toBeVisible()
+    await expect(page.getByText('$6', { exact: true })).toBeVisible()
     expect(pricingRequests).toEqual([])
     const product = await page.locator('script[type="application/ld+json"]').allTextContents()
     expect(product.join('')).toContain('"priceCurrency":"USD"')
-    await expect(page.getByText('$6', { exact: true })).toHaveCount(0)
   })
 
-  test('uses naira for new personal and team checkouts without converting invoice history', async ({ page }) => {
+  test('uses USD for new personal and team checkouts without converting invoice history', async ({ page }) => {
     test.setTimeout(120_000)
     const suffix = Date.now().toString(36)
     const username = `pricing-${suffix}`
@@ -82,7 +64,8 @@ test.describe('Nigerian subscription pricing', () => {
     await page.getByLabel('Email').fill(email)
     await page.locator('input[name="password"]').fill(password)
     await page.getByRole('button', { name: 'Sign in', exact: true }).click()
-    await expect(page).toHaveURL(/\/dashboard$/)
+    await expect(page).toHaveURL(/\/(dashboard|setup)$/)
+    await page.goto('/billing')
 
     const historicalInvoice = {
       id: 'regional-history', reference: 'regional-history', status: 'paid', interval: 'monthly',
@@ -105,20 +88,20 @@ test.describe('Nigerian subscription pricing', () => {
       await route.fulfill({ status: 503, json: { message: 'Checkout stub: no charge made' } })
     })
     await page.getByRole('link', { name: 'Plan & billing', exact: true }).click()
-    await expect(page.getByRole('heading', { name: /₦7,500/ })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /\$6/ })).toBeVisible()
     await expect(page.getByRole('cell', { name: '₦9,876.54', exact: true })).toBeVisible()
     await expect(page.getByRole('cell', { name: 'NGN amount unavailable', exact: true })).toBeVisible()
     await page.getByRole('button', { name: 'Upgrade to Personal Pro', exact: true }).click()
-    await expect.poll(() => personalCheckout).toMatchObject({ currency: 'NGN', interval: 'monthly' })
-    await chooseRegion(page, 'Other countries (USD)')
+    await expect.poll(() => personalCheckout).toMatchObject({ currency: 'USD', interval: 'monthly' })
     await expect(page.getByRole('heading', { name: /\$6/ })).toBeVisible()
     await expect(page.getByRole('cell', { name: '₦9,876.54', exact: true })).toBeVisible()
-    await chooseRegion(page, 'Nigeria (NGN)')
 
     await page.getByRole('button', { name: /Current team: Personal\. Switch team/ }).click()
     await page.getByText('Create team', { exact: true }).click()
     const dialog = page.getByRole('dialog', { name: 'Create a team' })
-    await expect(dialog.getByText(/After the trial it is ₦10,000 per member monthly/)).toBeVisible()
+    await expect(dialog.getByText('14 days free. No card required.', { exact: true })).toBeVisible()
+    await expect(dialog.getByText(/Paid plans are \$8 USD per member monthly/)).toBeVisible()
+    await expect(dialog.getByText(/Starting a trial does not start a paid subscription/)).toHaveCount(0)
     await page.getByLabel('Team name').fill('Regional Team')
     await page.getByLabel('Team address').fill(username)
     await expect(page.getByRole('button', { name: 'Create team', exact: true })).toBeEnabled()
@@ -144,29 +127,28 @@ test.describe('Nigerian subscription pricing', () => {
       await route.fulfill({ status: 503, json: { message: 'Checkout stub: no charge made' } })
     })
     await page.getByRole('link', { name: 'Billing', exact: true }).click()
-    const checkout = page.getByRole('button', { name: 'Pay and activate · ₦10,000', exact: true })
+    const checkout = page.getByRole('button', { name: 'Pay and activate · $8', exact: true })
     await expect(checkout).toBeEnabled()
     await checkout.click()
-    await expect.poll(() => teamCheckout).toMatchObject({ currency: 'NGN', interval: 'monthly' })
+    await expect.poll(() => teamCheckout).toMatchObject({ currency: 'USD', interval: 'monthly' })
     existingDollarSubscription = true
     await page.getByRole('link', { name: 'Members', exact: true }).click()
     await page.getByRole('link', { name: 'Billing', exact: true }).click()
     await expect(page.getByText('$80', { exact: true })).toBeVisible()
     await expect(page.getByText('Card · USD', { exact: true })).toBeVisible()
-    await expect(page.getByText(/Your existing subscription and past invoices keep their original currency/)).toBeVisible()
+    await expect(page.getByRole('combobox', { name: 'Currency', exact: true })).toHaveCount(0)
   })
 })
 
 test.describe('International subscription pricing', () => {
   test.use({ timezoneId: 'America/New_York' })
 
-  test('defaults to dollars outside Nigeria and allows an explicit region correction', async ({ page }) => {
+  test('uses the same USD prices outside Nigeria', async ({ page }) => {
     await page.goto('/pricing')
-    await expect(page.getByRole('combobox', { name: 'Billing region' })).toContainText('Other countries (USD)')
+    await expect(page.getByRole('combobox')).toHaveCount(0)
     await expect(page.getByText('$6', { exact: true })).toBeVisible()
     await expect(page.getByText('$8', { exact: true })).toBeVisible()
     await expect(page.getByText('Pay in US dollars by card. Subscriptions renew automatically until cancelled.', { exact: true })).toHaveCount(0)
-    await chooseRegion(page, 'Nigeria (NGN)')
-    await expect(page.getByText('₦7,500', { exact: true })).toBeVisible()
+    await expect(page.getByText('$6', { exact: true })).toBeVisible()
   })
 })

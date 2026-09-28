@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_BILLING_INTERVAL } from '#shared/billing'
+import { DEFAULT_BILLING_INTERVAL, subscriptionCurrencySchema } from '#shared/billing'
 import { planPriceCents, decimalAmountCents, formatInvoiceAmount, formatSubscriptionMoney, preferredBillingCurrency } from '#shared/regional-pricing'
 
-describe('regional subscription amounts', () => {
-  it('uses fixed NGN amounts with two months off annual billing', () => {
-    expect(planPriceCents('personal', 'monthly', 'NGN')).toBe(750000)
-    expect(planPriceCents('personal', 'yearly', 'NGN')).toBe(7500000)
-    expect(planPriceCents('team', 'monthly', 'NGN')).toBe(1000000)
-    expect(planPriceCents('team', 'yearly', 'NGN')).toBe(10000000)
+describe('subscription amounts and historical currency formatting', () => {
+  it('only accepts USD for new subscriptions, including stale clients', () => {
+    expect(subscriptionCurrencySchema.parse(undefined)).toBe('USD')
+    expect(subscriptionCurrencySchema.parse('USD')).toBe('USD')
+    for (const currency of ['NGN', 'EUR', '', null]) {
+      expect(subscriptionCurrencySchema.safeParse(currency).success).toBe(false)
+    }
   })
 
   it('preserves USD prices', () => {
-    expect(planPriceCents('personal', 'monthly', 'USD')).toBe(600)
-    expect(planPriceCents('personal', 'yearly', 'USD')).toBe(6000)
-    expect(planPriceCents('team', 'monthly', 'USD')).toBe(800)
-    expect(planPriceCents('team', 'yearly', 'USD')).toBe(8000)
+    expect(planPriceCents('personal', 'monthly')).toBe(600)
+    expect(planPriceCents('personal', 'yearly')).toBe(6000)
+    expect(planPriceCents('team', 'monthly')).toBe(800)
+    expect(planPriceCents('team', 'yearly')).toBe(8000)
   })
 
   it('defaults new selections to monthly billing', () => {

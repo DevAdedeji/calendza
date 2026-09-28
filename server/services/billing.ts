@@ -10,21 +10,16 @@ import {
 import { organizationInvoices, organizationSubscriptions } from '@@/server/database/schema'
 import { useDatabase } from '@@/server/database'
 import {
-  createCheckoutSession,
   createSubscriptionCheckout,
   ensureTeamProduct,
-  NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
   type BachsSubscription
 } from '@@/server/integrations/bachs'
-import { planPriceCents } from '#shared/regional-pricing'
 import { organizationEntitlement } from '@@/server/services/entitlement'
 import { recordAudit } from '@@/server/services/organization'
 import { enqueueSubscriptionSeatSync } from '@@/server/services/subscription-seat-sync'
 import { useEnv } from '@@/server/config/env'
 import { addUtcCalendarPeriod } from '@@/server/utils/date-time'
 
-// Bachs rejects NGN checkouts below ₦1,000. Even the smallest one-seat team
-// invoice is far above that after USD-to-NGN conversion.
 function periodEnd(from: Date, interval: BillingInterval) {
   return addUtcCalendarPeriod(from, interval === 'yearly' ? { years: 1 } : { months: 1 })
 }
@@ -60,6 +55,9 @@ export async function startCheckout(input: {
   customer: { email: string, name: string }
   actorUserId: string
 }) {
+  if (input.collectionCurrency !== 'USD') {
+    throw createError({ statusCode: 400, statusMessage: 'Subscriptions are billed in USD and renew automatically.' })
+  }
   const env = useEnv()
   assertPublicReturnUrl(env.siteUrl)
 
@@ -68,8 +66,7 @@ export async function startCheckout(input: {
 
   const seats = billableSeats(entitlement.seatsUsed)
   const [currentSubscription] = await db.select({
-    collectionMethod: organizationSubscriptions.collectionMethod,
-    seatsAtLastInvoice: organizationSubscriptions.seatsAtLastInvoice
+    collectionMethod: organizationSubscriptions.collectionMethod
   }).from(organizationSubscriptions)
     .where(eq(organizationSubscriptions.organizationId, input.organizationId))
     .limit(1)
@@ -79,20 +76,19 @@ export async function startCheckout(input: {
     : 'invoice'
   const checkoutReason = billingCheckoutReason(
     entitlement.status,
-    currentMethod,
-    (currentSubscription?.seatsAtLastInvoice ?? 0) !== seats
+    currentMethod
   )
   if (!checkoutReason) {
     throw createError({
       statusCode: 409,
       statusMessage: entitlement.status === 'active'
-        ? 'This subscription is already active and renews automatically.'
+        ? 'This plan is already active for the current billing period.'
         : 'Bachs is already handling payment recovery for this subscription.'
     })
   }
 
   const amountCents = invoiceTotalCents(entitlement.seatsUsed, input.interval)
-  const method = collectionMethodFor(input.collectionCurrency)
+  const method = 'charge_automatically' as const
   const start = new Date()
   const end = periodEnd(start, input.interval)
   const reference = invoiceReference(input.organizationId, start)
@@ -129,55 +125,28 @@ export async function startCheckout(input: {
     throw failure
   }
 
-  const collectionAmount = toDecimalString(planPriceCents('team', input.interval, input.collectionCurrency) * seats)
+  const collectionAmount = toDecimalString(amountCents)
   await db.update(organizationInvoices)
     .set({ collectionAmount, updatedAt: sql`now()` })
     .where(eq(organizationInvoices.id, invoice.id))
 
-  const session = method === 'charge_automatically'
-    // USD by card: a recurring product makes Bachs open the session in
-    // subscription mode and bill the saved card every period from then on.
-    ? await ensureTeamProduct(input.interval, seats)
-        .then(productId => createSubscriptionCheckout({
-          productId,
-          // Bachs cannot mutate subscription quantity yet. The product itself
-          // represents the complete occupied-seat price, so quantity stays one.
-          quantity: 1,
-          reference,
-          customer: input.customer,
-          successUrl,
-          cancelUrl,
-          metadata
-        }))
-        .catch(fail)
-    // NGN is bank transfer, which subscriptions do not support, so each period
-    // is a one-off charge the team chooses to pay. Bachs refuses to bill a
-    // USD-priced checkout in NGN, so it has to be priced in NGN outright.
-    : await createCheckoutSession({
-        amount: collectionAmount,
-        currency: input.collectionCurrency,
-        paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-        reference,
-        customer: input.customer,
-        successUrl,
-        cancelUrl,
-        metadata
-      })
-        .catch(fail)
+  const session = await ensureTeamProduct(input.interval, seats)
+    .then(productId => createSubscriptionCheckout({
+      productId,
+      // Bachs cannot mutate subscription quantity yet. The product itself
+      // represents the complete occupied-seat price, so quantity stays one.
+      quantity: 1,
+      reference,
+      customer: input.customer,
+      successUrl,
+      cancelUrl,
+      metadata
+    }))
+    .catch(fail)
 
   await db.update(organizationInvoices)
     .set({ bachsCheckoutId: session.checkout_id, updatedAt: sql`now()` })
     .where(eq(organizationInvoices.id, invoice.id))
-
-  await db.update(organizationSubscriptions)
-    .set({
-      interval: input.interval,
-      collectionCurrency: input.collectionCurrency,
-      collectionMethod: method,
-      lastInvoiceReference: reference,
-      updatedAt: sql`now()`
-    })
-    .where(eq(organizationSubscriptions.organizationId, input.organizationId))
 
   await recordAudit({
     organizationId: input.organizationId,
@@ -226,6 +195,7 @@ export async function markInvoicePaid(input: {
       status: 'active',
       interval: invoice.interval,
       collectionCurrency: invoice.collectionCurrency,
+      collectionMethod: collectionMethodFor(invoice.collectionCurrency as CollectionCurrency),
       currentPeriodEnd: invoice.periodEnd,
       graceEndsAt: null,
       trialEndsAt: null,
@@ -259,6 +229,7 @@ export async function applySubscriptionState(subscription: BachsSubscription) {
 
   const periodEndAt = subscription.current_period_end ?? subscription.next_billed_at
   const status = subscription.status as OrganizationPlanStatus
+  const interval = subscription.metadata?.interval
 
   const metadataSeats = Number.parseInt(
     subscription.product?.metadata?.schedra_seats
@@ -272,7 +243,9 @@ export async function applySubscriptionState(subscription: BachsSubscription) {
 
   await useDatabase().update(organizationSubscriptions).set({
     status,
+    ...(interval === 'monthly' || interval === 'yearly' ? { interval } : {}),
     collectionMethod: 'charge_automatically',
+    collectionCurrency: 'USD',
     bachsSubscriptionId: subscription.id,
     currentPeriodEnd: periodEndAt ? new Date(periodEndAt) : null,
     trialEndsAt: subscription.trial_end ? new Date(subscription.trial_end) : null,

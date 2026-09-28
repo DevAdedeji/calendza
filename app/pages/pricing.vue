@@ -110,7 +110,7 @@ const faqs = [
   },
   {
     q: 'How does billing work?',
-    a: 'Choose monthly or yearly billing, with two months free when paying yearly. Nigeria uses fixed naira prices and manual bank-transfer renewals. US dollar card subscriptions renew automatically until cancelled. Paid bookings use the currency chosen by the host.'
+    a: 'Personal Pro and Team plans are billed in US dollars and renew automatically by card until cancelled. Choose monthly or yearly billing, with two months free when paying yearly. Your bank may apply conversion fees if your card uses another currency. Appointment payments are separate and use the currency chosen by the host.'
   },
   {
     q: 'How does the Team plan work?',
@@ -184,7 +184,6 @@ useHead({
 
     <section class="border-b border-default bg-muted">
       <div class="mx-auto max-w-312 px-6 py-16 lg:px-10 lg:py-20">
-        <BillingRegionControl class="mb-8" />
         <!-- Sits with the cards, not up in the hero: the price above changes
              when this changes, so the control has to be next to what it moves. -->
         <div class="mb-6 flex flex-wrap items-center justify-between gap-3">

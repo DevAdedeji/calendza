@@ -4,7 +4,7 @@ import {
   TEAM_PLAN,
   type BillingInterval
 } from '#shared/billing'
-import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
+import { formatInvoiceAmount } from '#shared/regional-pricing'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { useBillingCheckout } from '@/composables/billing/useBillingCheckout'
 import { apiErrorMessage } from '@/services/api/http'
@@ -14,7 +14,6 @@ definePageMeta({ layout: 'app', middleware: 'auth' })
 useSeoMeta({ title: 'Plan & billing', robots: 'noindex, nofollow' })
 
 const feedback = useFeedback()
-const { invoiceAmount: formatInvoiceAmount } = useAccountMoneyDisplay()
 const interval = ref<BillingInterval>(DEFAULT_BILLING_INTERVAL)
 const { currency, ready: pricingReady, price } = useSubscriptionPricing()
 const cancelling = ref(false)
@@ -112,7 +111,9 @@ function formatDate(value: string | null | undefined) {
       label="Loading plan and billing"
     />
     <template v-else>
-      <BillingRegionControl :disabled="checkoutDisabled" />
+      <p class="text-sm text-muted">
+        Paid plans are billed in USD.
+      </p>
       <div class="flex justify-start">
         <div
           class="inline-flex rounded-full border border-default bg-muted p-1"
@@ -219,6 +220,9 @@ function formatDate(value: string | null | undefined) {
             >
               Upgrade to Personal Pro
             </UButton>
+            <p class="mt-2 text-center text-xs text-muted">
+              Renews automatically until cancelled.
+            </p>
             <p
               v-if="!data?.configured"
               class="mt-3 text-sm text-warning"
@@ -311,10 +315,17 @@ function formatDate(value: string | null | undefined) {
                 <dt class="text-muted">
                   Renewal
                 </dt><dd class="mt-1 font-medium text-highlighted">
-                  {{ entitlement.teamCoverage ? 'Included while your paid Team seat is active' : entitlement.autoRenews ? 'Automatic' : 'Manual or cancelled' }}
+                  {{ entitlement.teamCoverage ? 'Included while your paid Team seat is active' : entitlement.autoRenews ? 'Automatic' : 'Does not renew automatically' }}
                 </dd>
               </div>
             </dl>
+            <p
+              v-if="entitlement?.isPro && !entitlement.teamCoverage && data?.payment.collectionCurrency === 'NGN'"
+              class="mt-5 max-w-2xl text-sm text-muted"
+            >
+              Your paid naira plan remains valid through {{ formatDate(entitlement.currentPeriodEnd) }}.
+              After it ends, you can choose a recurring USD subscription. You will not be switched or charged automatically.
+            </p>
             <p
               v-if="entitlement?.source === 'personal_and_team'"
               class="mt-5 max-w-2xl text-sm text-muted"

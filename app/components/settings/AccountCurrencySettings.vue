@@ -33,7 +33,7 @@ async function save() {
         Currency
       </h2>
       <p class="mt-1 text-[14px] text-muted">
-        Your default for prices, new paid events and money views, on every device.
+        Your default for new paid events and balance displays, on every device.
       </p>
     </div>
     <form
@@ -52,7 +52,7 @@ async function save() {
         />
       </UFormField>
       <p class="text-sm text-muted">
-        Balances are displayed in this currency using Bachs’ exchange rate. Converted totals are estimates; your funds, existing event prices, subscriptions and payment records stay unchanged.
+        Balances are displayed in this currency using Bachs’ exchange rate. Converted totals are estimates; your funds, existing event prices and payment records stay unchanged. Calendza subscriptions are billed separately in USD.
       </p>
       <p
         v-if="error"

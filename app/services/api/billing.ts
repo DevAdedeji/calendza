@@ -36,7 +36,7 @@ export const billingApi = {
     resource('/api/teams', slug, '/billing/sync-seats'),
     { method: 'POST' }
   ),
-  checkout: (slug: string, body: { interval: BillingInterval, currency: CollectionCurrency }) =>
+  checkout: (slug: string, body: { interval: BillingInterval, currency: 'USD' }) =>
     $fetch<{ checkoutUrl: string, reference: string }>(
       resource('/api/teams', slug, '/billing/checkout'),
       { method: 'POST', body }
@@ -67,7 +67,7 @@ export interface PersonalBillingResponse {
 
 export const personalBillingApi = {
   summaryEndpoint: '/api/billing' as const,
-  checkout: (body: { interval: BillingInterval, currency: CollectionCurrency, requestId: string }) =>
+  checkout: (body: { interval: BillingInterval, currency: 'USD', requestId: string }) =>
     $fetch<{ checkoutUrl: string, reference: string }>('/api/billing/checkout', { method: 'POST', body }),
   cancel: () => $fetch<{ cancelAtPeriodEnd: boolean, currentPeriodEnd: string | null, autoRenews: boolean }>(
     '/api/billing/cancel',

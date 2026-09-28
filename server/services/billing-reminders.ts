@@ -57,31 +57,31 @@ const COPY: Record<Stage, (input: { name: string, amount: string, days: number }
   trial_ending: ({ name, amount, days }) => ({
     subject: `${name}: ${days} ${days === 1 ? 'day' : 'days'} left on your Calendza trial`,
     heading: 'Your trial is nearly up',
-    body: `${name} has ${days} ${days === 1 ? 'day' : 'days'} left of its free trial. Paying keeps your team booking pages taking bookings — it is ${amount} for the members who have joined.\n\nNothing is charged automatically, so this needs a moment from you.`,
-    action: 'Pay and keep the team running'
+    body: `${name} has ${days} ${days === 1 ? 'day' : 'days'} left of its free trial. You can start a USD card subscription at ${amount} for the members who have joined.\n\nThe trial does not charge you automatically. A paid subscription renews automatically until cancelled.`,
+    action: 'View subscription options'
   }),
   trial_over: ({ name, amount }) => ({
     subject: `${name}: your Calendza trial has ended`,
     heading: 'Your trial has ended',
-    body: `${name} is now in its ${TEAM_PLAN.graceDays}-day grace period. Team booking pages are still taking bookings, and paying ${amount} keeps them that way.\n\nNothing has been deleted, and nothing will be.`,
-    action: 'Pay now'
+    body: `${name} is now in its ${TEAM_PLAN.graceDays}-day grace period. Team booking pages are still taking bookings. Start a USD card subscription at ${amount} to keep them active. It renews automatically until cancelled.\n\nYour existing bookings and team data are retained.`,
+    action: 'View subscription options'
   }),
   period_ending: ({ name, amount, days }) => ({
-    subject: `${name}: your Calendza invoice is due`,
-    heading: 'Time to renew',
-    body: `${name} renews in ${Math.max(days, 0)} ${days === 1 ? 'day' : 'days'}, and it is ${amount} for the members who have joined.\n\nBank transfer cannot be charged automatically, so renewals always need a moment from you.`,
-    action: 'Pay this invoice'
+    subject: `${name}: your paid Calendza term is ending`,
+    heading: 'Your paid term is ending',
+    body: `${name}'s paid term ends in ${Math.max(days, 0)} ${days === 1 ? 'day' : 'days'}. It will not renew automatically.\n\nAfter it ends, you can choose a USD card subscription at ${amount} for the members who have joined. The new subscription renews automatically until cancelled.`,
+    action: 'View billing'
   }),
   grace: ({ name, amount }) => ({
     subject: `${name}: payment needed to keep taking bookings`,
     heading: 'Payment still outstanding',
-    body: `${name} has not been paid for yet. The grace period ends soon, after which team booking pages stop taking new bookings.\n\nEverything is retained either way — bookings, members and exports all stay. Paying ${amount} restores it immediately.`,
-    action: 'Pay now'
+    body: `${name}'s grace period ends soon, after which team booking pages stop taking new bookings.\n\nBookings, members and exports are retained. Start a USD card subscription at ${amount} to keep the team active once payment is confirmed. It renews automatically until cancelled.`,
+    action: 'View subscription options'
   }),
   locked: ({ name, amount }) => ({
     subject: `${name} is now read-only`,
     heading: 'Your team is read-only',
-    body: `${name} has stopped taking new bookings because its subscription is unpaid.\n\nNothing has been deleted. Every booking, member and export is exactly where you left it, and paying ${amount} brings the team straight back.`,
+    body: `${name} has stopped taking new bookings because its trial or paid term has ended.\n\nYour bookings, members and exports are retained. A USD card subscription at ${amount} restores access once payment is confirmed, then renews automatically until cancelled.`,
     action: 'Reactivate the team'
   })
 }

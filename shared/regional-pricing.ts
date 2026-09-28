@@ -1,9 +1,7 @@
 import { personalProPriceCents, seatPriceCents, type BillingInterval, type CollectionCurrency } from '#shared/billing'
 
-export function planPriceCents(plan: 'personal' | 'team', interval: BillingInterval, currency: CollectionCurrency): number {
-  if (currency === 'USD') return plan === 'personal' ? personalProPriceCents(interval) : seatPriceCents(interval)
-  const monthly = plan === 'personal' ? 750000 : 1000000
-  return interval === 'yearly' ? monthly * 10 : monthly
+export function planPriceCents(plan: 'personal' | 'team', interval: BillingInterval): number {
+  return plan === 'personal' ? personalProPriceCents(interval) : seatPriceCents(interval)
 }
 
 export function decimalAmountCents(value: string): number {
@@ -23,8 +21,7 @@ export function formatSubscriptionMoney(cents: number, currency: CollectionCurre
   }).format(cents / 100)
 }
 
-// A timezone is only a default, not proof of residence. The billing-region
-// selector lets travellers and users with a different system timezone correct it.
+// A timezone is only a default for account display, not subscription billing.
 export function preferredBillingCurrency(timeZone: string): CollectionCurrency {
   return timeZone === 'Africa/Lagos' ? 'NGN' : 'USD'
 }

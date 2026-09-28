@@ -161,18 +161,16 @@ async function create() {
             </span>
             <div class="min-w-0 text-[13px] leading-relaxed text-muted">
               <p class="font-medium text-highlighted">
-                {{ TEAM_PLAN.trialDays }} days free, no card needed
+                {{ TEAM_PLAN.trialDays }} days free. No card required.
               </p>
               <p class="mt-1">
-                After the trial it is {{ price('team', 'monthly') }} per member monthly or
-                {{ price('team', 'yearly') }} per member yearly. You only pay for people who
+                Paid plans are {{ price('team', 'monthly') }} USD per member monthly or
+                {{ price('team', 'yearly') }} USD per member yearly. You only pay for people who
                 have joined, and your personal booking page stays free.
               </p>
             </div>
           </div>
         </div>
-
-        <BillingRegionControl />
 
         <p
           v-if="error"

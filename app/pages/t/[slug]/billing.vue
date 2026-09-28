@@ -8,7 +8,7 @@ import {
   invoiceTotalCents,
   type BillingInterval
 } from '#shared/billing'
-import { useAccountMoneyDisplay } from '@/composables/payments/useAccountMoneyDisplay'
+import { formatInvoiceAmount, formatSubscriptionMoney } from '#shared/regional-pricing'
 import { useSubscriptionPricing } from '@/composables/billing/useSubscriptionPricing'
 import { useBillingCheckout } from '@/composables/billing/useBillingCheckout'
 import { apiErrorMessage } from '@/services/api/http'
@@ -21,7 +21,6 @@ useSeoMeta({ title: 'Team billing', robots: 'noindex, nofollow' })
 const route = useRoute()
 const slug = computed(() => String(route.params.slug ?? ''))
 const feedback = useFeedback()
-const { invoiceAmount: formatInvoiceAmount, money: formatSubscriptionMoney } = useAccountMoneyDisplay()
 
 const { data, refresh, status, error: loadFailure }
   = await useLazyFetch<TeamBillingResponse>(() => billingApi.summaryEndpoint(slug.value))
@@ -40,14 +39,12 @@ const checkoutReason = computed(() => {
   if (!entitlement.value || !seatBilling.value) return null
   return billingCheckoutReason(
     entitlement.value.status,
-    seatBilling.value.collectionMethod,
-    seatMismatch.value
+    seatBilling.value.collectionMethod
   )
 })
 const checkoutLabel = computed(() => {
   if (checkoutReason.value === 'restart') return 'Start a new subscription'
-  if (checkoutReason.value === 'manual_seat_change') return 'Update billing for current members'
-  if (checkoutReason.value === 'manual_renewal') return 'Pay outstanding invoice'
+  if (checkoutReason.value === 'manual_renewal') return 'Start a USD subscription'
   return 'Pay and activate'
 })
 
@@ -82,8 +79,7 @@ const seats = computed(() => entitlement.value?.seatsUsed ?? 0)
 // What the picker currently adds up to, used for the checkout button.
 const total = computed(() => invoiceTotalCents(seats.value, interval.value))
 
-// Keep the subscription amount intact; the UI may show its estimated equivalent
-// without changing what the existing subscription will actually charge.
+// Show the actual subscription charge, independent of balance-display settings.
 const headlineCents = computed(() => entitlement.value?.nextInvoiceCents ?? total.value)
 const headlinePeriod = computed(() => (hasBillingHistory.value ? entitlement.value?.interval : interval.value) === 'monthly' ? 'month' : 'year')
 const perSeatCents = computed(() => seatPriceCents(entitlement.value?.interval ?? 'yearly'))
@@ -110,12 +106,12 @@ const headline = computed(() => {
 const paymentMethod = computed(() => payingByCard.value
   ? {
       label: `Card · ${seatBilling.value?.collectionCurrency ?? 'USD'}`,
-      detail: 'Renews on its own each period',
+      detail: entitlement.value?.autoRenews ? 'Renews on its own each period' : 'Automatic renewal is not active',
       icon: 'i-lucide-credit-card'
     }
   : {
-      label: `Bank transfer · ${seatBilling.value?.collectionCurrency ?? 'NGN'}`,
-      detail: 'Invoiced each period — nothing is charged automatically',
+      label: `Paid term · ${seatBilling.value?.collectionCurrency ?? 'NGN'}`,
+      detail: 'Does not renew automatically',
       icon: 'i-lucide-landmark'
     })
 
@@ -297,8 +293,8 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
         />
         <p class="text-[14px] leading-relaxed text-muted">
           This team now has {{ entitlement.seatsUsed }} active members, but the last paid invoice
-          covered {{ seatBilling?.billedSeats ?? 0 }}. Bank transfers cannot be charged automatically;
-          start checkout below to update the paid term for the current team size.
+          covered {{ seatBilling?.billedSeats ?? 0 }}. Your existing paid term remains unchanged.
+          When it ends, the new USD subscription will cover the members who have joined.
         </p>
       </div>
 
@@ -351,15 +347,15 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
               Only members who have joined are counted.
             </p>
             <p
-              v-if="hasBillingHistory"
+              v-if="existingNairaBilling"
               class="mt-2 text-sm text-muted"
             >
-              ≈ is a display estimate at Bachs’ rate. Your existing subscription is still charged in {{ seatBilling?.collectionCurrency }}; past invoices are unchanged.
-              Your preferred currency is used for the display and new checkouts, not to change an existing subscription.
+              Your paid naira term and past invoices are unchanged. Once the term ends, you can choose a recurring USD subscription.
+              You will not be switched or charged automatically.
             </p>
 
             <p
-              v-if="entitlement.status === 'past_due'"
+              v-if="entitlement.status === 'past_due' && automaticSeatBilling"
               class="mt-3 text-[14px] leading-relaxed text-muted"
             >
               A payment failed. It is being retried automatically and the team keeps working meanwhile.
@@ -368,13 +364,19 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
               v-else-if="entitlement.status === 'unpaid'"
               class="mt-3 text-[14px] leading-relaxed text-muted"
             >
-              Payment retries are exhausted, so the team is read-only. Paying below restores it immediately.
+              Payment retries are exhausted, so the team is read-only. Access returns once payment is confirmed.
             </p>
             <p
               v-else-if="entitlement.readOnly"
               class="mt-3 text-[14px] leading-relaxed text-muted"
             >
               This team is read-only. Team booking pages are not taking new bookings until an invoice is paid.
+            </p>
+            <p
+              v-else-if="entitlement.status === 'past_due'"
+              class="mt-3 text-[14px] leading-relaxed text-muted"
+            >
+              Your trial or paid term has ended. Start a USD subscription before the grace period ends to keep team bookings active.
             </p>
           </div>
 
@@ -423,10 +425,10 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
           >
             <div>
               <h3 class="text-[15px] font-semibold text-highlighted">
-                Choose how to pay
+                Start your subscription
               </h3>
               <p class="mt-1 text-[13px] text-muted">
-                Review the billing period and payment method before opening secure checkout.
+                Billed in USD by card.
               </p>
             </div>
             <div class="grid gap-4 sm:grid-cols-2">
@@ -440,7 +442,6 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
                   class="w-full"
                 />
               </UFormField>
-              <BillingRegionControl :disabled="checkoutDisabled" />
             </div>
             <UButton
               size="lg"
@@ -451,6 +452,9 @@ const statusColor: Record<string, 'success' | 'warning' | 'error' | 'neutral'> =
             >
               {{ checkoutLabel }} · {{ price('team', interval, billedSeats) }}
             </UButton>
+            <p class="text-center text-xs text-muted">
+              Renews automatically until cancelled.
+            </p>
           </div>
 
           <div

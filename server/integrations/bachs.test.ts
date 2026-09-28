@@ -114,18 +114,16 @@ describe('money at the bachs boundary', () => {
   })
 
   it('does not offer a second checkout for provider-managed subscriptions', () => {
-    expect(billingCheckoutReason('active', 'charge_automatically', false)).toBeNull()
-    expect(billingCheckoutReason('active', 'charge_automatically', true)).toBeNull()
-    expect(billingCheckoutReason('past_due', 'charge_automatically', false)).toBeNull()
-    expect(billingCheckoutReason('unpaid', 'charge_automatically', false)).toBeNull()
+    expect(billingCheckoutReason('active', 'charge_automatically')).toBeNull()
+    expect(billingCheckoutReason('past_due', 'charge_automatically')).toBeNull()
+    expect(billingCheckoutReason('unpaid', 'charge_automatically')).toBeNull()
   })
 
   it('offers checkout only when the customer genuinely needs to pay', () => {
-    expect(billingCheckoutReason('trialing', 'invoice', false)).toBe('activate')
-    expect(billingCheckoutReason('canceled', 'charge_automatically', false)).toBe('restart')
-    expect(billingCheckoutReason('active', 'invoice', false)).toBeNull()
-    expect(billingCheckoutReason('active', 'invoice', true)).toBe('manual_seat_change')
-    expect(billingCheckoutReason('past_due', 'invoice', false)).toBe('manual_renewal')
+    expect(billingCheckoutReason('trialing', 'invoice')).toBe('activate')
+    expect(billingCheckoutReason('canceled', 'charge_automatically')).toBe('restart')
+    expect(billingCheckoutReason('active', 'invoice')).toBeNull()
+    expect(billingCheckoutReason('past_due', 'invoice')).toBe('manual_renewal')
   })
 })
 

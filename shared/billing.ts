@@ -26,11 +26,9 @@ export const PERSONAL_PRO_PLAN = {
   graceDays: 7
 } as const
 
-/**
- * Bachs cannot silently re-charge a bank transfer, and NGN collection is
- * primarily bank transfer, so every renewal is invoice → pay → extend rather
- * than a card charged on file.
- */
+/** New subscriptions use recurring USD card billing. */
+export const subscriptionCurrencySchema = z.literal('USD').default('USD')
+
 export const billingIntervals = ['yearly', 'monthly'] as const
 export type BillingInterval = typeof billingIntervals[number]
 export const DEFAULT_BILLING_INTERVAL: BillingInterval = 'monthly'
@@ -78,7 +76,7 @@ export interface PersonalPlanEntitlement {
   teamCoverage: PersonalTeamCoverage | null
 }
 
-/** Currencies a customer may pay in, each with its own fixed plan prices. */
+/** Includes historical invoices; new subscriptions only accept USD. */
 export const collectionCurrencies = ['USD', 'NGN'] as const
 export type CollectionCurrency = typeof collectionCurrencies[number]
 
@@ -93,7 +91,7 @@ export function collectionMethodFor(currency: CollectionCurrency): CollectionMet
   return currency === 'USD' ? 'charge_automatically' : 'invoice'
 }
 
-export type BillingCheckoutReason = 'activate' | 'restart' | 'manual_seat_change' | 'manual_renewal'
+export type BillingCheckoutReason = 'activate' | 'restart' | 'manual_renewal'
 
 /**
  * Checkout creates a new payment commitment, so it must never be offered for
@@ -101,13 +99,13 @@ export type BillingCheckoutReason = 'activate' | 'restart' | 'manual_seat_change
  */
 export function billingCheckoutReason(
   status: OrganizationPlanStatus,
-  collectionMethod: CollectionMethod,
-  seatMismatch: boolean
+  collectionMethod: CollectionMethod
 ): BillingCheckoutReason | null {
   if (status === 'trialing') return 'activate'
   if (status === 'canceled') return 'restart'
   if (collectionMethod === 'charge_automatically') return null
-  if (status === 'active') return seatMismatch ? 'manual_seat_change' : null
+  // Do not replace an unexpired manual term with an immediately charged USD plan.
+  if (status === 'active') return null
   return 'manual_renewal'
 }
 

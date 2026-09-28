@@ -9,13 +9,10 @@ import { members, personalInvoices, personalSubscriptions } from '@@/server/data
 import { useDatabase } from '@@/server/database'
 import {
   cancelSubscription,
-  createCheckoutSession,
   createSubscriptionCheckout,
   ensurePersonalProProduct,
-  NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
   type BachsSubscription
 } from '@@/server/integrations/bachs'
-import { planPriceCents } from '#shared/regional-pricing'
 import { useEnv } from '@@/server/config/env'
 import { addUtcCalendarPeriod } from '@@/server/utils/date-time'
 import { paidTeamCoverageForUser, personalPlanEntitlement } from '@@/server/services/personal-entitlement'
@@ -42,6 +39,9 @@ export async function startPersonalCheckout(input: {
   requestId: string
   customer: { email: string, name: string }
 }) {
+  if (input.collectionCurrency !== 'USD') {
+    throw createError({ statusCode: 400, statusMessage: 'Subscriptions are billed in USD and renew automatically.' })
+  }
   const env = useEnv()
   assertPublicReturnUrl(env.siteUrl)
   const entitlement = await personalPlanEntitlement(input.userId)
@@ -61,6 +61,9 @@ export async function startPersonalCheckout(input: {
   const [existing] = await db.select().from(personalInvoices)
     .where(eq(personalInvoices.reference, reference)).limit(1)
   if (existing?.checkoutUrl && existing.status === 'pending') {
+    if (existing.collectionCurrency !== 'USD' || existing.interval !== input.interval) {
+      throw createError({ statusCode: 409, statusMessage: 'That checkout uses a different plan. Please start a new checkout.' })
+    }
     return { checkoutUrl: existing.checkoutUrl, reference }
   }
   if (existing) {
@@ -68,7 +71,7 @@ export async function startPersonalCheckout(input: {
   }
 
   const amountCents = personalProPriceCents(input.interval)
-  const method = collectionMethodFor(input.collectionCurrency)
+  const method = 'charge_automatically' as const
   const start = new Date()
   const end = personalPeriodEnd(start, input.interval)
   const successUrl = `${env.siteUrl}/billing?paid=1`
@@ -99,34 +102,22 @@ export async function startPersonalCheckout(input: {
     throw failure
   }
 
-  const collectionAmount = toDecimalString(planPriceCents('personal', input.interval, input.collectionCurrency))
+  const collectionAmount = toDecimalString(amountCents)
   await db.update(personalInvoices)
     .set({ collectionAmount, updatedAt: sql`now()` })
     .where(eq(personalInvoices.id, invoice.id))
 
-  const session = method === 'charge_automatically'
-    ? await ensurePersonalProProduct(input.interval)
-        .then(productId => createSubscriptionCheckout({
-          productId,
-          quantity: 1,
-          reference,
-          customer: input.customer,
-          successUrl,
-          cancelUrl,
-          metadata
-        }))
-        .catch(fail)
-    : await createCheckoutSession({
-        amount: collectionAmount,
-        currency: input.collectionCurrency,
-        paymentMethodOptions: NGN_ONE_TIME_PAYMENT_METHOD_OPTIONS,
-        reference,
-        customer: input.customer,
-        successUrl,
-        cancelUrl,
-        metadata
-      })
-        .catch(fail)
+  const session = await ensurePersonalProProduct(input.interval)
+    .then(productId => createSubscriptionCheckout({
+      productId,
+      quantity: 1,
+      reference,
+      customer: input.customer,
+      successUrl,
+      cancelUrl,
+      metadata
+    }))
+    .catch(fail)
 
   await db.transaction(async (tx) => {
     await tx.update(personalInvoices).set({
@@ -141,16 +132,8 @@ export async function startPersonalCheckout(input: {
       collectionCurrency: input.collectionCurrency,
       collectionMethod: method,
       lastInvoiceReference: reference
-    }).onConflictDoUpdate({
-      target: personalSubscriptions.userId,
-      set: {
-        interval: input.interval,
-        collectionCurrency: input.collectionCurrency,
-        collectionMethod: method,
-        lastInvoiceReference: reference,
-        updatedAt: sql`now()`
-      }
-    })
+    // Leave an existing term untouched, including its database-managed timestamp.
+    }).onConflictDoNothing({ target: personalSubscriptions.userId })
   })
 
   await recordSecurityAudit({

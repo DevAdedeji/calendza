@@ -74,8 +74,9 @@ useSeoMeta({
         shown at checkout apply to your purchase.
       </p>
       <p>
-        Card subscriptions renew automatically unless cancelled before renewal. Bank-transfer plans do
-        not renew silently and require payment for each period. Taxes, currency conversion and provider
+        New subscriptions are billed in USD by card and renew automatically unless cancelled before renewal.
+        Existing paid naira terms remain valid until their expiry and are not automatically converted or renewed.
+        Taxes, currency conversion and provider
         fees may apply where disclosed. You can manage or cancel renewal from your billing settings.
         Cancelling renewal does not itself refund an earlier payment. Failed or overdue payments can
         restrict paid features or place a team into a grace period or read-only state, but do not
