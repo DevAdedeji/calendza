@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm'
 import { useDatabase } from '@@/server/database/index'
 import { useEnv } from '@@/server/config/env'
 import { logEvent } from '@@/server/observability/logger'
+import { workerOnlineCondition } from '@@/server/services/worker-coordination'
 
 export default defineEventHandler(async (event) => {
   try {
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
       to_regclass('public.worker_instances') is not null as worker_instances,
       exists(
         select 1 from worker_instances
-        where stopped_at is null and last_seen_at >= now() - interval '45 seconds'
+        where ${workerOnlineCondition}
       ) as worker_online`)
 
     const required = readiness

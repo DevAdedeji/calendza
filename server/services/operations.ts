@@ -18,6 +18,7 @@ import { completeWebhookDelivery, failWebhookDelivery, beginWebhookRetry, webhoo
 import { processBachsWebhook, type BachsEvent } from '@@/server/services/webhooks/bachs'
 import { processZoomWebhook } from '@@/server/services/webhooks/zoom'
 import { useEnv } from '@@/server/config/env'
+import { workerOnlineCondition } from '@@/server/services/worker-coordination'
 
 export type OperationKind = 'automation' | 'calendar' | 'billing' | 'email' | 'webhook'
 export type OperationStatus = 'all' | 'pending' | 'processing' | 'completed' | 'failed' | 'ignored'
@@ -372,8 +373,7 @@ export async function operationsDiagnostics() {
   const startedAt = performance.now()
   await useDatabase().execute(sql`select 1`)
   const [worker] = await useDatabase().select({
-    // Idle workers heartbeat hourly so monitoring does not keep Neon awake.
-    active: sql<number>`count(*) filter (where ${workerInstances.stoppedAt} is null and ${workerInstances.lastSeenAt} >= now() - interval '75 minutes')`.mapWith(Number),
+    active: sql<number>`count(*) filter (where ${workerOnlineCondition})`.mapWith(Number),
     lastSeenAt: sql<Date | null>`max(${workerInstances.lastSeenAt})`.mapWith(workerInstances.lastSeenAt)
   }).from(workerInstances)
   const env = useEnv()

@@ -21,6 +21,23 @@ describe.skipIf(!url)('production job runtime', () => {
     await sql.end()
   })
 
+  it('keeps idle workers healthy between hourly heartbeats but rejects stale or stopped workers', async () => {
+    const { workerOnlineCondition, registerWorkerInstance } = await import('@@/server/services/worker-coordination')
+    const { useDatabase } = await import('@@/server/database')
+    const { workerInstances } = await import('@@/server/database/schema')
+    const active = () => useDatabase().select({ id: workerInstances.id }).from(workerInstances).where(workerOnlineCondition)
+
+    await registerWorkerInstance(ownerA, 'all')
+    await sql`update worker_instances set last_seen_at = now() - interval '60 minutes' where id = ${ownerA}`
+    expect(await active()).toEqual([{ id: ownerA }])
+
+    await sql`update worker_instances set last_seen_at = now() - interval '76 minutes' where id = ${ownerA}`
+    expect(await active()).toEqual([])
+
+    await sql`update worker_instances set last_seen_at = now(), stopped_at = now() where id = ${ownerA}`
+    expect(await active()).toEqual([])
+  })
+
   it('lets only one worker own a scheduled task at a time', async () => {
     const { withWorkerLease } = await import('@@/server/services/worker-coordination')
     let enter!: () => void

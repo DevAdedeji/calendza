@@ -2,8 +2,12 @@ import { and, eq, lt, sql } from 'drizzle-orm'
 import { useDatabase } from '@@/server/database'
 import { workerInstances, workerLeases } from '@@/server/database/schema'
 import { logEvent } from '@@/server/observability/logger'
+import { IDLE_JOB_RECHECK_MS } from '@@/server/services/job-schedule'
 
 const DEFAULT_LEASE_MS = 60_000
+// Allow one hourly idle heartbeat plus a grace period in every health surface.
+export const workerOnlineCondition = sql`${workerInstances.stoppedAt} is null
+  and ${workerInstances.lastSeenAt} >= now() - (${IDLE_JOB_RECHECK_MS + 15 * 60_000} * interval '1 millisecond')`
 
 function leaseExpiry(ttlMs: number) {
   return sql`now() + (${ttlMs} * interval '1 millisecond')`
