@@ -24,5 +24,19 @@ export default defineNitroPlugin(async (nitro) => {
   const runtime = createJobRuntime({ role })
   await runtime.start()
 
+  // Runs after committed mutations, including provider callbacks. Health probes and
+  // ordinary read-only requests must not restart idle queue polling.
+  const wakeAfterMutation = (event: import('h3').H3Event) => {
+    const path = event.path.split('?')[0] ?? ''
+    if (path.startsWith('/api/') && (!['GET', 'HEAD', 'OPTIONS'].includes(event.method)
+      || (event.method === 'GET' && (path.includes('/callback') || path.startsWith('/api/auth/'))))) {
+      runtime.wake()
+    }
+  }
+  nitro.hooks.hook('afterResponse', wakeAfterMutation)
+  nitro.hooks.hook('error', (_error, context) => {
+    if (context.event) wakeAfterMutation(context.event)
+  })
+
   nitro.hooks.hook('close', () => runtime.stop())
 })

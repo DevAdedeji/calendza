@@ -14,6 +14,8 @@ import {
   withWorkerLease
 } from '@@/server/services/worker-coordination'
 import { logEvent } from '@@/server/observability/logger'
+import { IDLE_JOB_RECHECK_MS, startJobSchedule } from '@@/server/services/job-schedule'
+import { nextAutomationAt, nextCalendarSyncAt, nextEmailAt, nextPaidBookingHoldAt, nextPaidBookingRefundAt, nextSeatSyncAt } from '@@/server/services/job-deadlines'
 
 export interface RuntimeTask {
   name: string
@@ -21,31 +23,35 @@ export interface RuntimeTask {
   initialDelayMs?: number
   leaseMs?: number
   run: () => Promise<number>
+  nextRunAt?: () => Promise<Date | null>
 }
 
 export function defaultRuntimeTasks(): RuntimeTask[] {
   return [
     {
       name: 'calendar-sync',
+      nextRunAt: nextCalendarSyncAt,
       intervalMs: 5_000,
       leaseMs: 60_000,
       run: () => processCalendarSyncJobs()
     },
     {
       name: 'calendar-reconciliation',
-      intervalMs: 15 * 60_000,
+      intervalMs: IDLE_JOB_RECHECK_MS,
       initialDelayMs: 45_000,
       leaseMs: 60_000,
       run: () => enqueueCalendarReconciliation()
     },
     {
       name: 'email-outbox',
+      nextRunAt: nextEmailAt,
       intervalMs: 5_000,
       leaseMs: 60_000,
       run: () => processEmailOutbox()
     },
     {
       name: 'workflow-automation',
+      nextRunAt: nextAutomationAt,
       intervalMs: 5_000,
       leaseMs: 60_000,
       run: async () => {
@@ -56,12 +62,14 @@ export function defaultRuntimeTasks(): RuntimeTask[] {
     },
     {
       name: 'paid-booking-holds',
+      nextRunAt: nextPaidBookingHoldAt,
       intervalMs: 60_000,
       leaseMs: 60_000,
       run: () => expirePaidBookingHolds()
     },
     {
       name: 'paid-booking-refunds',
+      nextRunAt: nextPaidBookingRefundAt,
       intervalMs: 15 * 60_000,
       initialDelayMs: 30_000,
       leaseMs: 120_000,
@@ -69,13 +77,14 @@ export function defaultRuntimeTasks(): RuntimeTask[] {
     },
     {
       name: 'subscription-seat-sync',
+      nextRunAt: nextSeatSyncAt,
       intervalMs: 5_000,
       leaseMs: 60_000,
       run: () => processSubscriptionSeatSyncJobs()
     },
     {
       name: 'operations-alerts',
-      intervalMs: 60_000,
+      intervalMs: IDLE_JOB_RECHECK_MS,
       initialDelayMs: 15_000,
       leaseMs: 120_000,
       run: () => evaluateOperationsAlerts()
@@ -103,9 +112,9 @@ export function createJobRuntime(input: {
 }) {
   const workerId = input.workerId ?? randomUUID()
   const tasks = input.tasks ?? defaultRuntimeTasks()
-  const heartbeatMs = input.heartbeatMs ?? 15_000
+  const heartbeatMs = input.heartbeatMs ?? IDLE_JOB_RECHECK_MS
   const shutdownTimeoutMs = input.shutdownTimeoutMs ?? 25_000
-  const timers = new Set<ReturnType<typeof setInterval> | ReturnType<typeof setTimeout>>()
+  const schedules = new Map<string, ReturnType<typeof startJobSchedule>>()
   const inFlight = new Map<string, Promise<void>>()
   let started = false
   let stopping = false
@@ -125,6 +134,10 @@ export function createJobRuntime(input: {
         if (!execution.acquired) return
 
         const count = execution.result
+        if (count > 0 || task.name === 'paid-booking-holds') {
+          // A worker may commit follow-up emails/events without any HTTP request.
+          for (const [name, schedule] of schedules) if (name !== task.name) schedule.wake()
+        }
         if (count > 0) {
           logEvent('info', 'worker_task_completed', {
             workerId,
@@ -140,6 +153,7 @@ export function createJobRuntime(input: {
           durationMs: Math.round((performance.now() - startedAt) * 10) / 10,
           error
         })
+        throw error
       }
     })().finally(() => inFlight.delete(task.name))
 
@@ -152,39 +166,30 @@ export function createJobRuntime(input: {
     started = true
     await registerWorkerInstance(workerId, input.role)
 
-    const heartbeat = setInterval(() => {
-      void heartbeatWorkerInstance(workerId)
-        .then(async (alive) => {
-          // Test resets and manual maintenance can remove the row while the
-          // process is healthy. Re-register instead of reporting a false outage.
-          if (!alive) await registerWorkerInstance(workerId, input.role)
-        })
-        .catch(error => logEvent('error', 'worker_heartbeat_failed', {
-          workerId,
-          error
-        }))
-    }, heartbeatMs)
-    heartbeat.unref()
-    timers.add(heartbeat)
+    schedules.set('heartbeat', startJobSchedule({
+      intervalMs: heartbeatMs,
+      initialDelayMs: (Math.floor(Date.now() / heartbeatMs) + 1) * heartbeatMs - Date.now(),
+      run: async () => {
+        const alive = await heartbeatWorkerInstance(workerId)
+        // Test resets and manual maintenance can remove the row while the
+        // process is healthy. Re-register instead of reporting a false outage.
+        if (!alive) await registerWorkerInstance(workerId, input.role)
+      },
+      onError: error => logEvent('error', 'worker_heartbeat_failed', {
+        workerId,
+        error
+      })
+    }))
 
     for (const task of tasks) {
-      const schedule = () => {
-        if (stopping) return
-        void runTask(task)
-        const timer = setInterval(() => {
-          void runTask(task)
-        }, task.intervalMs)
-        timer.unref()
-        timers.add(timer)
-      }
-
-      if ((task.initialDelayMs ?? 0) > 0) {
-        const timer = setTimeout(schedule, task.initialDelayMs)
-        timer.unref()
-        timers.add(timer)
-      } else {
-        schedule()
-      }
+      schedules.set(task.name, startJobSchedule({
+        ...task,
+        // A dedicated worker cannot receive the web process's local wake signal.
+        // Keep its polling contract until a cross-process wake transport exists.
+        nextRunAt: input.role === 'all' ? task.nextRunAt : undefined,
+        run: () => runTask(task) ?? Promise.resolve(),
+        onError: error => logEvent('error', 'worker_schedule_failed', { workerId, task: task.name, error })
+      }))
     }
 
     logEvent('info', 'worker_runtime_started', {
@@ -197,10 +202,10 @@ export function createJobRuntime(input: {
   async function stop() {
     if (!started || stopping) return
     stopping = true
-    for (const timer of timers) clearInterval(timer)
-    timers.clear()
+    const pendingSchedules = [...schedules.values()].map(schedule => schedule.cancel())
+    schedules.clear()
 
-    const draining = Promise.allSettled([...inFlight.values()])
+    const draining = Promise.allSettled([...inFlight.values(), ...pendingSchedules])
     let timedOut = false
     let shutdownTimer: ReturnType<typeof setTimeout> | undefined
     await Promise.race([
@@ -231,6 +236,9 @@ export function createJobRuntime(input: {
     start,
     stop,
     runTask,
+    wake() {
+      for (const schedule of schedules.values()) schedule.wake()
+    },
     get runningTasks() { return [...inFlight.keys()] }
   }
 }

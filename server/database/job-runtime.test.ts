@@ -165,4 +165,21 @@ describe.skipIf(!url)('production job runtime', () => {
       worker: { ok: false, active: 0 }
     })
   })
+
+  it('derives reminder and stale-claim deadlines from durable rows, ignoring terminal work', async () => {
+    const { nextEmailAt, nextAutomationAt, nextCalendarSyncAt, nextSeatSyncAt, nextPaidBookingHoldAt, nextPaidBookingRefundAt } = await import('@@/server/services/job-deadlines')
+    await sql`truncate email_outbox, automation_runs, domain_events, calendar_sync_jobs, subscription_seat_sync_jobs, booking_payments cascade`
+    for (const next of [nextEmailAt, nextAutomationAt, nextCalendarSyncAt, nextSeatSyncAt, nextPaidBookingHoldAt, nextPaidBookingRefundAt]) {
+      expect(await next()).toBeNull()
+    }
+    const due = new Date(Date.now() + 7 * 60_000)
+    await sql`insert into email_outbox (dedupe_key, recipient, subject, heading, body, action_label, action_url, available_at)
+      values ('idle-deadline-test', 'test@example.com', 'Test', 'Test', 'Test', 'Open', 'https://example.com', ${due})`
+    expect((await nextEmailAt())?.getTime()).toBe(due.getTime())
+    await sql`update email_outbox set status = 'sent' where dedupe_key = 'idle-deadline-test'`
+    expect(await nextEmailAt()).toBeNull()
+    await sql`update email_outbox set status = 'sending', locked_at = ${due} where dedupe_key = 'idle-deadline-test'`
+    expect((await nextEmailAt())?.getTime()).toBe(due.getTime() + 10 * 60_000)
+    await sql`delete from email_outbox where dedupe_key = 'idle-deadline-test'`
+  })
 })

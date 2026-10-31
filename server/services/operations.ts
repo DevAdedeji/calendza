@@ -372,7 +372,8 @@ export async function operationsDiagnostics() {
   const startedAt = performance.now()
   await useDatabase().execute(sql`select 1`)
   const [worker] = await useDatabase().select({
-    active: sql<number>`count(*) filter (where ${workerInstances.stoppedAt} is null and ${workerInstances.lastSeenAt} >= now() - interval '45 seconds')`.mapWith(Number),
+    // Idle workers heartbeat hourly so monitoring does not keep Neon awake.
+    active: sql<number>`count(*) filter (where ${workerInstances.stoppedAt} is null and ${workerInstances.lastSeenAt} >= now() - interval '75 minutes')`.mapWith(Number),
     lastSeenAt: sql<Date | null>`max(${workerInstances.lastSeenAt})`.mapWith(workerInstances.lastSeenAt)
   }).from(workerInstances)
   const env = useEnv()
